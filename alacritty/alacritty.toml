@@ -18,5 +18,5 @@ size = 14
 
 [keyboard]
 bindings = [
-     { key = "s", mods = "Command", chars = "\u0013" },
+     { key = "s", mods = "Command", chars = "\u0018" },
 ]
