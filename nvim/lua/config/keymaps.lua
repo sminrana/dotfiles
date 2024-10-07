@@ -1,8 +1,7 @@
 -- vim.keymap.set({ "i", "x", "n", "s" }, "<C-s>", "<nop>")
-vim.keymap.set({ "i", "x", "n", "s" }, "<C-x>", "<cmd>w<cr><esc>", { desc = "Command + s on Mac" })
+vim.keymap.set({ "i", "x", "n", "s" }, "<leader>bs", "<cmd>w<cr><esc>", { desc = "Save buffer" })
 vim.keymap.set("n", "<leader>X", "<cmd>XcodebuildPicker<cr>", { desc = "Show Xcodebuild Actions" })
 vim.keymap.set("n", "<leader>xf", "<cmd>XcodebuildProjectManager<cr>", { desc = "Show Project Manager Actions" })
-
 
 vim.keymap.set("n", "<leader>xb", "<cmd>XcodebuildBuild<cr>", { desc = "Build Project" })
 vim.keymap.set("n", "<leader>xB", "<cmd>XcodebuildBuildForTesting<cr>", { desc = "Build For Testing" })

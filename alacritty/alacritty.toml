@@ -1,22 +1,18 @@
 
-[ env ]
+[env]
 TERM = "xterm-256color"
 
 [window]
 dynamic_padding = true
 decorations = "buttonless"
-opacity = 0.90
-blur = true
-padding.x = 10
-padding.y = 10
-
+opacity = 1.0
 
 [font]
 normal.family = "FiraCode Nerd Font"
-normal.style = "Retina"
-size = 14
+
+size = 15
 
 [keyboard]
 bindings = [
-     { key = "s", mods = "Command", chars = "\u0018" },
+     { key = "s", mods = "Command", chars = "\u0013" },
 ]
