@@ -451,6 +451,7 @@ return {
     -- Add the Laravel.nvim plugin which gives the ability to run Artisan commands
     -- from Neovim.
     "adalessa/laravel.nvim",
+    version = "2.2.1",
     dependencies = {
       "nvim-telescope/telescope.nvim",
       "tpope/vim-dotenv",
