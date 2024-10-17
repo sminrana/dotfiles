@@ -9,3 +9,5 @@ opt.sidescrolloff = 8
 opt.timeoutlen = 100
 opt.ttimeoutlen = 0
 --opt.clipboard:append("unnamedplus") -- use system clipboard as default register
+opt.spelllang = "en_us"
+opt.spell = true
