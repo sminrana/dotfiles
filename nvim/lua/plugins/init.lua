@@ -636,7 +636,4 @@ return {
     version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
     dependencies = { "rafamadriz/friendly-snippets" },
   },
-  {
-    "voldikss/vim-floaterm",
-  },
 }
