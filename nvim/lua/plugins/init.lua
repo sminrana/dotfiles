@@ -602,8 +602,8 @@ return {
         "<leader>fx",
         function()
           require("telescope.builtin").live_grep({
-            cwd = "~/Desktop/obs-v1/",
-            prompt_title = "Notes",
+            cwd = "~/Dropbox/obs-v1/",
+            prompt_title = "Dropbox Notes",
           })
         end,
         desc = "Live Grep in Notes Files",
