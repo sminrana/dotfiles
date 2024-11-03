@@ -134,7 +134,7 @@ return {
               languages = {
                 "javascript",
                 "typescript",
-                -- "vue"
+                "vue",
               },
             },
           },
@@ -142,7 +142,7 @@ return {
         filetypes = {
           "javascript",
           "typescript",
-          -- "vue",
+          "vue",
         },
       })
 
