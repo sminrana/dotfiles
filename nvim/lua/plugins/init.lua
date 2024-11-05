@@ -89,7 +89,7 @@ return {
       lspconfig["cssls"].setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        cmd = { "vscode-css-language-server", "--stdio" },
+        cmd = { "--stdio" },
         filetypes = {
           "css",
           "scss",
@@ -163,7 +163,6 @@ return {
       lspconfig["eslint"].setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        cmd = { "vscode-eslint-language-server", "--stdio" },
         filetypes = {
           "javascript",
           "javascriptreact",
@@ -222,7 +221,7 @@ return {
       lspconfig["html"].setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        cmd = { "vscode-html-language-server", "--stdio" },
+        cmd = { "--stdio" },
         filetypes = {
           "html",
         },
