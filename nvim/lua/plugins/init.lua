@@ -1,4 +1,5 @@
 return {
+  -- INFO: LSP
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
@@ -123,28 +124,28 @@ return {
         },
       })
 
-      lspconfig["ts_ls"].setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-        init_options = {
-          plugins = {
-            {
-              name = "@vue/typescript-plugin",
-              location = "/usr/local/lib/node_modules/@vue/typescript-plugin",
-              languages = {
-                "javascript",
-                "typescript",
-                "vue",
-              },
-            },
-          },
-        },
-        filetypes = {
-          "javascript",
-          "typescript",
-          "vue",
-        },
-      })
+      -- lspconfig["ts_ls"].setup({
+      --   capabilities = capabilities,
+      --   on_attach = on_attach,
+      --   init_options = {
+      --     plugins = {
+      --       {
+      --         name = "@vue/typescript-plugin",
+      --         location = "/usr/local/lib/node_modules/@vue/typescript-plugin",
+      --         languages = {
+      --           "javascript",
+      --           "typescript",
+      --           "vue",
+      --         },
+      --       },
+      --     },
+      --   },
+      --   filetypes = {
+      --     "javascript",
+      --     "typescript",
+      --     "vue",
+      --   },
+      -- })
 
       lspconfig["pyright"].setup({
         capabilities = capabilities,
@@ -271,6 +272,7 @@ return {
       })
     end,
   },
+  -- INFO: Linter
   {
     -- Remove phpcs linter.
     "mfussenegger/nvim-lint",
@@ -325,6 +327,7 @@ return {
         php = { "phpcs" },
         css = { "stylelint" },
         yaml = { "yamllint" },
+        python = { "pylint" },
       }
 
       local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
@@ -341,6 +344,7 @@ return {
       -- end, { desc = "Lint file" })
     end,
   },
+  -- INFO: Formatter
   {
     "stevearc/conform.nvim",
     lazy = true,
