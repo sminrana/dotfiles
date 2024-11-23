@@ -124,29 +124,6 @@ return {
         },
       })
 
-      -- lspconfig["ts_ls"].setup({
-      --   capabilities = capabilities,
-      --   on_attach = on_attach,
-      --   init_options = {
-      --     plugins = {
-      --       {
-      --         name = "@vue/typescript-plugin",
-      --         location = "/usr/local/lib/node_modules/@vue/typescript-plugin",
-      --         languages = {
-      --           "javascript",
-      --           "typescript",
-      --           "vue",
-      --         },
-      --       },
-      --     },
-      --   },
-      --   filetypes = {
-      --     "javascript",
-      --     "typescript",
-      --     "vue",
-      --   },
-      -- })
-
       lspconfig["pyright"].setup({
         capabilities = capabilities,
         on_attach = on_attach,
@@ -161,7 +138,7 @@ return {
         },
       })
 
-      lspconfig["eslint"].setup({
+      lspconfig["ts_ls"].setup({
         capabilities = capabilities,
         on_attach = on_attach,
         filetypes = {
@@ -315,11 +292,11 @@ return {
       -- setup
       lint.linters_by_ft = {
         swift = { "swiftlint" },
-        javascript = { "eslint" },
-        typescript = { "eslint" },
-        javascriptreact = { "eslint" },
-        typescriptreact = { "eslint" },
-        vue = { "eslint" },
+        javascript = { "eslint_d" },
+        typescript = { "eslint_d" },
+        javascriptreact = { "eslint_d" },
+        typescriptreact = { "eslint_d" },
+        vue = { "eslint_d" },
         sh = { "shellcheck" },
         fish = { "fish" },
         json = { "jsonlint" },
