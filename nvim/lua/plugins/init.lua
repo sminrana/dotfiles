@@ -22,7 +22,7 @@ return {
       local on_attach = function(client, bufnr)
         opts.buffer = bufnr
 
-        -- set keybinds
+        -- set keybinding
         opts.desc = "Show LSP references"
         keymap.set("n", "gR", "<cmd>Telescope lsp_references<CR>", opts)
 
@@ -95,6 +95,16 @@ return {
           "css",
           "scss",
           "less",
+        },
+      })
+
+      lspconfig["yamlls"].setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        cmd = { "--stdio" },
+        filetypes = {
+          "yaml",
+          "yml",
         },
       })
 
@@ -348,7 +358,6 @@ return {
         markdown = { "prettier" },
         graphql = { "prettier" },
         liquid = { "prettier" },
-        -- blade = { "php-cs-fixer" },
       },
       notify_on_error = true,
       -- format_on_save = {
@@ -524,10 +533,6 @@ return {
     opts = {
       transparent = true,
       style = "moon",
-      styles = {
-        sidebars = "transparent",
-        floats = "transparent",
-      },
     },
   },
   {
@@ -548,16 +553,6 @@ return {
   {
     "nvim-telescope/telescope.nvim",
     keys = {
-      {
-        "<leader>fv",
-        function()
-          require("telescope.builtin").live_grep({
-            cwd = vim.fn.stdpath("config"),
-            prompt_title = "Neovim",
-          })
-        end,
-        desc = "Live Grep in Neovim config files",
-      },
       {
         "<leader>fa",
         function()
