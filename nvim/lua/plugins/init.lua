@@ -163,37 +163,59 @@ return {
           "astro",
         },
         settings = {
-          {
-            codeAction = {
-              disableRuleComment = {
-                enable = true,
-                location = "separateLine",
-              },
-              showDocumentation = {
-                enable = true,
-              },
-            },
-            codeActionOnSave = {
-              enable = false,
-              mode = "all",
-            },
+          complete_function_calls = true,
+          vtsls = {
+            enableMoveToFileCodeAction = true,
+            autoUseWorkspaceTsdk = true,
             experimental = {
-              useFlatConfig = false,
+              completion = {
+                enableServerSideFuzzyMatch = true,
+              },
             },
-            format = true,
-            nodePath = "",
-            onIgnoredFiles = "off",
-            problems = {
-              shortenToSingleLine = false,
+          },
+          typescript = {
+            updateImportsOnFileMove = { enabled = "always" },
+            suggest = {
+              completeFunctionCalls = true,
             },
-            quiet = false,
-            rulesCustomizations = {},
-            run = "onType",
-            useESLintClass = false,
-            validate = "on",
-            workingDirectory = {
-              mode = "location",
+            inlayHints = {
+              enumMemberValues = { enabled = true },
+              functionLikeReturnTypes = { enabled = true },
+              parameterNames = { enabled = "literals" },
+              parameterTypes = { enabled = true },
+              propertyDeclarationTypes = { enabled = true },
+              variableTypes = { enabled = false },
             },
+          },
+          codeAction = {
+            disableRuleComment = {
+              enable = true,
+              location = "separateLine",
+            },
+            showDocumentation = {
+              enable = true,
+            },
+          },
+          codeActionOnSave = {
+            enable = false,
+            mode = "all",
+          },
+          experimental = {
+            useFlatConfig = false,
+          },
+          format = true,
+          nodePath = "",
+          onIgnoredFiles = "off",
+          problems = {
+            shortenToSingleLine = false,
+          },
+          quiet = false,
+          rulesCustomizations = {},
+          run = "onType",
+          useESLintClass = false,
+          validate = "on",
+          workingDirectory = {
+            mode = "location",
           },
         },
       })
