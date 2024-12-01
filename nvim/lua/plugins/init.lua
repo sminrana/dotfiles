@@ -553,8 +553,9 @@ return {
     lazy = false,
     priority = 1000,
     opts = {
+      colorscheme = "tokyonight",
+      style = "day",
       transparent = true,
-      style = "moon",
     },
   },
   {
