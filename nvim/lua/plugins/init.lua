@@ -220,13 +220,6 @@ return {
         },
       })
 
-      -- PHP
-      -- lspconfig["phpactor"].setup({
-      --   capabilities = capabilities,
-      --   on_attach = on_attach,
-      -- })
-      --
-
       -- HTML
       lspconfig["html"].setup({
         capabilities = capabilities,
@@ -554,7 +547,7 @@ return {
     priority = 1000,
     opts = {
       colorscheme = "tokyonight",
-      style = "day",
+      style = "night",
       transparent = true,
     },
   },
