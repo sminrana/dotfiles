@@ -372,7 +372,7 @@ return {
         yaml = { "prettier" },
         markdown = { "prettier" },
         graphql = { "prettier" },
-        liquid = { "prettier" },
+        sql = { "sql-formatter" },
       },
       notify_on_error = true,
       -- format_on_save = {
@@ -678,6 +678,6 @@ return {
   --     --   max_tokens = 4096,
   --     -- },
   --   },
-
-  },
+  --
+  -- },
 }
