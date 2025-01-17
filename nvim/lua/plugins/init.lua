@@ -1,141 +1,4 @@
 return {
-  -- INFO: LSP
-  -- INFO: Linter
-  -- {
-  --   -- Remove phpcs linter.
-  --   "mfussenegger/nvim-lint",
-  --   event = { "BufReadPre", "BufNewFile" },
-  --   config = function()
-  --     local phpcs = require("lint").linters.phpcs
-  --     phpcs.args = {
-  --       "-q",
-  --       -- <- Add a new parameter here
-  --       "--standard=PSR12",
-  --       "--report=json",
-  --       "-",
-  --     }
-
-  --     -- swiftlint
-  --     local lint = require("lint")
-  --     local pattern = "[^:]+:(%d+):(%d+): (%w+): (.+)"
-  --     local groups = { "lnum", "col", "severity", "message" }
-  --     local defaults = { ["source"] = "swiftlint" }
-  --     local severity_map = {
-  --       ["error"] = vim.diagnostic.severity.ERROR,
-  --       ["warning"] = vim.diagnostic.severity.WARN,
-  --     }
-
-  --     lint.linters.swiftlint = {
-  --       cmd = "swiftlint",
-  --       stdin = true,
-  --       args = {
-  --         "lint",
-  --         "--use-stdin",
-  --         "--config",
-  --         os.getenv("HOME") .. "/.config/nvim/.swiftlint.yml",
-  --         "-",
-  --       },
-  --       stream = "stdout",
-  --       ignore_exitcode = true,
-  --       parser = require("lint.parser").from_pattern(pattern, groups, severity_map, defaults),
-  --     }
-
-  --     -- setup
-  --     lint.linters_by_ft = {
-  --       swift = { "swiftlint" },
-  --       javascript = { "eslint_d" },
-  --       typescript = { "eslint_d" },
-  --       javascriptreact = { "eslint_d" },
-  --       typescriptreact = { "eslint_d" },
-  --       vue = { "eslint_d" },
-  --       sh = { "shellcheck" },
-  --       fish = { "fish" },
-  --       json = { "jsonlint" },
-  --       markdown = { "markdownlint" },
-  --       php = { "phpcs" },
-  --       css = { "stylelint" },
-  --       yaml = { "yamllint" },
-  --       python = { "pylint" },
-  --     }
-
-  --     local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
-
-  --     vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave", "TextChanged" }, {
-  --       group = lint_augroup,
-  --       callback = function()
-  --         require("lint").try_lint()
-  --       end,
-  --     })
-
-  --     -- vim.keymap.set("n", "<leader>ml", function()
-  --     --   require("lint").try_lint()
-  --     -- end, { desc = "Lint file" })
-  --   end,
-  -- },
-  -- INFO: Formatter
-  -- {
-  --   "stevearc/conform.nvim",
-  --   lazy = true,
-  --   event = { "BufReadPre", "BufNewFile" },
-  --   opts = {
-  --     formatters_by_ft = {
-  --       php = { "php-cs-fixer" },
-  --       lua = { "stylua" },
-  --       -- Conform will run multiple formatters sequentially
-  --       python = { "isort", "black" },
-  --       -- You can customize some of the format options for the filetype (:help conform.format)
-  --       rust = { "rustfmt", lsp_format = "fallback" },
-  --       -- Conform will run the first available formatter
-  --       swift = { "swiftformat_ext" },
-  --       javascript = { "prettier" },
-  --       typescript = { "prettier" },
-  --       javascriptreact = { "prettier" },
-  --       typescriptreact = { "prettier" },
-  --       svelte = { "prettier" },
-  --       css = { "prettier" },
-  --       html = { "prettier", "htmlbeautifier" },
-  --       json = { "prettier" },
-  --       yaml = { "prettier" },
-  --       markdown = { "prettier" },
-  --       graphql = { "prettier" },
-  --       sql = { "sql-formatter" },
-  --     },
-  --     notify_on_error = true,
-  --     -- format_on_save = {
-  --     --   lsp_fallback = true,
-  --     --   async = false,
-  --     --   timeout_ms = 1000,
-  --     -- },
-  --     log_level = vim.log.levels.ERROR,
-  --     formatters = {
-  --       ["php-cs-fixer"] = {
-  --         command = "php-cs-fixer",
-  --         args = {
-  --           "fix",
-  --           "--rules=@PSR12", -- Formatting preset. Other presets are available, see the php-cs-fixer docs.
-  --           "$FILENAME",
-  --         },
-  --         stdin = false,
-  --       },
-  --       swiftformat_ext = {
-  --         command = "swiftformat",
-  --         args = { "--config", "~/.config/nvim/.swiftformat", "--stdinpath", "$FILENAME" },
-  --         range_args = function(ctx)
-  --           return {
-  --             "--config",
-  --             "~/.config/nvim/.swiftformat",
-  --             "--linerange",
-  --             ctx.range.start[1] .. "," .. ctx.range["end"][1],
-  --           }
-  --         end,
-  --         stdin = true,
-  --         condition = function(ctx)
-  --           return vim.fs.basename(ctx.filename) ~= "README.md"
-  --         end,
-  --       },
-  --     },
-  --   },
-  -- },
   {
     "mbbill/undotree",
   },
@@ -284,7 +147,7 @@ return {
         desc = "Live Grep in Snippets Files",
       },
       {
-        "<leader>fo",
+        "<leader>fl",
         function()
           require("fzf-lua").lines({
             grep_open_files = true,
@@ -297,11 +160,6 @@ return {
         "<leader>f.",
         require("fzf-lua").blines,
         desc = "Current Buffer Fuzzy",
-      },
-      {
-        "<leader>ft",
-        require("fzf-lua").tabs,
-        desc = "Open Tabs",
       },
     },
   },
