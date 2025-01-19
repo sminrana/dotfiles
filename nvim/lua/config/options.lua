@@ -11,3 +11,5 @@ opt.ttimeoutlen = 0
 --opt.clipboard:append("unnamedplus") -- use system clipboard as default register
 opt.spelllang = "en_us"
 opt.spell = true
+
+vim.g.lazyvim_php_lsp = "intelephense"

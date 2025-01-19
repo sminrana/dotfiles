@@ -157,7 +157,7 @@ return {
         desc = "Live Grep in in Open Lines",
       },
       {
-        "<leader>f.",
+        "<leader>a",
         require("fzf-lua").blines,
         desc = "Current Buffer Fuzzy",
       },
