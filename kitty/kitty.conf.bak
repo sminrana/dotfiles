@@ -25,7 +25,7 @@ map caps_lock send_text all \x1b
 #: fonts manually, read the font specification syntax
 #: <https://sw.kovidgoyal.net/kitty/kittens/choose-fonts/#font-spec-
 #: syntax>.
-# font_family	FiraCode Nerd Font
+font_family	FiraCode Nerd Font
 font_size 14.0
 
 #: Font size (in pts).
@@ -859,7 +859,7 @@ bell_on_tab "🔔 "
 #: that setting a non-zero window_margin_width overrides this and
 #: causes all borders to be drawn.
 
-# window_margin_width 0
+window_margin_width 0
 
 #: The window margin (in pts) (blank area outside the border). A
 #: single value sets all four sides. Two values set the vertical and
@@ -874,7 +874,7 @@ bell_on_tab "🔔 "
 #: set the vertical and horizontal sides. Three values set top,
 #: horizontal and bottom. Four values set top, right, bottom and left.
 
-window_padding_width 10
+window_padding_width 0
 
 #: The window padding (in pts) (blank area between the text and the
 #: window border). A single value sets all four sides. Two values set
@@ -919,7 +919,7 @@ window_padding_width 10
 #: Fade the text in inactive windows by the specified amount (a number
 #: between zero and one, with zero being fully faded).
 
-hide_window_decorations no
+hide_window_decorations titlebar-only
 
 #: Hide the window decorations (title-bar and window borders) with
 #: yes. On macOS, titlebar-only and titlebar-and-corners can be used
@@ -1187,7 +1187,7 @@ tab_powerline_style slanted
 
 #: The foreground and background colors.
 
-background_opacity 0.95
+background_opacity 0.93
 
 #: The opacity of the background. A number between zero and one, where
 #: one is opaque and zero is fully transparent. This will only work if
@@ -2601,7 +2601,7 @@ macos_colorspace displayp3
 
 
 # BEGIN_KITTY_FONTS
-font_family      family="Hack Nerd Font Mono"
+font_family      family="Monaco"
 bold_font        auto
 italic_font      auto
 bold_italic_font auto

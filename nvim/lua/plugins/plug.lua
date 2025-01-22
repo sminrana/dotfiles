@@ -1,7 +1,7 @@
 return {
-  {
-    "junegunn/fzf",
-  },
+  -- {
+  --   "junegunn/fzf",
+  -- },
   {
     "mbbill/undotree",
   },
@@ -100,9 +100,10 @@ return {
     opts = {
       colorscheme = "tokyonight",
       style = "night",
+      transparent = true,
       styles = {
         sidebars = "transparent",
-        floats = "transparent",
+        terminal = "transparent",
       },
     },
   },
