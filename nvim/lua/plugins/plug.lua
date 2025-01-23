@@ -113,9 +113,8 @@ return {
       {
         "<leader>fa",
         function()
-          require("fzf-lua").files({
+          require("fzf-lua").live_grep({
             cwd = "~/app/",
-            prompt_title = "App",
           })
         end,
         desc = "Live Grep in App Files",
@@ -123,9 +122,8 @@ return {
       {
         "<leader>fw",
         function()
-          require("fzf-lua").files({
+          require("fzf-lua").live_grep({
             cwd = "~/web/",
-            prompt_title = "Web",
           })
         end,
         desc = "Live Grep in Web Files",
@@ -133,9 +131,8 @@ return {
       {
         "<leader>fx",
         function()
-          require("fzf-lua").files({
+          require("fzf-lua").live_grep({
             cwd = "~/Desktop/obs-v1/",
-            prompt_title = "Desktop Notes",
           })
         end,
         desc = "Live Grep in Notes Files",
@@ -143,27 +140,18 @@ return {
       {
         "<leader>fs",
         function()
-          require("fzf-lua").files({
+          require("fzf-lua").live_grep({
             cwd = "~/Desktop/snippets/",
-            prompt_title = "q Snippets",
           })
         end,
         desc = "Live Grep in Snippets Files",
       },
       {
-        "<leader>fl",
-        function()
-          require("fzf-lua").lines({
-            grep_open_files = true,
-            prompt_title = "Open Lines",
-          })
-        end,
-        desc = "Live Grep in in Open Lines",
-      },
-      {
         "<leader>a",
-        require("fzf-lua").blines,
-        desc = "Current Buffer Fuzzy",
+        function()
+          require("fzf-lua").grep_curbuf()
+        end,
+        desc = "Live Grep in Current Buffer",
       },
     },
   },
