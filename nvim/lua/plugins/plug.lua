@@ -100,11 +100,11 @@ return {
     opts = {
       colorscheme = "tokyonight",
       style = "night",
-      transparent = true,
-      styles = {
-        sidebars = "transparent",
-        terminal = "transparent",
-      },
+      -- transparent = true,
+      -- styles = {
+      --   sidebars = "transparent",
+      --   terminal = "transparent",
+      -- },
     },
   },
   {
@@ -149,7 +149,7 @@ return {
       {
         "<leader>a",
         function()
-          require("fzf-lua").grep_curbuf()
+          require("fzf-lua").blines()
         end,
         desc = "Live Grep in Current Buffer",
       },
