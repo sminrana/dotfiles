@@ -14,3 +14,12 @@
 --     vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "NONE", ctermbg = "NONE" })
 --   end,
 -- })
+--
+--
+vim.api.nvim_create_autocmd("DirChanged", {
+  callback = function()
+    local cwd = vim.fn.getcwd()
+    local hostname = vim.fn.hostname()
+    os.execute('printf "\\033]7;file://' .. hostname .. cwd .. '\\033\\\\"')
+  end,
+})
