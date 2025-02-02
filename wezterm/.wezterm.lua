@@ -9,14 +9,15 @@ local config = wezterm.config_builder()
 -- For example, changing the color scheme:
 config.color_scheme = "Tokyo Night"
 
-config.font = wezterm.font("JetBrains Mono")
+config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 15
 config.freetype_load_target = "Light"
 config.freetype_render_target = "HorizontalLcd"
 config.front_end = 'OpenGL'
 config.cell_width = 0.9
 config.freetype_load_flags = 'NO_HINTING'
-
+config.window_close_confirmation = 'NeverPrompt'
+config.default_cursor_style = 'BlinkingBar'
 
 config.enable_tab_bar = true
 config.hide_tab_bar_if_only_one_tab = true
