@@ -147,7 +147,7 @@ return {
         desc = "Live Grep in Snippets Files",
       },
       {
-        "<leader>a",
+        "<leader>e",
         function()
           require("fzf-lua").blines()
         end,
