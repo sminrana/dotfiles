@@ -6,6 +6,9 @@
 
 -- vim.keymap.set("i", "jj", "<Esc>", { desc = "Map jj to Esc", remap = true })
 
+vim.keymap.set("n", "Q", "q", { desc = "Q for q" })
+vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
+
 -- Add empty lines before and after cursor line
 vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>")
