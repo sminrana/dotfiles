@@ -15,7 +15,7 @@ config.freetype_load_target = "Light"
 config.freetype_render_target = "HorizontalLcd"
 config.front_end = 'OpenGL'
 config.cell_width = 0.9
-config.freetype_load_flags = 'NO_HINTING'
+config.freetype_load_flags = 'FORCE_AUTOHINT'
 config.window_close_confirmation = 'AlwaysPrompt'
 config.default_cursor_style = 'BlinkingBar'
 
@@ -23,6 +23,7 @@ config.enable_tab_bar = true
 config.hide_tab_bar_if_only_one_tab = true
 config.window_background_opacity = 0.98
 config.window_decorations = "RESIZE"
+config.use_fancy_tab_bar = true
 
 config.window_padding = {
 	left = 0,
