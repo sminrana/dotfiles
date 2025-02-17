@@ -13,3 +13,5 @@ vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
 vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>")
 vim.keymap.set("n", "<leader>cu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
+
+vim.api.nvim_set_keymap("n", "<C-a>", 'ggVG"+y', { noremap = true, silent = true })
