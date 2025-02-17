@@ -14,4 +14,4 @@ vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>")
 vim.keymap.set("n", "<leader>cu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
 
-vim.api.nvim_set_keymap("n", "<C-a>", 'ggVG"+y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<C-a>", "<Cmd>%y<CR>", { noremap = true, silent = true })
