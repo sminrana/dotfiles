@@ -13,3 +13,4 @@ opt.spelllang = "en_us"
 opt.spell = true
 
 vim.g.lazyvim_picker = "fzf"
+vim.g.snacks_animate = false
