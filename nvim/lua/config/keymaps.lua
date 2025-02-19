@@ -14,6 +14,7 @@ vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>")
 vim.keymap.set("n", "<leader>cu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
 
-vim.api.nvim_set_keymap("n", "<C-a>", "<Cmd>%y<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<C-d>", "<Cmd>%d<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<C-x>", "ggVGx", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>bC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
+vim.keymap.set("n", "<leader>bD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
+vim.keymap.set("n", "<leader>bX", "ggVGx", { noremap = true, silent = true, desc = "Cut all" })
+vim.keymap.set("n", "<leader>e", ":Neotree reveal float<CR>", {})

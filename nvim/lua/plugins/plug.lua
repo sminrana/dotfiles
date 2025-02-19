@@ -1,7 +1,4 @@
 return {
-  -- {
-  --   "junegunn/fzf",
-  -- },
   {
     "mbbill/undotree",
   },
