@@ -23,3 +23,5 @@ vim.api.nvim_create_autocmd("DirChanged", {
     os.execute('printf "\\033]7;file://' .. hostname .. cwd .. '\\033\\\\"')
   end,
 })
+
+vim.api.nvim_exec2("Neotree reveal float", {})

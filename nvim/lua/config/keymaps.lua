@@ -17,4 +17,4 @@ vim.keymap.set("n", "<leader>cu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Un
 vim.keymap.set("n", "<leader>bC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
 vim.keymap.set("n", "<leader>bD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
 vim.keymap.set("n", "<leader>bX", "ggVGx", { noremap = true, silent = true, desc = "Cut all" })
-vim.keymap.set("n", "<leader>e", ":Neotree reveal float<CR>", {})
+vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>", {})

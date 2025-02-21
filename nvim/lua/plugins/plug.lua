@@ -1,5 +1,27 @@
 return {
   {
+    "nvim-neo-tree/neo-tree.nvim",
+    opts = {
+      filesystem = {
+        filtered_items = {
+          visible = true, -- hide filtered items on open
+          hide_gitignored = true,
+          hide_dotfiles = false,
+          hide_by_name = {
+            ".github",
+            ".gitignore",
+            "package-lock.json",
+            ".changeset",
+            ".prettierrc.json",
+            ".git",
+            ".DS_Store",
+          },
+          never_show = { ".git" },
+        },
+      },
+    },
+  },
+  {
     "mbbill/undotree",
   },
   {
@@ -60,6 +82,30 @@ return {
     opts = {
       ensure_installed = {
         "php",
+        "bash",
+        "c",
+        "diff",
+        "html",
+        "javascript",
+        "jsdoc",
+        "json",
+        "jsonc",
+        "lua",
+        "luadoc",
+        "luap",
+        "markdown",
+        "markdown_inline",
+        "printf",
+        "python",
+        "query",
+        "regex",
+        "toml",
+        "tsx",
+        "typescript",
+        "vim",
+        "vimdoc",
+        "xml",
+        "yaml",
       },
       auto_install = true,
       highlight = {
