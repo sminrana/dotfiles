@@ -16,6 +16,9 @@ vim.keymap.set("n", "<leader>cu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Un
 
 vim.keymap.set("n", "<leader>bC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
 vim.keymap.set("n", "<leader>bD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
-vim.keymap.set("n", "<leader>bX", "ggVGx", { noremap = true, silent = true, desc = "Cut all" })
+vim.keymap.set("n", "<leader>bX", "ggVGx", { noremap = true, silent = true, desc = "Cut All" })
 vim.keymap.set("n", "<leader>bS", "ggVG", { noremap = true, silent = true, desc = "Select All" })
 vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>", {})
+
+vim.keymap.set("n", "<leader>ot", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
+vim.keymap.set("n", "<leader>on", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
