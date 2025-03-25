@@ -8,18 +8,15 @@
 
 vim.keymap.set("n", "Q", "q", { desc = "Q for q" })
 vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
-
--- Add empty lines before and after cursor line
 vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>")
-vim.keymap.set("n", "<leader>cu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
-
-vim.keymap.set("n", "<leader>bC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
-vim.keymap.set("n", "<leader>bD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
-vim.keymap.set("n", "<leader>bX", "ggVGx", { noremap = true, silent = true, desc = "Cut All" })
-vim.keymap.set("n", "<leader>bS", "ggVG", { noremap = true, silent = true, desc = "Select All" })
 vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>", {})
 
+vim.keymap.set("n", "<leader>out", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
+vim.keymap.set("n", "<leader>oC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
+vim.keymap.set("n", "<leader>oD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
+vim.keymap.set("n", "<leader>oX", "ggVGx", { noremap = true, silent = true, desc = "Cut All" })
+vim.keymap.set("n", "<leader>oS", "ggVG", { noremap = true, silent = true, desc = "Select All" })
 vim.keymap.set("n", "<leader>ot", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
 vim.keymap.set("n", "<leader>on", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
 vim.keymap.set(
