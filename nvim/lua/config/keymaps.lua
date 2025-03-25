@@ -22,3 +22,9 @@ vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>", {})
 
 vim.keymap.set("n", "<leader>ot", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
 vim.keymap.set("n", "<leader>on", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
+vim.keymap.set(
+  "n",
+  "<leader>ocp",
+  ':let @+=expand("%:p")<CR>',
+  { noremap = true, silent = true, desc = "Copy file absolute path" }
+)
