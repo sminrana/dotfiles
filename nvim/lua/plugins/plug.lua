@@ -198,4 +198,10 @@ return {
       },
     },
   },
+  {
+    "chrisgrieser/nvim-scissors",
+    opts = {
+      snippetDir = "/Users/smin/Desktop/snippets/",
+    },
+  },
 }
