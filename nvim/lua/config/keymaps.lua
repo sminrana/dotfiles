@@ -25,3 +25,17 @@ vim.keymap.set(
   ':let @+=expand("%:p")<CR>',
   { noremap = true, silent = true, desc = "Copy file absolute path" }
 )
+
+vim.keymap.set(
+	{ "n", "x" },
+	"<leader>osa",
+	function() require("scissors").addNewSnippet() end,
+	{ desc = "Snippet: Add" }
+)
+
+vim.keymap.set(
+	"n",
+	"<leader>ose",
+	function() require("scissors").editSnippet() end,
+	{ desc = "Snippet: Edit" }
+)
