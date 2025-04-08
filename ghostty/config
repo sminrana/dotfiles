@@ -1,5 +1,5 @@
 theme = catppuccin-mocha
-macos-titlebar-style = hidden
+macos-titlebar-style = tabs
 
 font-family = JetBrains Mono
 font-family-bold = JetBrains Mono
