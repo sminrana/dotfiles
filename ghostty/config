@@ -27,5 +27,19 @@ window-colorspace = display-p3
 clipboard-read = allow
 window-save-state = always
 window-theme = auto
-background-opacity = 0.9
+mouse-hide-while-typing = true
+macos-non-native-fullscreen=visible-menu
+macos-option-as-alt = true
+
+window-decoration=true
+window-padding-y = 0
+window-padding-x = 0
+window-padding-color = extend
+window-padding-balance = true
+background-opacity = 0.95
+
+keybind = super+left=goto_split:left
+keybind = super+right=goto_split:right
+keybind = super+up=goto_split:top
+keybind = super+down=goto_split:bottom
 keybind = cmd+s=text:\x13
