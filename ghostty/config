@@ -1,5 +1,5 @@
 theme = catppuccin-mocha
-macos-titlebar-style = tabs
+term = xterm-256color
 
 font-family = JetBrains Mono
 font-family-bold = JetBrains Mono
@@ -21,26 +21,32 @@ font-feature = ss09
 font-feature = ss08
 font-feature = ss09
 
-adjust-cell-width = 0
-adjust-cell-height = 0
-window-colorspace = display-p3
-clipboard-read = allow
-window-save-state = always
-window-theme = auto
-mouse-hide-while-typing = true
 macos-non-native-fullscreen=visible-menu
 macos-option-as-alt = true 
+macos-titlebar-style = tabs
 
+
+quit-after-last-window-closed = true
+confirm-close-surface=true
+clipboard-read = allow
+mouse-hide-while-typing = true
+
+background-opacity = 0.95
+unfocused-split-opacity = 0.35
+adjust-cell-width = 0
+adjust-cell-height = 0
+
+window-colorspace = display-p3
+window-save-state = always
+window-theme = auto
 window-decoration=true
 window-padding-y = 0
 window-padding-x = 0
 window-padding-color = extend
 window-padding-balance = true
-background-opacity = 0.95
-
-unfocused-split-opacity = 0.35
 
 
+keybind = cmd+s=text:\x13
 keybind = super+left=goto_split:left
 keybind = super+right=goto_split:right
 keybind = super+up=goto_split:top
@@ -50,4 +56,14 @@ keybind = alt+down=scroll_page_lines:2
 keybind = super+shift+left=previous_tab
 keybind = super+shift+right=next_tab
 keybind = super+r=reload_config
-keybind = cmd+s=text:\x13
+keybind = super+shift+f=toggle_fullscreen
+keybind = super+shift+left=resize_split:left,10
+keybind = super+shift+right=resize_split:right,10
+keybind = super+shift+up=resize_split:up,10
+keybind = super+shift+down=resize_split:down,10
+keybind = super+shift+e=equalize_splits
+keybind = super+shift+t=toggle_tab_overview
+keybind = global:cmd+grave_accent=toggle_quick_terminal
+
+
+
