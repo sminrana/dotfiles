@@ -26,6 +26,8 @@ macos-option-as-alt = true
 macos-titlebar-style = tabs
 
 
+auto-update=download
+auto-update-channel=stable
 quit-after-last-window-closed = true
 confirm-close-surface=true
 clipboard-read = allow
@@ -33,9 +35,10 @@ mouse-hide-while-typing = true
 
 background-opacity = 0.95
 unfocused-split-opacity = 0.35
+
+
 adjust-cell-width = 0
 adjust-cell-height = 0
-
 window-colorspace = display-p3
 window-save-state = always
 window-theme = auto
@@ -63,7 +66,7 @@ keybind = super+shift+up=resize_split:up,10
 keybind = super+shift+down=resize_split:down,10
 keybind = super+shift+e=equalize_splits
 keybind = super+shift+t=toggle_tab_overview
-keybind = global:cmd+grave_accent=toggle_quick_terminal
+keybind = global:cmd+shift+grave_accent=toggle_quick_terminal
 
 
 
