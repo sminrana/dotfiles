@@ -66,7 +66,7 @@ keybind = super+shift+up=resize_split:up,10
 keybind = super+shift+down=resize_split:down,10
 keybind = super+shift+e=equalize_splits
 keybind = super+shift+t=toggle_tab_overview
-keybind = global:cmd+shift+grave_accent=toggle_quick_terminal
+keybind = global:cmd+shift+e=toggle_quick_terminal
 
 
 
