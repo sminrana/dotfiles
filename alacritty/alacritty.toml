@@ -74,6 +74,6 @@ bindings = [
   #{ key = "Enter", mods = "Command|Shift", chars = "\u0002z" },
 ]
 
-#[terminal.shell]
-#program = "/opt/homebrew/bin/zellij"
+[terminal.shell]
+program = "/opt/homebrew/bin/tmux"
 
