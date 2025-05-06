@@ -69,4 +69,5 @@ keybind = super+shift+t=toggle_tab_overview
 keybind = global:cmd+shift+e=toggle_quick_terminal
 
 
+command = zsh --login -c "if command -v tmux >/dev/null 2>&1; then tmux attach || tmux; else zsh; fi"
 
