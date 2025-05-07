@@ -1,6 +1,5 @@
 -- Pull in the wezterm API
 local wezterm = require("wezterm")
-
 -- This will hold the configuration.
 local config = wezterm.config_builder()
 
@@ -68,6 +67,11 @@ config.keys = {
 		action = act.AdjustPaneSize({ "Right", 5 }),
 	},
 }
+
+
+-- config.default_prog = { "/bin/zsh", "-l", "-c", "--", "/opt/homebrew/bin/tmux new-session -As 0" }
+
+
 
 -- and finally, return the configuration to wezterm
 return config
