@@ -23,20 +23,24 @@ dynamic_title = true
 [selection]
 save_to_clipboard = true
 
-
 [font]
-glyph_offset = { x = 0, y = 0 }
-normal.family = "FiraCode Nerd Font"
-normal.style = "Regular"
 size = 16.0
 
 [font.bold]
-family = "FiraCode Nerd Font"
+family = "JetBrainsMono Nerd Font"
 style = "Bold"
 
+[font.bold_italic]
+family = "JetBrainsMono Nerd Font"
+style = "Bold Italic"
+
 [font.italic]
-family = "FiraCode Nerd Font"
+family = "JetBrainsMono Nerd Font"
 style = "Italic"
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
 
 [mouse]
 hide_when_typing = true
