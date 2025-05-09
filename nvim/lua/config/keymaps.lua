@@ -49,7 +49,7 @@ vim.keymap.set("n", prefix .. "X", "ggVGx", { noremap = true, silent = true, des
 vim.keymap.set("n", prefix .. "S", "ggVG", { noremap = true, silent = true, desc = "Select All" })
 vim.keymap.set("n", prefix .. "t", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
 vim.keymap.set("n", prefix .. "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
--- Personal keymaps start here prefix <leader>o
+
 vim.keymap.set("n", "<leader>out", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
 vim.keymap.set("n", "<leader>oC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
 vim.keymap.set("n", "<leader>oD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
