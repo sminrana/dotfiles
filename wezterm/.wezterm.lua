@@ -3,6 +3,8 @@ local config = wezterm.config_builder()
 
 config.max_fps = 120
 config.prefer_egl = true
+config.scrollback_lines = 3500
+config.enable_scroll_bar = true
 
 config.color_scheme = "Tokyo Night"
 config.bold_brightens_ansi_colors = "BrightOnly"
