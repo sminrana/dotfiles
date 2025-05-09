@@ -200,20 +200,6 @@ return {
   },
   {
     "chrisgrieser/nvim-scissors",
-    -- require("blink.cmp").setup({
-    --   sources = {
-    --     providers = {
-    --       snippets = {
-    --         opts = {
-    --           search_paths = { "/Users/smin/Desktop/snippets/" },
-    --         },
-    --       },
-    --     },
-    --   },
-    -- }),
-    opts = {
-      snippetDir = "/Users/smin/Desktop/snippets/",
-    },
   },
   {
     "mikavilpas/yazi.nvim",
