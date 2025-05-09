@@ -143,11 +143,11 @@ return {
     opts = {
       colorscheme = "tokyonight",
       style = "night",
-      -- transparent = true,
-      -- styles = {
-      --   sidebars = "transparent",
-      --   terminal = "transparent",
-      -- },
+      transparent = true,
+      styles = {
+        sidebars = "transparent",
+        terminal = "transparent",
+      },
     },
   },
   {
