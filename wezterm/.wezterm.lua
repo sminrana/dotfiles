@@ -1,15 +1,12 @@
--- Pull in the wezterm API
 local wezterm = require("wezterm")
--- This will hold the configuration.
 local config = wezterm.config_builder()
 
--- This is where you actually apply your config choices
+config.max_fps = 120
+config.prefer_egl = true
 
--- For example, changing the color scheme:
 config.color_scheme = "Tokyo Night"
 config.bold_brightens_ansi_colors = "BrightOnly"
-config.font =
-	wezterm.font({ family = "JetBrainsMono Nerd Font", weight = "Medium"})
+config.font = wezterm.font({ family = "JetBrainsMono Nerd Font", weight = "Medium" })
 config.font_size = 16.0
 config.freetype_load_target = "Light"
 config.freetype_render_target = "HorizontalLcd"
@@ -68,10 +65,7 @@ config.keys = {
 	},
 }
 
-
 -- config.default_prog = { "/bin/zsh", "-l", "-c", "--", "/opt/homebrew/bin/tmux new-session -As 0" }
-
-
 
 -- and finally, return the configuration to wezterm
 return config
