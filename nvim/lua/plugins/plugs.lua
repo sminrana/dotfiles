@@ -150,54 +150,7 @@ return {
       },
     },
   },
-  {
-    "saghen/blink.cmp",
-    keys = {
-      {
-        "<leader>fa",
-        function()
-          require("fzf-lua").live_grep({
-            cwd = "~/app/",
-          })
-        end,
-        desc = "Live Grep in App Files",
-      },
-      {
-        "<leader>fw",
-        function()
-          require("fzf-lua").live_grep({
-            cwd = "~/web/",
-          })
-        end,
-        desc = "Live Grep in Web Files",
-      },
-      {
-        "<leader>fx",
-        function()
-          require("fzf-lua").live_grep({
-            cwd = "~/Desktop/obs-v1/",
-          })
-        end,
-        desc = "Live Grep in Notes Files",
-      },
-      {
-        "<leader>fs",
-        function()
-          require("fzf-lua").live_grep({
-            cwd = "~/Desktop/snippets/",
-          })
-        end,
-        desc = "Live Grep in Snippets Files",
-      },
-      {
-        "<leader>ba",
-        function()
-          require("fzf-lua").blines()
-        end,
-        desc = "Live Grep in Current Buffer",
-      },
-    },
-  },
+
   {
     "chrisgrieser/nvim-scissors",
     require("blink.cmp").setup({
@@ -219,26 +172,6 @@ return {
       -- check the installation instructions at
       -- https://github.com/folke/snacks.nvim
       "folke/snacks.nvim",
-    },
-    keys = {
-      -- 👇 in this section, choose your own keymappings!
-      {
-        "<leader>oyf",
-        mode = { "n", "v" },
-        "<cmd>Yazi<cr>",
-        desc = "Open yazi at the current file",
-      },
-      {
-        -- Open in the current working directory
-        "<leader>oyd",
-        "<cmd>Yazi cwd<cr>",
-        desc = "Open the file manager in nvim's working directory",
-      },
-      {
-        "<leader>oyt",
-        "<cmd>Yazi toggle<cr>",
-        desc = "Resume the last yazi session",
-      },
     },
     ---@type YaziConfig | {}
     opts = {
