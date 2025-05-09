@@ -12,10 +12,6 @@ vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1
 vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>", {})
 
 --- Keymap for blink.cmp
-vim.keymap.set("i", "<C-s>", function()
-  require("blink.cmp").confirm()
-end, { desc = "Confirm snippet" })
-
 vim.keymap.set("n", "<leader>fa", function()
   require("fzf-lua").live_grep({
     cwd = "~/app/",
