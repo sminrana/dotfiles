@@ -12,6 +12,7 @@ vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>")
 vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>", {})
 
+-- Personal keymaps start here prefix <leader>o
 vim.keymap.set("n", "<leader>out", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
 vim.keymap.set("n", "<leader>oC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
 vim.keymap.set("n", "<leader>oD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
@@ -26,6 +27,9 @@ vim.keymap.set(
   { noremap = true, silent = true, desc = "Copy file absolute path" }
 )
 
+vim.keymap.set("n", "<leader>om", "<Cmd>MarkdownPreview<CR>", { silent = true })
+vim.keymap.set("n", "<leader>och", "<Cmd>checkhealth<CR>", { silent = true })
+
 vim.keymap.set({ "n", "x" }, "<leader>osa", function()
   require("scissors").addNewSnippet()
 end, { desc = "Snippet: Add" })
@@ -33,5 +37,3 @@ end, { desc = "Snippet: Add" })
 vim.keymap.set("n", "<leader>ose", function()
   require("scissors").editSnippet()
 end, { desc = "Snippet: Edit" })
-
-vim.keymap.set("n", "<leader>om", "<Cmd>MarkdownPreview<CR>", { silent = true })
