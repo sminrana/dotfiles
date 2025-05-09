@@ -32,6 +32,11 @@ config.window_padding = {
 	bottom = 0,
 }
 
+config.inactive_pane_hsb = {
+	saturation = 0.3,
+	brightness = 0.3,
+}
+
 local act = wezterm.action
 config.keys = {
 	{ mods = "CMD", key = "s", action = act.SendKey({ mods = "CTRL", key = "s" }) },
