@@ -4,7 +4,7 @@
 -- vim.keymap.set("n", "j", "<C-Down>", { desc = "Down arrow", remap = true })
 -- vim.keymap.set("n", "l", "<C-Right>", { desc = "Right arrow", remap = true })
 
-vim.keymap.set("i", "jj", "<Esc>", { desc = "Map jj to Esc", remap = true })
+-- vim.keymap.set("i", "jj", "<Esc>", { desc = "Map jj to Esc", remap = true })
 vim.keymap.set("n", "Q", "q", { desc = "Q for q" })
 vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
 vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
