@@ -57,5 +57,5 @@ bindings = [
   { key = "f", mods = "Command|Shift", action = "ToggleSimpleFullscreen" },
 ]
 
-[terminal.shell]
-program = "/opt/homebrew/bin/tmux"
+#[terminal.shell]
+#program = "/opt/homebrew/bin/tmux"
