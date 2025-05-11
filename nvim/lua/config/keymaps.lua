@@ -86,5 +86,5 @@ vim.keymap.set("n", prefix .. "se", function()
 end, { desc = "Snippet: Edit" })
 
 vim.keymap.set({ "n", "v" }, prefix .. "yf", "<cmd>Yazi<cr>", { desc = "Open yazi at the current file" })
-vim.keymap.set("n", prefix .."yd", "<cmd>Yazi cwd<cr>", { desc = "Open the file manager in nvim's working directory" })
+vim.keymap.set("n", prefix .. "yd", "<cmd>Yazi cwd<cr>", { desc = "Open the file manager in nvim's working directory" })
 vim.keymap.set("n", prefix .. "yt", "<cmd>Yazi toggle<cr>", { desc = "Resume the last yazi session" })
