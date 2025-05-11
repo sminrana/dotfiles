@@ -154,16 +154,42 @@ return {
   {
     "chrisgrieser/nvim-scissors",
     config = function()
-      require("blink.cmp").setup({
+      local scissors = require("blink.cmp")
+      scissors.setup({
         sources = {
           providers = {
             snippets = {
               opts = {
-                search_paths = { "~/.config/nvim/snippets" },
+                search_paths = { "/Users/smin/.config/nvim/snippets" },
+                filetypes = { "blade", "php", "html", "tsx", "ts", "ct", "javascript", "python" },
               },
             },
           },
         },
+      })
+
+      -- Auto-reload snippets when files in the snippet directory change
+      local snippet_path = vim.fn.expand("/Users/smin/.config/nvim/snippets")
+      local reload_snippets = function()
+        scissors.setup({
+          sources = {
+            providers = {
+              snippets = {
+                opts = {
+                  search_paths = { snippet_path },
+                  filetypes = { "blade", "php", "html", "tsx", "ts", "ct", "javascript", "python" },
+                },
+              },
+            },
+          },
+        })
+        vim.notify("Snippets reloaded!", vim.log.levels.INFO)
+      end
+
+      -- Use an autocommand to watch for changes in the snippet directory
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        pattern = snippet_path .. "/*.json",
+        callback = reload_snippets,
       })
     end,
   },
