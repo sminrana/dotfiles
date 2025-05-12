@@ -41,7 +41,7 @@ vim.keymap.set("n", "<leader>ba", function()
 end, { desc = "Live Grep in Current Buffer" })
 
 -- Personal keymaps start here, prefix <leader>o
-local prefix = "<leader>o"
+local prefix = "<leader>j"
 
 vim.keymap.set("n", prefix .. "C", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
 vim.keymap.set("n", prefix .. "D", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
@@ -50,13 +50,13 @@ vim.keymap.set("n", prefix .. "S", "ggVG", { noremap = true, silent = true, desc
 vim.keymap.set("n", prefix .. "t", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
 vim.keymap.set("n", prefix .. "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
 
-vim.keymap.set("n", "<leader>out", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
-vim.keymap.set("n", "<leader>oC", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
-vim.keymap.set("n", "<leader>oD", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
-vim.keymap.set("n", "<leader>oX", "ggVGx", { noremap = true, silent = true, desc = "Cut All" })
-vim.keymap.set("n", "<leader>oS", "ggVG", { noremap = true, silent = true, desc = "Select All" })
-vim.keymap.set("n", "<leader>ot", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
-vim.keymap.set("n", "<leader>on", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
+vim.keymap.set("n", prefix .. "ut", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
+vim.keymap.set("n", prefix .. "C", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
+vim.keymap.set("n", prefix .. "D", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
+vim.keymap.set("n", prefix .. "X", "ggVGx", { noremap = true, silent = true, desc = "Cut All" })
+vim.keymap.set("n", prefix .. "S", "ggVG", { noremap = true, silent = true, desc = "Select All" })
+vim.keymap.set("n", prefix .. "t", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
+vim.keymap.set("n", prefix .. "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
 vim.keymap.set(
   "n",
   prefix .. "fp",
@@ -64,11 +64,19 @@ vim.keymap.set(
   { noremap = true, silent = true, desc = "Copy file absolute path" }
 )
 
-vim.keymap.set("n", "<leader>om", "<Cmd>MarkdownPreview<CR>", { silent = true })
-vim.keymap.set("n", "<leader>och", "<Cmd>checkhealth<CR>", { silent = true })
+vim.keymap.set(
+  "n",
+  prefix .. "fr",
+  ':let @+=expand("%:f")<CR>',
+  { noremap = true, silent = true, desc = "Copy file relative path" }
+)
 
-vim.keymap.set("n", "<leader>om", "<Cmd>MarkdownPreview<CR>", { silent = true })
-vim.keymap.set("n", "<leader>och", "<Cmd>checkhealth<CR>", { silent = true })
+vim.keymap.set(
+  "n",
+  prefix .. "fn",
+  ':let @+=expand("%:t")<CR>',
+  { noremap = true, silent = true, desc = "Copy file name" }
+)
 
 vim.keymap.set("n", prefix .. "ch", "<Cmd>checkhealth<CR>", { silent = true })
 vim.keymap.set("n", prefix .. "cl", "<cmd>Lazy<CR>", { desc = "Plugin Manager - [LazyVim]" })
