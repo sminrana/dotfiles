@@ -38,5 +38,5 @@ bind -r l resize-pane -R 5
 ### LazyVim 
 
 I have been using Neovim for more than five years now, I am still learning. Neovim journey is not an easy one, but it can make you productive.
-Take a look at my lazyvim keymap https://github.com/sminrana/dotfiles/blob/6422b25bd1af624a704000f88621a33bbfc8c61e/nvim/lua/config/keymaps.lua
+Take a look at my lazyvim keymap https://github.com/sminrana/dotfiles/blob/main/nvim/lua/config/keymaps.lua
 which I use daily for  navigating files, loading snippets, notes, and source codes.
