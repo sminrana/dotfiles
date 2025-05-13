@@ -1,98 +1,83 @@
--- vim.keymap.set({ "i", "x", "n", "s" }, "<C-s>", "<nop>")
--- vim.keymap.set("n", "h", "<C-Left>", { desc = "Left arrow", remap = true })
--- vim.keymap.set("n", "k", "<C-Up>", { desc = "Up arrow", remap = true })
--- vim.keymap.set("n", "j", "<C-Down>", { desc = "Down arrow", remap = true })
--- vim.keymap.set("n", "l", "<C-Right>", { desc = "Right arrow", remap = true })
 
--- vim.keymap.set("i", "jj", "<Esc>", { desc = "Map jj to Esc", remap = true })
-vim.keymap.set("n", "Q", "q", { desc = "Q for q" })
-vim.keymap.set("n", "q", "<nop>", { desc = "Disable q" })
-vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
-vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>")
-vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>", {})
+-- Utility function to simplify keymap definitions
+local function map(mode, lhs, rhs, opts)
+  opts = opts or {}
+  vim.keymap.set(mode, lhs, rhs, opts)
+end
 
---- Keymap for blink.cmp
-vim.keymap.set("n", "<leader>fa", function()
-  require("fzf-lua").live_grep({
-    cwd = "~/app/",
-  })
+-- General keymaps
+map("n", "Q", "q", { desc = "Q for q" })
+map("n", "q", "<nop>", { desc = "Disable q" })
+map("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
+map("n", "go", "<Cmd>call append(line('.'), repeat([''], v:count1))<CR>")
+map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
+map("n", "<leader>be", "<Cmd>Neotree buffers float<CR>")
+
+-- FZF keymaps
+map("n", "<leader>fa", function()
+  require("fzf-lua").live_grep({ cwd = "~/app/" })
 end, { desc = "Live Grep in App Files" })
 
-vim.keymap.set("n", "<leader>fw", function()
-  require("fzf-lua").live_grep({
-    cwd = "~/web/",
-  })
+map("n", "<leader>fw", function()
+  require("fzf-lua").live_grep({ cwd = "~/web/" })
 end, { desc = "Live Grep in Web Files" })
 
-vim.keymap.set("n", "<leader>fx", function()
-  require("fzf-lua").live_grep({
-    cwd = "~/Desktop/obs-v1/",
-  })
+map("n", "<leader>fx", function()
+  require("fzf-lua").live_grep({ cwd = "~/Desktop/obs-v1/" })
 end, { desc = "Live Grep in Notes Files" })
 
-vim.keymap.set("n", "<leader>fs", function()
-  require("fzf-lua").live_grep({
-    cwd = "~/Desktop/snippets/",
-  })
+map("n", "<leader>fs", function()
+  require("fzf-lua").live_grep({ cwd = "~/Desktop/snippets/" })
 end, { desc = "Live Grep in Snippets Files" })
 
-vim.keymap.set("n", "<leader>ba", function()
+map("n", "<leader>ba", function()
   require("fzf-lua").blines()
 end, { desc = "Live Grep in Current Buffer" })
 
--- Personal keymaps start here, prefix <leader>o
+-- Personal keymaps
+-- Define a prefix for personal keymaps
 local prefix = "<leader>j"
 
-vim.keymap.set("n", prefix .. "C", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
-vim.keymap.set("n", prefix .. "D", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
-vim.keymap.set("n", prefix .. "X", "ggVGx", { noremap = true, silent = true, desc = "Cut All" })
-vim.keymap.set("n", prefix .. "S", "ggVG", { noremap = true, silent = true, desc = "Select All" })
-vim.keymap.set("n", prefix .. "t", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
-vim.keymap.set("n", prefix .. "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
 
-vim.keymap.set("n", prefix .. "ut", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
-vim.keymap.set("n", prefix .. "C", "<Cmd>%y<CR>", { noremap = true, silent = true, desc = "Copy All" })
-vim.keymap.set("n", prefix .. "D", "<Cmd>%d<CR>", { noremap = true, silent = true, desc = "Delete All" })
-vim.keymap.set("n", prefix .. "X", "ggVGx", { noremap = true, silent = true, desc = "Cut All" })
-vim.keymap.set("n", prefix .. "S", "ggVG", { noremap = true, silent = true, desc = "Select All" })
-vim.keymap.set("n", prefix .. "t", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>", { silent = true })
-vim.keymap.set("n", prefix .. "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { silent = true })
-vim.keymap.set(
-  "n",
-  prefix .. "fp",
-  ':let @+=expand("%:p")<CR>',
-  { noremap = true, silent = true, desc = "Copy file absolute path" }
-)
+local personal_keymaps = {
+  { "C", "<Cmd>%y<CR>", "Copy All" },
+  { "D", "<Cmd>%d<CR>", "Delete All" },
+  { "X", "ggVGx", "Cut All" },
+  { "S", "ggVG", "Select All" },
+  { "t", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
+  { "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
+  { "ut", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
+  { "fp", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
+  { "fr", ':let @+=expand("%:f")<CR>', "Copy file relative path" },
+  { "fn", ':let @+=expand("%:t")<CR>', "Copy file name" },
+  { "ch", "<Cmd>checkhealth<CR>" },
+  { "cl", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
+  { "cm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
+  { "ce", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
+  { "ci", "<cmd>LspInfo<CR>", "Lsp Info" },
+  { "m", "<Cmd>MarkdownPreview<CR>" },
+}
 
-vim.keymap.set(
-  "n",
-  prefix .. "fr",
-  ':let @+=expand("%:f")<CR>',
-  { noremap = true, silent = true, desc = "Copy file relative path" }
-)
+for _, keymap in ipairs(personal_keymaps) do
+  map("n", prefix .. keymap[1], keymap[2], { noremap = true, silent = true, desc = keymap[3] })
+end
 
-vim.keymap.set(
-  "n",
-  prefix .. "fn",
-  ':let @+=expand("%:t")<CR>',
-  { noremap = true, silent = true, desc = "Copy file name" }
-)
-
-vim.keymap.set("n", prefix .. "ch", "<Cmd>checkhealth<CR>", { silent = true })
-vim.keymap.set("n", prefix .. "cl", "<cmd>Lazy<CR>", { desc = "Plugin Manager - [LazyVim]" })
-vim.keymap.set("n", prefix .. "cm", "<cmd>Mason<CR>", { desc = "Package Manager - [Mason]" })
-vim.keymap.set("n", prefix .. "ce", "<cmd>LazyExtras<CR>", { desc = "Extras Manager - [LazyVim]" })
-vim.keymap.set("n", prefix .. "ci", "<cmd>LspInfo<CR>", { desc = "Lsp Info" })
-
-vim.keymap.set("n", prefix .. "m", "<Cmd>MarkdownPreview<CR>", { silent = true })
-vim.keymap.set({ "n", "x" }, prefix .. "sa", function()
+-- Snippet keymaps
+map({ "n", "x" }, prefix .. "sa", function()
   require("scissors").addNewSnippet()
 end, { desc = "Snippet: Add" })
 
-vim.keymap.set("n", prefix .. "se", function()
+map("n", prefix .. "se", function()
   require("scissors").editSnippet()
 end, { desc = "Snippet: Edit" })
 
-vim.keymap.set({ "n", "v" }, prefix .. "yf", "<cmd>Yazi<cr>", { desc = "Open yazi at the current file" })
-vim.keymap.set("n", prefix .. "yd", "<cmd>Yazi cwd<cr>", { desc = "Open the file manager in nvim's working directory" })
-vim.keymap.set("n", prefix .. "yt", "<cmd>Yazi toggle<cr>", { desc = "Resume the last yazi session" })
+-- Yazi keymaps
+local yazi_keymaps = {
+  { "yf", "<cmd>Yazi<cr>", "Open yazi at the current file" },
+  { "yd", "<cmd>Yazi cwd<cr>", "Open the file manager in nvim's working directory" },
+  { "yt", "<cmd>Yazi toggle<cr>", "Resume the last yazi session" },
+}
+
+for _, keymap in ipairs(yazi_keymaps) do
+  map({ "n", "v" }, prefix .. keymap[1], keymap[2], { desc = keymap[3] })
+end
