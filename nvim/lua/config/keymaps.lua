@@ -1,4 +1,3 @@
-
 -- Utility function to simplify keymap definitions
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}
@@ -38,7 +37,6 @@ end, { desc = "Live Grep in Current Buffer" })
 -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
 
-
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
   { "D", "<Cmd>%d<CR>", "Delete All" },
@@ -48,14 +46,15 @@ local personal_keymaps = {
   { "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
   { "ut", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
   { "fp", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
-  { "fr", ':let @+=expand("%:f")<CR>', "Copy file relative path" },
+  { "fr", ':let @+=expand("%:." )<CR>', "Copy file relative path" },
   { "fn", ':let @+=expand("%:t")<CR>', "Copy file name" },
-  { "ch", "<Cmd>checkhealth<CR>" },
-  { "cl", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
-  { "cm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
-  { "ce", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
-  { "ci", "<cmd>LspInfo<CR>", "Lsp Info" },
+  { "lh", "<Cmd>checkhealth<CR>" },
+  { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
+  { "m", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
+  { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
+  { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "m", "<Cmd>MarkdownPreview<CR>" },
+  { "fc", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
 }
 
 for _, keymap in ipairs(personal_keymaps) do
