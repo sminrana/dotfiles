@@ -53,7 +53,9 @@ local personal_keymaps = {
   { "m", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
-  { "m", "<Cmd>MarkdownPreview<CR>" },
+  { "mp", "<Cmd>MarkdownPreview<CR>" },
+  { "mn", "<Cmd>ObsidianNew<CR>" },
+  { "md", "<Cmd>ObsidianToday<CR>" },
   { "fc", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
 }
 
