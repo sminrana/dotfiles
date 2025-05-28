@@ -35,6 +35,9 @@ bind -r k resize-pane -U 5
 bind -r l resize-pane -R 5
 ```
 
+![Screenshot 2025-05-28 at 10 00 00 AM](https://github.com/user-attachments/assets/6860a55b-b9e1-481d-9ab1-c669dc4d087f)
+
+
 ### LazyVim 
 
 I have been using Neovim for more than five years now, I am still learning. Neovim journey is not an easy one, but it can make you productive.
