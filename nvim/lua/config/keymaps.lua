@@ -5,8 +5,6 @@ local function map(mode, lhs, rhs, opts)
 end
 
 -- General keymaps
-map("n", "Q", "q", { desc = "Q for q" })
-map("n", "q", "<nop>", { desc = "Disable q" })
 map("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 map("n", "go", "<Cmd>call append(line('.'), repeat([''], v:count1))<CR>")
 map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
