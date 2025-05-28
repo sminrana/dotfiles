@@ -35,7 +35,8 @@ bind -r k resize-pane -U 5
 bind -r l resize-pane -R 5
 ```
 
-![Screenshot 2025-05-28 at 10 00 00 AM](https://github.com/user-attachments/assets/6860a55b-b9e1-481d-9ab1-c669dc4d087f)
+![Screenshot 2025-05-28 at 10 00 00 AM](https://github.com/user-attachments/assets/019bad2a-12e4-4cbf-86ac-c1be55de3073)
+
 
 
 ### LazyVim 
