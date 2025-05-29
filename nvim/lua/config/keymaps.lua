@@ -34,39 +34,44 @@ end, { desc = "Live Grep in Current Buffer" })
 -- ===============================Personal keymaps===================================
 -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
-local date = os.date("%b %d, %Y %H:%M:%S %Z")
 
 map("n", prefix .. "td", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "✅ Done - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark is as done" })
 
 map("n", prefix .. "tb", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "❌ " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as bug" })
 
 map("n", prefix .. "t?", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "❓ " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as unknown, send question" })
 
 map("n", prefix .. "tl", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "🕤 " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as delayed" })
 
 map("n", prefix .. "tp", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "🔨 " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as in progress" })
 
 map("n", prefix .. "t#1", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "⭕" .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
