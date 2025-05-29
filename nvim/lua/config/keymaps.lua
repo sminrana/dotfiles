@@ -33,7 +33,7 @@ end, { desc = "Live Grep in Current Buffer" })
 
 -- Add done emoji
 map("n", "<leader>jmc", function()
-  local emoji = "✅"
+  local emoji = "✅ Done - " .. os.date("%Y-%m-%d %H:%M:%S")
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Insert checkmark at end of line" })
