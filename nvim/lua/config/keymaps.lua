@@ -31,20 +31,48 @@ map("n", "<leader>ba", function()
   require("fzf-lua").blines()
 end, { desc = "Live Grep in Current Buffer" })
 
--- Personal keymaps
+-- ===============================Personal keymaps===================================
 -- Define a prefix for personal keymaps
-
 local prefix = "<leader>j"
+local date = os.date("%b %d, %Y %H:%M:%S %Z")
 
--- Add done emoji
-map("n", prefix .. "mc", function()
-  local emoji = "✅ Done - " .. os.date("%b %d, %Y %H:%M:%S %Z")
+map("n", prefix .. "td", function()
+  local emoji = "✅ Done - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
-end, { desc = "Insert checkmark at end of line" })
+end, { desc = "Mark is as done" })
+
+map("n", prefix .. "tb", function()
+  local emoji = "❌ " .. date
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Mark it as bug" })
+
+map("n", prefix .. "t?", function()
+  local emoji = "❓ " .. date
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Mark it as unknown, send question" })
+
+map("n", prefix .. "tl", function()
+  local emoji = "🕤 " .. date
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Mark it as delayed" })
+
+map("n", prefix .. "tp", function()
+  local emoji = "🔨 " .. date
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Mark it as in progress" })
+
+map("n", prefix .. "t#1", function()
+  local emoji = "⭕" .. date
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Mark it as high priority" })
 
 vim.keymap.set("n", prefix .. "md", function()
-  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
 
@@ -53,7 +81,7 @@ local personal_keymaps = {
   { "D", "<Cmd>%d<CR>", "Delete All" },
   { "X", "ggVGx", "Cut All" },
   { "S", "ggVG", "Select All" },
-  { "t", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
+  { "tt", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
   { "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
   { "ut", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
   { "fp", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
