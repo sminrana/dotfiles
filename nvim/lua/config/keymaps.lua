@@ -31,6 +31,13 @@ map("n", "<leader>ba", function()
   require("fzf-lua").blines()
 end, { desc = "Live Grep in Current Buffer" })
 
+-- Add done emoji
+map("n", "<leader>jmc", function()
+  local emoji = "✅"
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Insert checkmark at end of line" })
+
 -- Personal keymaps
 -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
