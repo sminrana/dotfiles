@@ -31,16 +31,22 @@ map("n", "<leader>ba", function()
   require("fzf-lua").blines()
 end, { desc = "Live Grep in Current Buffer" })
 
+-- Personal keymaps
+-- Define a prefix for personal keymaps
+
+local prefix = "<leader>j"
+
 -- Add done emoji
-map("n", "<leader>jmc", function()
+map("n", prefix .. "mc", function()
   local emoji = "✅ Done - " .. os.date("%b %d, %Y %H:%M:%S %Z")
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Insert checkmark at end of line" })
 
--- Personal keymaps
--- Define a prefix for personal keymaps
-local prefix = "<leader>j"
+vim.keymap.set("n", prefix .. "md", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
+  vim.api.nvim_put({ date }, "c", true, true)
+end, { desc = "Add date here" })
 
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
@@ -60,7 +66,7 @@ local personal_keymaps = {
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "mp", "<Cmd>MarkdownPreview<CR>" },
   { "mn", "<Cmd>ObsidianNew<CR>" },
-  { "md", "<Cmd>ObsidianToday<CR>" },
+  { "mt", "<Cmd>ObsidianToday<CR>" },
   { "fc", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
 }
 
