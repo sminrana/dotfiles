@@ -5,6 +5,10 @@ local function map(mode, lhs, rhs, opts)
 end
 
 -- General keymaps
+map('n', 'q', '<nop>', { noremap = true })
+map('n', 'Q', 'q', { noremap = true, desc = 'Record macro' })
+map('n', '<M-q>', 'Q', { noremap = true, desc = 'Replay last register' })
+
 map("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 map("n", "go", "<Cmd>call append(line('.'), repeat([''], v:count1))<CR>")
 map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
@@ -35,6 +39,7 @@ end, { desc = "Live Grep in Current Buffer" })
 -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
 
+-- ======================================== TODO
 map("n", prefix .. "td", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "✅ Done - " .. date
@@ -51,7 +56,7 @@ end, { desc = "Mark it as bug" })
 
 map("n", prefix .. "t?", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "❓ " .. date
+  local emoji = "❓- Need Feedback - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as unknown, send question" })
@@ -70,14 +75,49 @@ map("n", prefix .. "tp", function()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as in progress" })
 
-map("n", prefix .. "t#1", function()
+map("n", prefix .. "t1", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "⭕" .. date
+  local emoji = "⭕⭕⭕ - High - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as high priority" })
+map("n", prefix .. "t2", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
+  local emoji = "⭕⭕ - Medium - " .. date
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Mark it as medium priority" })
+map("n", prefix .. "t3", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
+  local emoji = "⭕ - Low - " .. date
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Mark it as low priority" })
+
+-- =========================================== Markdown
+vim.keymap.set("n", prefix .. "ms", function()
+  local line = vim.api.nvim_get_current_line()
+  if not (vim.startswith(line, "~~") and vim.endswith(line, "~~")) then
+    vim.api.nvim_set_current_line("~~" .. line .. "~~")
+  end
+end, { desc = "Wrap current line with ~ for markdown strike through" })
+
+vim.keymap.set("n", prefix .. "mb", function()
+  local line = vim.api.nvim_get_current_line()
+  if not (vim.startswith(line, "**") and vim.endswith(line, "**")) then
+    vim.api.nvim_set_current_line("**" .. line .. "**")
+  end
+end, { desc = "Wrap current line with ** for markdown bold" })
+
+vim.keymap.set("n", prefix .. "mi", function()
+  local line = vim.api.nvim_get_current_line()
+  if not (vim.startswith(line, "*") and vim.endswith(line, "*")) then
+    vim.api.nvim_set_current_line("*" .. line .. "*")
+  end
+end, { desc = "Wrap current line with * for markdown italic" })
 
 vim.keymap.set("n", prefix .. "md", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
 
@@ -94,7 +134,7 @@ local personal_keymaps = {
   { "fn", ':let @+=expand("%:t")<CR>', "Copy file name" },
   { "lh", "<Cmd>checkhealth<CR>" },
   { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
-  { "m", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
+  { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "mp", "<Cmd>MarkdownPreview<CR>" },
