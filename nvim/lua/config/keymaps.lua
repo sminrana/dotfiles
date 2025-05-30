@@ -49,7 +49,7 @@ end, { desc = "Mark is as done" })
 
 map("n", prefix .. "ta", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "🖍️  - " .. date .. " : "
+  local emoji = "Nafiz(" .. date .. "): "
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Add your answer" })
