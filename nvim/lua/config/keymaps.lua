@@ -49,7 +49,7 @@ end, { desc = "Mark is as done" })
 
 map("n", prefix .. "ta", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "Nafiz(" .. date .. "): "
+  local emoji = "💬 Nafiz(" .. date .. "): "
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
   vim.api.nvim_win_set_cursor(0, { vim.api.nvim_win_get_cursor(0)[1], #line + #emoji + 1 })
@@ -89,19 +89,19 @@ end, { desc = "Mark it as in progress" })
 
 map("n", prefix .. "t1", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "⭕⭕⭕ - High - " .. date
+  local emoji = "🚩🚩🚩 - High - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as high priority" })
 map("n", prefix .. "t2", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "⭕⭕ - Medium - " .. date
+  local emoji = "🚩🚩 - Medium - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as medium priority" })
 map("n", prefix .. "t3", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "⭕ - Low - " .. date
+  local emoji = "🚩 - Low - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as low priority" })
