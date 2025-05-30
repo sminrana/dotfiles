@@ -158,6 +158,45 @@ map("n", prefix .. "fs", select_file_to_move_to_dropbox, { desc = "Move screensh
 
 -- Copy file to Dropbox Vault END
 
+-- Copy file to S3 Bucket END
+local function send_file_to_s3()
+  local file = vim.fn.input("Enter file path to upload: ", vim.fn.expand("%:p"), "file")
+  if file == "" or vim.fn.filereadable(file) == 0 then
+    vim.notify("Invalid file path: " .. file, vim.log.levels.ERROR)
+    return
+  end
+  local confirm = vim.fn.input("Upload '" .. file .. "' to S3? (y/N): ")
+  if confirm:lower() ~= "y" then
+    vim.notify("Upload cancelled.", vim.log.levels.INFO)
+    return
+  end
+  if not vim.fn.executable("aws") then
+    vim.notify("AWS CLI is not installed or not in PATH.", vim.log.levels.ERROR)
+    return
+  end
+  if not vim.fn.filereadable(file) then
+    vim.notify("File does not exist: " .. file, vim.log.levels.ERROR)
+    return
+  end
+
+  local filename = vim.fn.fnamemodify(file, ":t")
+  local bucket = "smindev" -- change this to your S3 bucket
+  local s3_path = "s3://" .. bucket .. "/static/" .. filename
+  local cmd = { "aws", "s3", "cp", file, s3_path, "--acl", "public-read" }
+  local result = vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Failed to upload: " .. result, vim.log.levels.ERROR)
+    return
+  end
+  local url = "https://" .. bucket .. ".s3.amazonaws.com/static/" .. filename
+  vim.fn.setreg("+", url)
+  vim.notify("Uploaded to S3: " .. url .. " (copied to clipboard)", vim.log.levels.INFO)
+end
+
+map("n", prefix .. "fa", send_file_to_s3, { desc = "Send file to AWS S3 (public link copied)" })
+-- Copy file to S3 Bucket END
+
+
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
   { "D", "<Cmd>%d<CR>", "Delete All" },
@@ -203,3 +242,4 @@ local yazi_keymaps = {
 for _, keymap in ipairs(yazi_keymaps) do
   map({ "n", "v" }, prefix .. keymap[1], keymap[2], { desc = keymap[3] })
 end
+
