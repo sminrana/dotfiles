@@ -183,14 +183,28 @@ local function send_file_to_s3()
   local bucket = "smindev" -- change this to your S3 bucket
   local s3_path = "s3://" .. bucket .. "/static/" .. filename
   local cmd = { "aws", "s3", "cp", file, s3_path, "--acl", "public-read" }
-  local result = vim.fn.system(cmd)
-  if vim.v.shell_error ~= 0 then
-    vim.notify("Failed to upload: " .. result, vim.log.levels.ERROR)
-    return
-  end
-  local url = "https://" .. bucket .. ".s3.amazonaws.com/static/" .. filename
-  vim.fn.setreg("+", url)
-  vim.notify("Uploaded to S3: " .. url .. " (copied to clipboard)", vim.log.levels.INFO)
+
+  -- Show progress in statusline
+  vim.api.nvim_set_option("statusline", "%#WarningMsg#Uploading to S3: " .. filename .. "...%*")
+  vim.notify("Uploading to S3 in background: " .. filename, vim.log.levels.INFO)
+
+  vim.loop.spawn(cmd[1], {
+    args = { unpack(cmd, 2) },
+    stdio = {nil, nil, nil},
+  }, function(code, signal)
+    -- Restore statusline (optional: you may want to save/restore original)
+    vim.schedule(function()
+      vim.api.nvim_set_option("statusline", "")
+      if code == 0 then
+        vim.notify("Uploaded to S3: " .. filename, vim.log.levels.INFO)
+        local url = "https://" .. bucket .. ".s3.amazonaws.com/static/" .. filename
+        vim.fn.setreg("+", url)
+        vim.notify("Public URL copied: " .. url, vim.log.levels.INFO)
+      else
+        vim.notify("Failed to upload: exit code " .. code, vim.log.levels.ERROR)
+      end
+    end)
+  end)
 end
 
 map("n", prefix .. "fa", send_file_to_s3, { desc = "Send file to AWS S3 (public link copied)" })
