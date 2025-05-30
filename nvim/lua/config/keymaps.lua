@@ -121,6 +121,17 @@ vim.keymap.set("n", prefix .. "md", function()
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
 
+-- Copy file to Dropbox Vault
+local function copy_to_dropbox_vault()
+  local file = vim.fn.expand("%:p")
+  local target = vim.fn.expand("~/Library/CloudStorage/Dropbox/Vault/") .. vim.fn.expand("%:t")
+  vim.fn.system({ "cp", file, target })
+  vim.notify("Sent to Dropbox Vault: " .. target, vim.log.levels.INFO)
+end
+
+map("n", prefix .. "fd", copy_to_dropbox_vault, { desc = "Send file to Dropbox Vault" })
+
+
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
   { "D", "<Cmd>%d<CR>", "Delete All" },
@@ -132,6 +143,7 @@ local personal_keymaps = {
   { "fp", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
   { "fr", ':let @+=expand("%:." )<CR>', "Copy file relative path" },
   { "fn", ':let @+=expand("%:t")<CR>', "Copy file name" },
+  { "fc", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
   { "lh", "<Cmd>checkhealth<CR>" },
   { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
   { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
@@ -140,7 +152,6 @@ local personal_keymaps = {
   { "mp", "<Cmd>MarkdownPreview<CR>" },
   { "mn", "<Cmd>ObsidianNew<CR>" },
   { "mt", "<Cmd>ObsidianToday<CR>" },
-  { "fc", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
 }
 
 for _, keymap in ipairs(personal_keymaps) do

@@ -25,3 +25,25 @@ vim.api.nvim_create_autocmd("DirChanged", {
 })
 
 vim.api.nvim_exec2("Neotree reveal float", {})
+
+-- vim.api.nvim_create_autocmd("BufWritePost", {
+--   pattern = "*.md",
+--   callback = function(args)
+--     local src = args.file
+--     local dest = os.getenv("HOME") .. "/Library/CloudStorage/Dropbox/Vault/" .. vim.fn.fnamemodify(src, ":t")
+--     vim.fn.jobstart({ "cp", src, dest }, {
+--       detach = true,
+--       on_exit = function(_, code)
+--         if code == 0 then
+--           vim.schedule(function()
+--             vim.notify("Copied to Dropbox Vault: " .. dest, vim.log.levels.INFO)
+--           end)
+--         else
+--           vim.schedule(function()
+--             vim.notify("Failed to copy to Dropbox Vault", vim.log.levels.ERROR)
+--           end)
+--         end
+--       end,
+--     })
+--   end,
+-- })
