@@ -121,7 +121,7 @@ vim.keymap.set("n", prefix .. "md", function()
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
 
--- Copy file to Dropbox Vault
+-- Copy file to Dropbox Vault START
 local function copy_to_dropbox_vault()
   local file = vim.fn.expand("%:p")
   local target = vim.fn.expand("~/Library/CloudStorage/Dropbox/Vault/") .. vim.fn.expand("%:t")
@@ -131,6 +131,32 @@ end
 
 map("n", prefix .. "fd", copy_to_dropbox_vault, { desc = "Send file to Dropbox Vault" })
 
+local function select_file_to_move_to_dropbox()
+  local src_dir = vim.fn.expand("~/Downloads/scr/")
+  local files = {}
+  local p = io.popen('ls -1 "' .. src_dir .. '"')
+  if p then
+    for file in p:lines() do
+      table.insert(files, file)
+    end
+    p:close()
+  end
+  if #files == 0 then
+    vim.notify("No files found in " .. src_dir, vim.log.levels.WARN)
+    return
+  end
+  vim.ui.select(files, { prompt = "Select file to copy to Dropbox Vault?" }, function(choice)
+    if not choice then return end
+    local src = src_dir .. choice
+    local dst = vim.fn.expand("~/Library/CloudStorage/Dropbox/Vault/") .. choice
+    vim.fn.system({ "mv", src, dst })
+    vim.notify("Moved file: " .. choice, vim.log.levels.INFO)
+  end)
+end
+
+map("n", prefix .. "fs", select_file_to_move_to_dropbox, { desc = "Move screenshot to Dropbox (choose)" })
+
+-- Copy file to Dropbox Vault END
 
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
