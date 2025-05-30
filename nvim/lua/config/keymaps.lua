@@ -52,6 +52,7 @@ map("n", prefix .. "ta", function()
   local emoji = "Nafiz(" .. date .. "): "
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
+  vim.api.nvim_win_set_cursor(0, { vim.api.nvim_win_get_cursor(0)[1], #line + #emoji + 1 })
 end, { desc = "Add your answer" })
 
 vim.keymap.set("v", prefix .. "tf", function()
