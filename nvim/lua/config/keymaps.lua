@@ -256,3 +256,42 @@ for _, keymap in ipairs(yazi_keymaps) do
   map({ "n", "v" }, prefix .. keymap[1], keymap[2], { desc = keymap[3] })
 end
 
+map("n", prefix .. "c", function()
+  vim.ui.input({ prompt = "Shell command to run: " }, function(cmd)
+    if not cmd or cmd == "" then
+      vim.notify("No command entered.", vim.log.levels.WARN)
+      return
+    end
+    vim.notify("Running: " .. cmd, vim.log.levels.INFO)
+    local stdout = vim.loop.new_pipe(false)
+    local stderr = vim.loop.new_pipe(false)
+    local output = {}
+    local function on_read(err, data)
+      if data then
+        table.insert(output, data)
+      end
+    end
+    vim.loop.spawn("sh", {
+      args = { "-c", cmd },
+      stdio = {nil, stdout, stderr},
+    }, function(code, signal)
+      stdout:read_stop()
+      stderr:read_stop()
+      stdout:close()
+      stderr:close()
+      vim.schedule(function()
+        local result = table.concat(output)
+        if result ~= "" then
+          vim.notify(result, vim.log.levels.INFO, { title = "Shell Output" })
+        end
+        if code == 0 then
+          vim.notify("Command finished: " .. cmd, vim.log.levels.INFO)
+        else
+          vim.notify("Command failed (exit " .. code .. "): " .. cmd, vim.log.levels.ERROR)
+        end
+      end)
+    end)
+    stdout:read_start(on_read)
+    stderr:read_start(on_read)
+  end)
+end, { desc = "Run shell command in background" })
