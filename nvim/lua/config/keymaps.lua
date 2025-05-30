@@ -95,28 +95,28 @@ map("n", prefix .. "t3", function()
 end, { desc = "Mark it as low priority" })
 
 -- =========================================== Markdown
-vim.keymap.set("n", prefix .. "ms", function()
+vim.keymap.set("n", prefix .. "m4", function()
   local line = vim.api.nvim_get_current_line()
   if not (vim.startswith(line, "~~") and vim.endswith(line, "~~")) then
     vim.api.nvim_set_current_line("~~" .. line .. "~~")
   end
 end, { desc = "Wrap current line with ~ for markdown strike through" })
 
-vim.keymap.set("n", prefix .. "mb", function()
+vim.keymap.set("n", prefix .. "m5", function()
   local line = vim.api.nvim_get_current_line()
   if not (vim.startswith(line, "**") and vim.endswith(line, "**")) then
     vim.api.nvim_set_current_line("**" .. line .. "**")
   end
 end, { desc = "Wrap current line with ** for markdown bold" })
 
-vim.keymap.set("n", prefix .. "mi", function()
+vim.keymap.set("n", prefix .. "m6", function()
   local line = vim.api.nvim_get_current_line()
   if not (vim.startswith(line, "*") and vim.endswith(line, "*")) then
     vim.api.nvim_set_current_line("*" .. line .. "*")
   end
 end, { desc = "Wrap current line with * for markdown italic" })
 
-vim.keymap.set("n", prefix .. "md", function()
+vim.keymap.set("n", prefix .. "m7", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
@@ -129,7 +129,7 @@ local function copy_to_dropbox_vault()
   vim.notify("Sent to Dropbox Vault: " .. target, vim.log.levels.INFO)
 end
 
-map("n", prefix .. "fd", copy_to_dropbox_vault, { desc = "Send file to Dropbox Vault" })
+map("n", prefix .. "f7", copy_to_dropbox_vault, { desc = "Send file to Dropbox Vault" })
 
 local function select_file_to_move_to_dropbox()
   local src_dir = vim.fn.expand("~/Downloads/scr/")
@@ -154,7 +154,7 @@ local function select_file_to_move_to_dropbox()
   end)
 end
 
-map("n", prefix .. "fs", select_file_to_move_to_dropbox, { desc = "Move screenshot to Dropbox (choose)" })
+map("n", prefix .. "f6", select_file_to_move_to_dropbox, { desc = "Move screenshot to Dropbox (choose)" })
 
 -- Copy file to Dropbox Vault END
 
@@ -207,7 +207,7 @@ local function send_file_to_s3()
   end)
 end
 
-map("n", prefix .. "fa", send_file_to_s3, { desc = "Send file to AWS S3 (public link copied)" })
+map("n", prefix .. "f5", send_file_to_s3, { desc = "Send file to AWS S3 (public link copied)" })
 -- Copy file to S3 Bucket END
 
 
@@ -216,21 +216,21 @@ local personal_keymaps = {
   { "D", "<Cmd>%d<CR>", "Delete All" },
   { "X", "ggVGx", "Cut All" },
   { "S", "ggVG", "Select All" },
-  { "tt", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
+  { "R", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
+  { "d", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
   { "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
-  { "ut", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
-  { "fp", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
-  { "fr", ':let @+=expand("%:." )<CR>', "Copy file relative path" },
-  { "fn", ':let @+=expand("%:t")<CR>', "Copy file name" },
-  { "fc", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
-  { "lh", "<Cmd>checkhealth<CR>" },
+  { "u", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
+  { "f1", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
+  { "f2", ':let @+=expand("%:." )<CR>', "Copy file relative path" },
+  { "f3", ':let @+=expand("%:t")<CR>', "Copy file name" },
+  { "lh", "<Cmd>checkhealth<CR>", "Check health" },
   { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
   { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
-  { "mp", "<Cmd>MarkdownPreview<CR>" },
-  { "mn", "<Cmd>ObsidianNew<CR>" },
-  { "mt", "<Cmd>ObsidianToday<CR>" },
+  { "m1", "<Cmd>MarkdownPreview<CR>" },
+  { "m2", "<Cmd>ObsidianNew<CR>" },
+  { "m3", "<Cmd>ObsidianToday<CR>" },
 }
 
 for _, keymap in ipairs(personal_keymaps) do
