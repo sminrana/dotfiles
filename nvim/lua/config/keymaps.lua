@@ -213,8 +213,7 @@ map("n", prefix .. "f5", send_file_to_s3, { desc = "Send file to AWS S3 (public 
 
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
-  { "D", "<Cmd>%d<CR>", "Delete All" },
-  { "X", "ggVGx", "Cut All" },
+  { "X", "<Cmd>%d<CR>", "Cut All" },
   { "S", "ggVG", "Select All" },
   { "R", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
   { "d", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
