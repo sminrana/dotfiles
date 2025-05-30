@@ -5,9 +5,9 @@ local function map(mode, lhs, rhs, opts)
 end
 
 -- General keymaps
-map('n', 'q', '<nop>', { noremap = true })
-map('n', 'Q', 'q', { noremap = true, desc = 'Record macro' })
-map('n', '<M-q>', 'Q', { noremap = true, desc = 'Replay last register' })
+map("n", "q", "<nop>", { noremap = true })
+map("n", "Q", "q", { noremap = true, desc = "Record macro" })
+map("n", "<M-q>", "Q", { noremap = true, desc = "Replay last register" })
 
 map("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 map("n", "go", "<Cmd>call append(line('.'), repeat([''], v:count1))<CR>")
@@ -47,6 +47,17 @@ map("n", prefix .. "td", function()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark is as done" })
 
+map("n", prefix .. "ta", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
+  local emoji = "🖍️  - " .. date .. " : "
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. " " .. emoji)
+end, { desc = "Add your answer" })
+
+vim.keymap.set("v", prefix .. "tf", function()
+  vim.cmd([[s/^/➡️ /]])
+end, { desc = "Add emoji at beginning of each line" })
+
 map("n", prefix .. "tb", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "❌ " .. date
@@ -70,7 +81,7 @@ end, { desc = "Mark it as delayed" })
 
 map("n", prefix .. "tp", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "🔨 " .. date
+  local emoji = "🛠️" .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as in progress" })
@@ -146,7 +157,9 @@ local function select_file_to_move_to_dropbox()
     return
   end
   vim.ui.select(files, { prompt = "Select file to copy to Dropbox Vault?" }, function(choice)
-    if not choice then return end
+    if not choice then
+      return
+    end
     local src = src_dir .. choice
     local dst = vim.fn.expand("~/Library/CloudStorage/Dropbox/Vault/") .. choice
     vim.fn.system({ "mv", src, dst })
@@ -190,7 +203,7 @@ local function send_file_to_s3()
 
   vim.loop.spawn(cmd[1], {
     args = { unpack(cmd, 2) },
-    stdio = {nil, nil, nil},
+    stdio = { nil, nil, nil },
   }, function(code, signal)
     -- Restore statusline (optional: you may want to save/restore original)
     vim.schedule(function()
@@ -209,7 +222,6 @@ end
 
 map("n", prefix .. "f5", send_file_to_s3, { desc = "Send file to AWS S3 (public link copied)" })
 -- Copy file to S3 Bucket END
-
 
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
@@ -273,7 +285,7 @@ map("n", prefix .. "c", function()
     end
     vim.loop.spawn("sh", {
       args = { "-c", cmd },
-      stdio = {nil, stdout, stderr},
+      stdio = { nil, stdout, stderr },
     }, function(code, signal)
       stdout:read_stop()
       stderr:read_stop()
