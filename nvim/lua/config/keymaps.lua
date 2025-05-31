@@ -47,7 +47,7 @@ map("n", prefix .. "td", function()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark is as done" })
 
-map("n", prefix .. "ta", function()
+map("n", prefix .. "tc", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "💬 Nafiz(" .. date .. "): "
   local line = vim.api.nvim_get_current_line()
@@ -55,9 +55,9 @@ map("n", prefix .. "ta", function()
   vim.api.nvim_win_set_cursor(0, { vim.api.nvim_win_get_cursor(0)[1], #line + #emoji + 1 })
 end, { desc = "Add your answer" })
 
-vim.keymap.set("v", prefix .. "tf", function()
-  vim.cmd([[s/^/➡️ /]])
-end, { desc = "Add emoji at beginning of each line" })
+vim.keymap.set("n", prefix .. "ta", function()
+  vim.cmd([[normal! I🟩 ]])
+end, { desc = "Add emoji at beginning of the line" })
 
 map("n", prefix .. "tb", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
@@ -93,12 +93,14 @@ map("n", prefix .. "t1", function()
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as high priority" })
+
 map("n", prefix .. "t2", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "🚩🚩 - Medium - " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as medium priority" })
+
 map("n", prefix .. "t3", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "🚩 - Low - " .. date
@@ -146,7 +148,7 @@ map("n", prefix .. "f7", copy_to_dropbox_vault, { desc = "Send file to Dropbox V
 local function select_file_to_move_to_dropbox()
   local src_dir = vim.fn.expand("~/Downloads/scr/")
   local files = {}
-  local p = io.popen('ls -1 "' .. src_dir .. '"')
+  local p = io.popen('ls -1t "' .. src_dir .. '"')
   if p then
     for file in p:lines() do
       table.insert(files, file)
