@@ -174,7 +174,7 @@ map("n", prefix .. "f6", select_file_to_move_to_dropbox, { desc = "Move screensh
 
 -- Copy file to S3 Bucket END
 local function send_file_to_s3()
-  local file = vim.fn.input("Enter file path to upload: ", vim.fn.expand("%:p"), "file")
+  local file = vim.fn.input("Enter file path to upload: ", "", "file")
   if file == "" or vim.fn.filereadable(file) == 0 then
     vim.notify("Invalid file path: " .. file, vim.log.levels.ERROR)
     return
