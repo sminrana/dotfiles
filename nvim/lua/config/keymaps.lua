@@ -195,6 +195,26 @@ local function send_file_to_s3()
     return
   end
 
+  -- If file is .mov, convert to .mp4 first using ffmpeg
+  if file:match("%.mov$") then
+    local mp4_file = file:gsub("%.mov$", ".mp4")
+    local ffmpeg_cmd = { "ffmpeg", "-y", "-i", file, "-vcodec", "libx264", "-acodec", "aac", mp4_file }
+    local ffmpeg_ok = vim.fn.executable("ffmpeg") == 1
+    if not ffmpeg_ok then
+      vim.notify("ffmpeg is not installed or not in PATH.", vim.log.levels.ERROR)
+      return
+    end
+    vim.notify("Converting .mov to .mp4 in background: " .. mp4_file, vim.log.levels.INFO)
+    local result = vim.fn.system(ffmpeg_cmd)
+    if vim.v.shell_error ~= 0 then
+      vim.notify("ffmpeg conversion failed: " .. result, vim.log.levels.ERROR)
+      return
+    else
+      vim.notify("ffmpeg conversion succeeded: " .. mp4_file, vim.log.levels.INFO)
+    end
+
+    file = mp4_file
+  end
   local filename = vim.fn.fnamemodify(file, ":t")
   local bucket = "smindev" -- change this to your S3 bucket
   local s3_path = "s3://" .. bucket .. "/static/" .. filename
