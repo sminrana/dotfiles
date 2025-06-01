@@ -215,7 +215,9 @@ local function send_file_to_s3()
 
     file = mp4_file
   end
+
   local filename = vim.fn.fnamemodify(file, ":t")
+  filename = filename:gsub("%s+", "")
   local bucket = "smindev" -- change this to your S3 bucket
   local s3_path = "s3://" .. bucket .. "/static/" .. filename
   local cmd = { "aws", "s3", "cp", file, s3_path, "--acl", "public-read" }
