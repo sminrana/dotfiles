@@ -175,49 +175,10 @@ map("n", prefix .. "f6", select_file_to_move_to_dropbox, { desc = "Move screensh
 -- Copy file to Dropbox Vault END
 
 -- Copy file to S3 Bucket END
-local function send_file_to_s3()
-  local file = vim.fn.input("Enter file path to upload: ", "", "file")
-  if file == "" or vim.fn.filereadable(file) == 0 then
-    vim.notify("Invalid file path: " .. file, vim.log.levels.ERROR)
-    return
-  end
-  local confirm = vim.fn.input("Upload '" .. file .. "' to S3? (y/N): ")
-  if confirm:lower() ~= "y" then
-    vim.notify("Upload cancelled.", vim.log.levels.INFO)
-    return
-  end
-  if not vim.fn.executable("aws") then
-    vim.notify("AWS CLI is not installed or not in PATH.", vim.log.levels.ERROR)
-    return
-  end
-  if not vim.fn.filereadable(file) then
-    vim.notify("File does not exist: " .. file, vim.log.levels.ERROR)
-    return
-  end
 
-  -- If file is .mov, convert to .mp4 first using ffmpeg
-  if file:match("%.mov$") then
-    local mp4_file = file:gsub("%.mov$", ".mp4")
-    local ffmpeg_cmd = { "ffmpeg", "-y", "-i", file, "-vcodec", "libx264", "-acodec", "aac", mp4_file }
-    local ffmpeg_ok = vim.fn.executable("ffmpeg") == 1
-    if not ffmpeg_ok then
-      vim.notify("ffmpeg is not installed or not in PATH.", vim.log.levels.ERROR)
-      return
-    end
-    vim.notify("Converting .mov to .mp4 in background: " .. mp4_file, vim.log.levels.INFO)
-    local result = vim.fn.system(ffmpeg_cmd)
-    if vim.v.shell_error ~= 0 then
-      vim.notify("ffmpeg conversion failed: " .. result, vim.log.levels.ERROR)
-      return
-    else
-      vim.notify("ffmpeg conversion succeeded: " .. mp4_file, vim.log.levels.INFO)
-    end
-
-    file = mp4_file
-  end
-
+local function upload_to_s3(file)
   local filename = vim.fn.fnamemodify(file, ":t")
-  filename = filename:gsub("%s+", "")
+  filename = filename:gsub("%s+", "") -- remove all whitespace (spaces, tabs, etc.)
   local bucket = "smindev" -- change this to your S3 bucket
   local s3_path = "s3://" .. bucket .. "/static/" .. filename
   local cmd = { "aws", "s3", "cp", file, s3_path, "--acl", "public-read" }
@@ -244,6 +205,56 @@ local function send_file_to_s3()
     end)
   end)
 end
+
+local function send_file_to_s3()
+  local file = vim.fn.input("Enter file path to upload to S3: ", "", "file")
+  if file == "" or vim.fn.filereadable(file) == 0 then
+    vim.notify("Invalid file path: " .. file, vim.log.levels.ERROR)
+    return
+  end
+  local confirm = vim.fn.input("Upload '" .. file .. "' to S3? (y/N): ")
+  if confirm:lower() ~= "y" then
+    vim.notify("Upload cancelled.", vim.log.levels.INFO)
+    return
+  end
+  if not vim.fn.executable("aws") then
+    vim.notify("AWS CLI is not installed or not in PATH.", vim.log.levels.ERROR)
+    return
+  end
+  if not vim.fn.filereadable(file) then
+    vim.notify("File does not exist: " .. file, vim.log.levels.ERROR)
+    return
+  end
+
+  -- If file is .mov, convert to .mp4 first using ffmpeg (in background)
+  if file:match("%.mov$") then
+    local mp4_file = file:gsub("%.mov$", ".mp4")
+    local ffmpeg_cmd = { "ffmpeg", "-y", "-i", file, "-vcodec", "libx264", "-acodec", "aac", mp4_file }
+    if vim.fn.executable("ffmpeg") ~= 1 then
+      vim.notify("ffmpeg is not installed or not in PATH.", vim.log.levels.ERROR)
+      return
+    end
+    vim.notify("Converting .mov to .mp4 in background: " .. mp4_file, vim.log.levels.INFO)
+    vim.loop.spawn(ffmpeg_cmd[1], {
+      args = { unpack(ffmpeg_cmd, 2) },
+      stdio = { nil, nil, nil },
+    }, function(code, signal)
+      vim.schedule(function()
+        if code == 0 then
+          vim.notify("ffmpeg conversion succeeded: " .. mp4_file, vim.log.levels.INFO)
+          -- Continue upload with mp4_file
+          upload_to_s3(mp4_file)
+        else
+          vim.notify("ffmpeg conversion failed (exit " .. code .. "): " .. mp4_file, vim.log.levels.ERROR)
+        end
+      end)
+    end)
+    return
+  else
+    upload_to_s3(file)
+  end
+end
+
 
 map("n", prefix .. "f5", send_file_to_s3, { desc = "Send file to AWS S3 (public link copied)" })
 -- Copy file to S3 Bucket END
