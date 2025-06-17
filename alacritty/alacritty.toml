@@ -19,6 +19,7 @@ blur = false
 startup_mode = "Windowed"
 dynamic_padding = true
 dynamic_title = true
+option_as_alt = "OnlyLeft"
 
 [selection]
 save_to_clipboard = true
@@ -56,6 +57,7 @@ bindings = [
   { key = "s", mods = "Command", chars = "\u0013" },
   { key = "f", mods = "Command|Shift", action = "ToggleSimpleFullscreen" },
 ]
+
 
 #[terminal.shell]
 #program = "/opt/homebrew/bin/tmux"
