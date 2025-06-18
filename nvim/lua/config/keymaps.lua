@@ -108,6 +108,16 @@ map("n", prefix .. "t3", function()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as low priority" })
 
+map("n", prefix .. "r", function()
+  vim.ui.input({ prompt = "Substitute pattern (e.g. foo/bar/g): " }, function(input)
+    if not input or input == "" then
+      vim.notify("No pattern entered.", vim.log.levels.WARN)
+      return
+    end
+    vim.cmd("%s/" .. input)
+  end)
+end, { desc = "Start :%s substitution" })
+
 -- =========================================== Markdown
 vim.keymap.set("n", prefix .. "m4", function()
   local line = vim.api.nvim_get_current_line()
