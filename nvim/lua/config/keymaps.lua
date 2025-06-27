@@ -314,42 +314,40 @@ for _, keymap in ipairs(yazi_keymaps) do
   map({ "n", "v" }, prefix .. keymap[1], keymap[2], { desc = keymap[3] })
 end
 
-map("n", prefix .. "c", function()
+map("n", prefix .. "c1", function()
   vim.ui.input({ prompt = "Shell command to run: " }, function(cmd)
     if not cmd or cmd == "" then
       vim.notify("No command entered.", vim.log.levels.WARN)
       return
     end
-    vim.notify("Running: " .. cmd, vim.log.levels.INFO)
-    local stdout = vim.loop.new_pipe(false)
-    local stderr = vim.loop.new_pipe(false)
-    local output = {}
-    local function on_read(err, data)
-      if data then
-        table.insert(output, data)
+    vim.notify("Running in new tab: " .. cmd, vim.log.levels.INFO)
+    vim.cmd("tabnew | terminal " .. cmd)
+  end)
+end, { desc = "Run shell command" })
+
+
+map("n", prefix .. "c2", function()
+  local script_dir = vim.fn.expand("~/Desktop/scripts/")
+  local files = {}
+  local p = io.popen('ls -1 "' .. script_dir .. '"')
+  if p then
+    for file in p:lines() do
+      if file:match("%.sh$") then
+        table.insert(files, file)
       end
     end
-    vim.loop.spawn("sh", {
-      args = { "-c", cmd },
-      stdio = { nil, stdout, stderr },
-    }, function(code, signal)
-      stdout:read_stop()
-      stderr:read_stop()
-      stdout:close()
-      stderr:close()
-      vim.schedule(function()
-        local result = table.concat(output)
-        if result ~= "" then
-          vim.notify(result, vim.log.levels.INFO, { title = "Shell Output" })
-        end
-        if code == 0 then
-          vim.notify("Command finished: " .. cmd, vim.log.levels.INFO)
-        else
-          vim.notify("Command failed (exit " .. code .. "): " .. cmd, vim.log.levels.ERROR)
-        end
-      end)
-    end)
-    stdout:read_start(on_read)
-    stderr:read_start(on_read)
+    p:close()
+  end
+  if #files == 0 then
+    vim.notify("No shell scripts found in " .. script_dir, vim.log.levels.WARN)
+    return
+  end
+  vim.ui.select(files, { prompt = "Select shell script to run:" }, function(choice)
+    if not choice then
+      return
+    end
+    local script_path = script_dir .. choice
+    vim.notify("Running: " .. script_path .. " in terminal", vim.log.levels.INFO)
+    vim.cmd("terminal bash '" .. script_path .. "'")
   end)
-end, { desc = "Run shell command in background" })
+end, { desc = "Run shell script from ~/Desktop/scripts" })
