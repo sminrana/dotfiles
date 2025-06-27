@@ -160,6 +160,7 @@ return {
         "vimdoc",
         "xml",
         "yaml",
+        "svelte"
       },
       auto_install = true,
       highlight = {
