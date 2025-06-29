@@ -206,7 +206,7 @@ local function upload_to_s3(file)
       vim.api.nvim_set_option("statusline", "")
       if code == 0 then
         vim.notify("Uploaded to S3: " .. filename, vim.log.levels.INFO)
-        local url = "https://" .. bucket .. ".s3.amazonaws.com/static/" .. filename
+        local url = "https://smin.dev/scr/" .. filename
         vim.fn.setreg("+", url)
         vim.notify("Public URL copied: " .. url, vim.log.levels.INFO)
       else
