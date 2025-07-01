@@ -52,7 +52,7 @@ vim.cmd("wincmd p") -- Sometimes needs to be called twice depending on window la
 
 
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.svelte", "*.blade.php" },
+  pattern = { "*.svelte" },
   callback = function()
     local clients = vim.lsp.get_active_clients({ bufnr = 0 })
     if #clients > 0 then
