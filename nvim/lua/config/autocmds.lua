@@ -25,6 +25,8 @@ vim.api.nvim_create_autocmd("DirChanged", {
 })
 
 vim.api.nvim_exec2("Neotree reveal float", {})
+vim.cmd("wincmd p") -- Switch focus to the previous window (the newly opened Neotree)
+vim.cmd("wincmd p") -- Sometimes needs to be called twice depending on window layout
 
 -- vim.api.nvim_create_autocmd("BufWritePost", {
 --   pattern = "*.md",
@@ -47,3 +49,14 @@ vim.api.nvim_exec2("Neotree reveal float", {})
 --     })
 --   end,
 -- })
+
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = { "*.svelte", "*.blade.php" },
+  callback = function()
+    local clients = vim.lsp.get_active_clients({ bufnr = 0 })
+    if #clients > 0 then
+      vim.lsp.buf.format()
+    end
+  end,
+})
