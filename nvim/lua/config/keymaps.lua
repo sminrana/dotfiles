@@ -272,6 +272,7 @@ local personal_keymaps = {
   { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
+  { "ls", "<cmd>Lazy sync<CR>", "Lazy sync" },
   { "m1", "<Cmd>MarkdownPreview<CR>" },
   { "m2", "<Cmd>ObsidianNew<CR>" },
   { "m3", "<Cmd>ObsidianToday<CR>" },
@@ -311,7 +312,6 @@ map("n", prefix .. "c1", function()
     vim.cmd("tabnew | terminal " .. cmd)
   end)
 end, { desc = "Run shell command" })
-
 
 map("n", prefix .. "c2", function()
   local script_dir = vim.fn.expand("~/Desktop/scripts/")
