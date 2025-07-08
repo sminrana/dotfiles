@@ -4,12 +4,12 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
-local function upload_to_s3(file)
-  local filename = vim.fn.fnamemodify(file, ":t")
+local function do_upload(finalFile)
+  local filename = vim.fn.fnamemodify(finalFile, ":t")
   filename = filename:gsub("%s+", "") -- remove all whitespace (spaces, tabs, etc.)
   local bucket = "smindev" -- change this to your S3 bucket
   local s3_path = "s3://" .. bucket .. "/static/" .. filename
-  local cmd = { "aws", "s3", "cp", file, s3_path, "--acl", "public-read" }
+  local cmd = { "aws", "s3", "cp", finalFile, s3_path, "--acl", "public-read" }
 
   -- Show progress in statusline
   vim.api.nvim_set_option("statusline", "%#WarningMsg#Uploading to S3: " .. filename .. "...%*")
@@ -34,6 +34,36 @@ local function upload_to_s3(file)
   end)
 end
 
+local function upload_to_s3(file)
+
+  if file:match("%.mov$") then
+    local mp4_file = file:gsub("%.mov$", ".mp4")
+    local ffmpeg_cmd = { "ffmpeg", "-y", "-i", file, "-vcodec", "libx264", "-acodec", "aac", mp4_file }
+    if vim.fn.executable("ffmpeg") ~= 1 then
+      vim.notify("ffmpeg is not installed or not in PATH.", vim.log.levels.ERROR)
+      return
+    end
+    vim.notify("Converting .mov to .mp4 in background: " .. mp4_file, vim.log.levels.INFO)
+    vim.loop.spawn(ffmpeg_cmd[1], {
+      args = { unpack(ffmpeg_cmd, 2) },
+      stdio = { nil, nil, nil },
+    }, function(code, signal)
+      vim.schedule(function()
+        if code == 0 then
+          vim.notify("ffmpeg conversion succeeded: " .. mp4_file, vim.log.levels.INFO)
+          -- Continue upload with mp4_file
+          do_upload(mp4_file)
+        else
+          vim.notify("ffmpeg conversion failed (exit " .. code .. "): " .. mp4_file, vim.log.levels.ERROR)
+        end
+      end)
+    end)
+    return
+  end
+
+  do_upload(file)
+end
+
 local function send_file_to_s3()
   local file = vim.fn.input("Enter file path to upload to S3: ", "", "file")
   if file == "" or vim.fn.filereadable(file) == 0 then
@@ -54,33 +84,7 @@ local function send_file_to_s3()
     return
   end
 
-  -- If file is .mov, convert to .mp4 first using ffmpeg (in background)
-  if file:match("%.mov$") then
-    local mp4_file = file:gsub("%.mov$", ".mp4")
-    local ffmpeg_cmd = { "ffmpeg", "-y", "-i", file, "-vcodec", "libx264", "-acodec", "aac", mp4_file }
-    if vim.fn.executable("ffmpeg") ~= 1 then
-      vim.notify("ffmpeg is not installed or not in PATH.", vim.log.levels.ERROR)
-      return
-    end
-    vim.notify("Converting .mov to .mp4 in background: " .. mp4_file, vim.log.levels.INFO)
-    vim.loop.spawn(ffmpeg_cmd[1], {
-      args = { unpack(ffmpeg_cmd, 2) },
-      stdio = { nil, nil, nil },
-    }, function(code, signal)
-      vim.schedule(function()
-        if code == 0 then
-          vim.notify("ffmpeg conversion succeeded: " .. mp4_file, vim.log.levels.INFO)
-          -- Continue upload with mp4_file
-          upload_to_s3(mp4_file)
-        else
-          vim.notify("ffmpeg conversion failed (exit " .. code .. "): " .. mp4_file, vim.log.levels.ERROR)
-        end
-      end)
-    end)
-    return
-  else
-    upload_to_s3(file)
-  end
+  upload_to_s3(file)
 end
 
 local function select_file_to_move_to_s3()
@@ -252,9 +256,9 @@ vim.keymap.set("n", prefix .. "m7", function()
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
 
-map("n", prefix .. "f7", copy_to_s3, { desc = "Send file to S3" })
-map("n", prefix .. "f6", select_file_to_move_to_s3, { desc = "Move screenshot to S3" })
-map("n", prefix .. "f5", send_file_to_s3, { desc = "Send file to AWS S3 (public link copied)" })
+map("n", prefix .. "f7", copy_to_s3, { desc = "Upload current buffer to S3" })
+map("n", prefix .. "f6", select_file_to_move_to_s3, { desc = "Upload file from /scr to S3" })
+map("n", prefix .. "f5", send_file_to_s3, { desc = "Choose any file to S3" })
 
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
