@@ -4,9 +4,21 @@ local function map(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
+local function random_filename_with_ext(path)
+  local ext = path:match("^.+(%..+)$") or ""
+  local ts = os.date("%Y%m%d%H%M%S")
+  -- List of syllables for more meaningful pseudo-words
+  local syllables = { "ka", "lo", "mi", "ra", "zu", "ve", "xo", "ni", "sa", "tu", "po", "qi", "wa", "jo", "fi" }
+  local mystic = ""
+  for _ = 1, 2 do
+    mystic = mystic .. syllables[math.random(#syllables)]
+  end
+  return ts .. mystic .. ext
+end
+
 local function do_upload(finalFile)
   local filename = vim.fn.fnamemodify(finalFile, ":t")
-  filename = filename:gsub("%s+", "") -- remove all whitespace (spaces, tabs, etc.)
+  filename = random_filename_with_ext(filename)
   local bucket = "smindev" -- change this to your S3 bucket
   local s3_path = "s3://" .. bucket .. "/static/" .. filename
   local cmd = { "aws", "s3", "cp", finalFile, s3_path, "--acl", "public-read" }
