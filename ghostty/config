@@ -1,4 +1,4 @@
-theme = tokyonight
+theme = molokai
 term = xterm-256color
 
 font-family = JetBrains Mono
