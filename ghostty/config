@@ -44,8 +44,8 @@ window-colorspace = display-p3
 window-save-state = always
 window-theme = auto
 window-decoration=true
-window-padding-y = 0
-window-padding-x = 0
+window-padding-y = 10
+window-padding-x = 10
 window-padding-color = extend
 window-padding-balance = true
 
