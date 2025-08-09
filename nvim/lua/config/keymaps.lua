@@ -276,7 +276,6 @@ local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
   { "X", "<Cmd>%d<CR>", "Cut All" },
   { "S", "ggVG", "Select All" },
-  { "R", "<Cmd>%s/\r//g<CR>", "Remove ^M" },
   { "d", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
   { "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
   { "u", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
@@ -293,6 +292,21 @@ local personal_keymaps = {
   { "m2", "<Cmd>ObsidianNew<CR>" },
   { "m3", "<Cmd>ObsidianToday<CR>" },
 }
+
+
+map("n", prefix .. "r^", "<Cmd>%s/\r//g<CR>", { desc = "Remove ^M" })
+map("v", prefix .. "rm", function()
+  local start_line = vim.fn.line("v")
+  local end_line = vim.fn.line(".")
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
+  for lnum = start_line, end_line do
+    local line = vim.fn.getline(lnum)
+    line = line:gsub("^[-+]+", "")
+    vim.fn.setline(lnum, line)
+  end
+end, { desc = "Remove - and + from beginning of selected lines" })
 
 for _, keymap in ipairs(personal_keymaps) do
   map("n", prefix .. keymap[1], keymap[2], { noremap = true, silent = true, desc = keymap[3] })
