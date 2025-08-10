@@ -11,6 +11,10 @@ opt.ttimeoutlen = 0
 --opt.clipboard:append("unnamedplus") -- use system clipboard as default register
 opt.spelllang = "en_us"
 opt.spell = true
+opt.incsearch = true
+opt.ignorecase = true
+opt.smartcase = true
+opt.lazyredraw = true
 
 vim.g.lazyvim_picker = "fzf"
 vim.g.snacks_animate = false
