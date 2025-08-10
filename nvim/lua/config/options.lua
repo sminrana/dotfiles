@@ -14,7 +14,6 @@ opt.spell = true
 opt.incsearch = true
 opt.ignorecase = true
 opt.smartcase = true
-opt.lazyredraw = true
 
 vim.g.lazyvim_picker = "fzf"
 vim.g.snacks_animate = false
