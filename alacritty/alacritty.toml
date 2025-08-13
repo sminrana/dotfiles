@@ -7,8 +7,8 @@ live_config_reload = true
 working_directory = "/Users/smin"
 
 [colors]
-#transparent_background_colors = true
-#draw_bold_text_with_bright_colors = true
+transparent_background_colors = true
+draw_bold_text_with_bright_colors = false
 
 [window]
 padding.x = 0
@@ -21,11 +21,19 @@ dynamic_padding = true
 dynamic_title = true
 option_as_alt = "OnlyLeft"
 
+
 [selection]
 save_to_clipboard = true
 
 [font]
 size = 15.0
+
+
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
+
 
 [font.bold]
 family = "JetBrainsMono Nerd Font"
@@ -38,10 +46,6 @@ style = "Bold Italic"
 [font.italic]
 family = "JetBrainsMono Nerd Font"
 style = "Italic"
-
-[font.normal]
-family = "JetBrainsMono Nerd Font"
-style = "Regular"
 
 [mouse]
 hide_when_typing = true
