@@ -1,43 +1,37 @@
 return {
   "chrisgrieser/nvim-scissors",
   config = function()
-    local ft  = { "blade", "php", "html", "tsx", "ts", "ct", "javascript", "python", "svelte" }
-    local snippet_path = vim.fn.expand("/Users/smin/.config/nvim/snippets")
+    local snippet_path = vim.fn.expand("~/.config/nvim/snippets")
 
-    local scissors = require("blink.cmp")
-    scissors.setup({
+    local blink = require("blink.cmp")
+    blink.setup({
       sources = {
         providers = {
           snippets = {
             opts = {
               search_paths = { snippet_path },
-              filetypes = ft,
+              -- auto-detects filetype from buffer, no manual ft list needed
             },
           },
         },
       },
     })
 
-
-    local reload_snippets = function()
-      scissors.setup({
-        sources = {
-          providers = {
-            snippets = {
-              opts = {
-                search_paths = { snippet_path },
-                filetypes = ft,
+    -- reload snippets whenever you edit them
+    vim.api.nvim_create_autocmd("BufWritePost", {
+      pattern = snippet_path .. "/*.json",
+      callback = function()
+        blink.setup({
+          sources = {
+            providers = {
+              snippets = {
+                opts = { search_paths = { snippet_path } },
               },
             },
           },
-        },
-      })
-      vim.notify("Snippets reloaded!", vim.log.levels.INFO)
-    end
-
-    vim.api.nvim_create_autocmd("BufWritePost", {
-      pattern = snippet_path .. "/*.json",
-      callback = reload_snippets,
+        })
+        vim.notify("Snippets reloaded!", vim.log.levels.INFO)
+      end,
     })
   end,
 }
