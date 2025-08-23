@@ -231,6 +231,18 @@ map("n", prefix .. "t3", function()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as low priority" })
 
+map("n", prefix .. "t0", function()
+  local line = vim.api.nvim_get_current_line()
+  if line:match("%[ %]") then
+    line = line:gsub("%[ %]", "[x]", 1)
+  elseif line:match("%[x%]") then
+    line = line:gsub("%[x%]", "[ ]", 1)
+  end
+  vim.api.nvim_set_current_line(line)
+end)
+
+-- end of todo
+
 map("n", prefix .. "R", function()
   vim.ui.input({ prompt = "Substitute pattern (e.g. foo/bar/g): " }, function(input)
     if not input or input == "" then
