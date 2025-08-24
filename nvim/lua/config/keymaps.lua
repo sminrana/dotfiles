@@ -163,7 +163,7 @@ end, { desc = "Live Grep in Current Buffer" })
 local prefix = "<leader>j"
 
 -- ======================================== TODO
-map("n", prefix .. "td", function()
+map("n", prefix .. "tx", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "✅ Done - " .. date
   local line = vim.api.nvim_get_current_line()
@@ -178,7 +178,7 @@ map("n", prefix .. "tc", function()
   vim.api.nvim_win_set_cursor(0, { vim.api.nvim_win_get_cursor(0)[1], #line + #emoji + 1 })
 end, { desc = "Add your answer" })
 
-vim.keymap.set("n", prefix .. "ta", function()
+vim.keymap.set("n", prefix .. "te", function()
   vim.cmd([[normal! I🟩 ]])
 end, { desc = "Add emoji at beginning of the line" })
 
@@ -240,6 +240,9 @@ map("n", prefix .. "t0", function()
   end
   vim.api.nvim_set_current_line(line)
 end)
+
+vim.keymap.set("n", prefix .. "td", ":Today<CR>", { desc = "Insert Today's Log" })
+vim.keymap.set("n", prefix .. "tw", ":Week<CR>", { desc = "Insert This Week's Plan" })
 
 -- end of todo
 
