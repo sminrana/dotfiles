@@ -24,33 +24,12 @@ vim.api.nvim_create_autocmd("DirChanged", {
   end,
 })
 
+-- Show Neotree on a popup, disabling left sidebar
 vim.api.nvim_exec2("Neotree reveal float", {})
 vim.cmd("wincmd p") -- Switch focus to the previous window (the newly opened Neotree)
 vim.cmd("wincmd p") -- Sometimes needs to be called twice depending on window layout
 
--- vim.api.nvim_create_autocmd("BufWritePost", {
---   pattern = "*.md",
---   callback = function(args)
---     local src = args.file
---     local dest = os.getenv("HOME") .. "/Library/CloudStorage/Dropbox/Vault/" .. vim.fn.fnamemodify(src, ":t")
---     vim.fn.jobstart({ "cp", src, dest }, {
---       detach = true,
---       on_exit = function(_, code)
---         if code == 0 then
---           vim.schedule(function()
---             vim.notify("Copied to Dropbox Vault: " .. dest, vim.log.levels.INFO)
---           end)
---         else
---           vim.schedule(function()
---             vim.notify("Failed to copy to Dropbox Vault", vim.log.levels.ERROR)
---           end)
---         end
---       end,
---     })
---   end,
--- })
-
-
+-- Format svelte file
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = { "*.svelte" },
   callback = function()
@@ -61,7 +40,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
-
+-- Auto save on focus lost
 vim.api.nvim_create_autocmd("FocusLost", {
   pattern = "*",
   command = "silent! wa"
@@ -73,5 +52,23 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     local save = vim.fn.winsaveview()
     vim.cmd([[%s/\s\+$//e]])
     vim.fn.winrestview(save)
+  end,
+})
+
+-- Auto insert `$` only if the previous line starts with `$` in PHP files
+-- Insert `$` on the next line only when the current line starts with `$` (ignoring leading spaces)
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "php",
+  group = vim.api.nvim_create_augroup("PhpAutoDollarOnNewline", { clear = true }),
+  callback = function(args)
+    vim.keymap.set("i", "<CR>", function()
+      local prev = vim.api.nvim_get_current_line()
+      if prev:match("^%s*%$") then
+        -- Let Neovim do its normal newline + indent, then insert $
+        return "<CR>$"
+      else
+        return "<CR>"
+      end
+    end, { buffer = args.buf, expr = true, desc = "Auto `$` after lines that start with `$`" })
   end,
 })
