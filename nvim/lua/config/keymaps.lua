@@ -246,15 +246,6 @@ vim.keymap.set("n", prefix .. "tw", ":Week<CR>", { desc = "Insert This Week's Pl
 
 -- end of todo
 
-map("n", prefix .. "R", function()
-  vim.ui.input({ prompt = "Substitute pattern (e.g. foo/bar/g): " }, function(input)
-    if not input or input == "" then
-      vim.notify("No pattern entered.", vim.log.levels.WARN)
-      return
-    end
-    vim.cmd("%s/" .. input)
-  end)
-end, { desc = "Start :%s substitution" })
 
 -- =========================================== Markdown
 vim.keymap.set("n", prefix .. "m4", function()
@@ -308,6 +299,32 @@ local personal_keymaps = {
   { "m3", "<Cmd>ObsidianToday<CR>" },
 }
 
+
+-- Open File
+map("n", prefix .. "fo", function()
+  vim.ui.input({ prompt = "File to open: " }, function(input)
+    if not input or input == "" then
+      vim.notify("No pattern entered.", vim.log.levels.WARN)
+      return
+    end
+    -- Quote the input to handle spaces and special characters
+    vim.cmd("tabnew " .. vim.fn.fnameescape(input))
+  end)
+end, { desc = "Open file " })
+
+
+map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all and exit Vim" })
+
+-- Open Search and Replace
+map("n", prefix .. "R", function()
+  vim.ui.input({ prompt = "Substitute pattern (e.g. foo/bar/g): " }, function(input)
+    if not input or input == "" then
+      vim.notify("No pattern entered.", vim.log.levels.WARN)
+      return
+    end
+    vim.cmd("%s/" .. input)
+  end)
+end, { desc = "Start :%s substitution" })
 
 map("n", prefix .. "r^", "<Cmd>%s/\r//g<CR>", { desc = "Remove ^M" })
 map("v", prefix .. "rm", function()
