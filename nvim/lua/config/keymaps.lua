@@ -299,6 +299,10 @@ local personal_keymaps = {
   { "m3", "<Cmd>ObsidianToday<CR>" },
 }
 
+for _, keymap in ipairs(personal_keymaps) do
+  map("n", prefix .. keymap[1], keymap[2], { noremap = true, silent = true, desc = keymap[3] })
+end
+
 
 -- Open File
 map("n", prefix .. "fo", function()
@@ -340,9 +344,54 @@ map("v", prefix .. "rm", function()
   end
 end, { desc = "Remove - and + from beginning of selected lines" })
 
-for _, keymap in ipairs(personal_keymaps) do
-  map("n", prefix .. keymap[1], keymap[2], { noremap = true, silent = true, desc = keymap[3] })
-end
+-- Copy LSP error 
+map("n", prefix .. "E", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line_nr = cursor[1]
+  local diagnostics = vim.diagnostic.get(bufnr)
+  local errors = {}
+
+  -- Find diagnostics on the current line
+  for _, d in ipairs(diagnostics) do
+    if d.lnum + 1 == line_nr then
+      table.insert(errors, d)
+    end
+  end
+
+  -- If no diagnostics on the line, try to get diagnostics in the current function or class
+  if #errors == 0 and vim.treesitter then
+    local ts_utils = require("nvim-treesitter.ts_utils")
+    local node = ts_utils.get_node_at_cursor()
+    while node do
+      local type = node:type()
+      if type:match("function") or type:match("class") then
+        local start_row, _, end_row, _ = node:range()
+        for _, d in ipairs(diagnostics) do
+          if d.lnum >= start_row and d.lnum <= end_row then
+            table.insert(errors, d)
+          end
+        end
+        break
+      end
+      node = node:parent()
+    end
+  end
+
+  if #errors == 0 then
+    vim.notify("No LSP errors found on this line or code block.", vim.log.levels.INFO)
+    return
+  end
+
+  local msgs = {}
+  for _, d in ipairs(errors) do
+    table.insert(msgs, string.format("[%s] %s (line %d)", vim.diagnostic.severity[d.severity], d.message, d.lnum + 1))
+  end
+  local text = table.concat(msgs, "\n")
+  vim.fn.setreg("+", text)
+  vim.notify("Copied LSP error(s) to clipboard.", vim.log.levels.INFO)
+end, { desc = "Copy LSP error(s) on line or code block" })
+
 
 -- Snippet keymaps
 map({ "n", "x" }, prefix .. "sa", function()
