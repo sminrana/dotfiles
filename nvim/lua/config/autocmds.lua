@@ -99,3 +99,19 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     end
   end,
 })
+
+-- Set relative number in normal mode, absolute in insert mode
+vim.api.nvim_create_autocmd({ "InsertEnter" }, {
+  pattern = "*",
+  callback = function()
+    vim.opt.relativenumber = false
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "InsertLeave" }, {
+  pattern = "*",
+  callback = function()
+    vim.opt.relativenumber = true
+  end,
+})
+
