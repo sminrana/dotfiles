@@ -55,7 +55,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
--- Auto insert `$` only if the previous line starts with `$` in PHP files
 -- Insert `$` on the next line only when the current line starts with `$` (ignoring leading spaces)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "php",
@@ -70,5 +69,33 @@ vim.api.nvim_create_autocmd("FileType", {
         return "<CR>"
       end
     end, { buffer = args.buf, expr = true, desc = "Auto `$` after lines that start with `$`" })
+  end,
+})
+
+-- Highlight trailing whitespace
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "*",
+  callback = function(args)
+    vim.cmd [[match ErrorMsg /\s\+$/]]
+  end,
+})
+
+-- Automatically remove trailing blank lines on save
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  callback = function()
+    vim.cmd [[silent! %s#\($\n\s*\)\+\%$##]]
+  end,
+})
+
+-- Restore cursor position when reopening a file
+vim.api.nvim_create_autocmd("BufReadPost", {
+  pattern = "*",
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    if mark[1] > 0 and mark[1] <= lcount then
+      vim.api.nvim_win_set_cursor(0, mark)
+    end
   end,
 })
