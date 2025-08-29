@@ -320,7 +320,7 @@ end, { desc = "Open file " })
 map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all and exit Vim" })
 
 -- Open Search and Replace
-map("n", prefix .. "Rr", function()
+map("n", prefix .. "R", function()
   vim.ui.input({ prompt = "Substitute pattern (e.g. %s/foo/bar/g): " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
@@ -330,7 +330,7 @@ map("n", prefix .. "Rr", function()
   end)
 end, { desc = "Start :%s substitution" })
 
-map("n", prefix .. "Rc", function()
+map("n", prefix .. "rc", function()
   vim.ui.input({ prompt = "cfdo substitute pattern (e.g. cfdo %s/foo/bar/g | update): " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
@@ -340,7 +340,7 @@ map("n", prefix .. "Rc", function()
   end)
 end, { desc = "cfdo :%s substitution (all quickfix files)" })
 
-map("n", prefix .. "Rd", function()
+map("n", prefix .. "rd", function()
   vim.ui.input({ prompt = "cdo substitute pattern (e.g. cdo s/foo/bar/g | update): " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
@@ -350,7 +350,7 @@ map("n", prefix .. "Rd", function()
   end)
 end, { desc = "cdo :%s substitution (all quickfix matches/lines)" })
 
-map("n", prefix .. "Ra", function()
+map("n", prefix .. "ra", function()
   vim.ui.input({ prompt = "argdo substitute pattern (e.g. argdo %s/foo/bar/g | update): " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
