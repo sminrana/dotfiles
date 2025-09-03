@@ -100,7 +100,7 @@ local function send_file_to_s3()
 end
 
 local function select_file_to_move_to_s3()
-  local src_dir = vim.fn.expand("~/Downloads/scr/")
+  local src_dir = vim.fn.expand("~/Downloads/screenshots/")
   local files = {}
   local p = io.popen('ls -1t "' .. src_dir .. '"')
   if p then
