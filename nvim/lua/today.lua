@@ -11,9 +11,9 @@ local function insert_today()
 ## %s
 
 ✅ 3 MIT (Most Important Tasks)
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+- [ ] 
+- [ ] 
+- [ ] 
 
 🪶 Notes
 -
@@ -61,9 +61,9 @@ local function insert_week()
 - Main focus for the week
 
 ## ✅ Tasks
-- [ ] Important task 1
-- [ ] Important task 2
-- [ ] Important task 3
+- [ ] 
+- [ ] 
+- [ ] 
 
 ## 📝 Notes
 -
