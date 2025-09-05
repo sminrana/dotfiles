@@ -282,9 +282,10 @@ local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
   { "X", "<Cmd>%d<CR>", "Cut All" },
   { "S", "ggVG", "Select All" },
-  { "d", "<Cmd>tabe ~/Desktop/obs-v1/todo.md<CR>" },
-  { "n", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
-  { "u", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
+  { "G", "<Cmd>tabe ~/Desktop/obs-v1/goals/goals.md<CR>" },
+  { "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>" },
+  { "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
+  { "U", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
   { "f1", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
   { "f2", ':let @+=expand("%:." )<CR>', "Copy file relative path" },
   { "f3", ':let @+=expand("%:t")<CR>', "Copy file name" },
@@ -306,15 +307,32 @@ end
 
 -- Open File
 map("n", prefix .. "fo", function()
-  vim.ui.input({ prompt = "File to open: " }, function(input)
+  local fzf = require("fzf-lua")
+  fzf.files({
+    cwd = "~", -- Set search directory to home folder
+    prompt = "Open file: ",
+    actions = {
+      ["default"] = function(selected)
+        if not selected or #selected == 0 then
+          vim.notify("No file selected.", vim.log.levels.WARN)
+          return
+        end
+        vim.cmd("tabnew " .. vim.fn.fnameescape(selected[1]))
+      end,
+    },
+  })
+end, { desc = "Open file in ~ (fzf)" })
+
+map("n", prefix .. "fn", function()
+  vim.ui.input({ prompt = "New file name: " }, function(input)
     if not input or input == "" then
-      vim.notify("No pattern entered.", vim.log.levels.WARN)
+      vim.notify("No file name entered.", vim.log.levels.WARN)
       return
     end
-    -- Quote the input to handle spaces and special characters
     vim.cmd("tabnew " .. vim.fn.fnameescape(input))
+    vim.notify("Created new file: " .. input, vim.log.levels.INFO)
   end)
-end, { desc = "Open file " })
+end, { desc = "Create new file" })
 
 
 map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all and exit Vim" })
