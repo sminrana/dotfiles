@@ -137,27 +137,6 @@ map("n", "go", "<Cmd>call append(line('.'), repeat([''], v:count1))<CR>")
 map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
 map("n", "<leader>be", "<Cmd>Neotree buffers float<CR>")
 
--- FZF keymaps
-map("n", "<leader>fa", function()
-  require("fzf-lua").live_grep({ cwd = "~/app/" })
-end, { desc = "Live Grep in App Files" })
-
-map("n", "<leader>fw", function()
-  require("fzf-lua").live_grep({ cwd = "~/web/" })
-end, { desc = "Live Grep in Web Files" })
-
-map("n", "<leader>fx", function()
-  require("fzf-lua").live_grep({ cwd = "~/Desktop/obs-v1/" })
-end, { desc = "Live Grep in Notes Files" })
-
-map("n", "<leader>fs", function()
-  require("fzf-lua").live_grep({ cwd = "~/Desktop/snippets/" })
-end, { desc = "Live Grep in Snippets Files" })
-
-map("n", "<leader>ba", function()
-  require("fzf-lua").blines()
-end, { desc = "Live Grep in Current Buffer" })
-
 -- ===============================Personal keymaps===================================
 -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
@@ -274,6 +253,28 @@ vim.keymap.set("n", prefix .. "m7", function()
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
 
+
+-- FZF keymaps
+map("n", prefix .. "fa", function()
+  require("fzf-lua").live_grep({ cwd = "~/app/" })
+end, { desc = "Live Grep in App Files" })
+
+map("n", prefix .. "fw", function()
+  require("fzf-lua").live_grep({ cwd = "~/web/" })
+end, { desc = "Live Grep in Web Files" })
+
+map("n", prefix .. "<leader>fx", function()
+  require("fzf-lua").live_grep({ cwd = "~/Desktop/obs-v1/" })
+end, { desc = "Live Grep in Notes Files" })
+
+map("n", prefix .. "fs", function()
+  require("fzf-lua").live_grep({ cwd = "~/Desktop/snippets/" })
+end, { desc = "Live Grep in Snippets Files" })
+
+map("n", prefix .. "<leader>ba", function()
+  require("fzf-lua").blines()
+end, { desc = "Live Grep in Current Buffer" })
+
 map("n", prefix .. "f7", copy_to_s3, { desc = "Upload current buffer to S3" })
 map("n", prefix .. "f6", select_file_to_move_to_s3, { desc = "Upload file from /scr to S3" })
 map("n", prefix .. "f5", send_file_to_s3, { desc = "Choose any file to S3" })
@@ -282,6 +283,7 @@ local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
   { "X", "<Cmd>%d<CR>", "Cut All" },
   { "S", "ggVG", "Select All" },
+  { "P", "ggVGp", "Select All and Paste" },
   { "G", "<Cmd>tabe ~/Desktop/obs-v1/goals/goals.md<CR>" },
   { "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>" },
   { "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
@@ -392,7 +394,7 @@ map("v", prefix .. "rm", function()
   end
 end, { desc = "Remove - and + from beginning of selected lines" })
 
--- Copy LSP error 
+-- Copy LSP error
 map("n", prefix .. "E", function()
   local bufnr = vim.api.nvim_get_current_buf()
   local cursor = vim.api.nvim_win_get_cursor(0)
