@@ -501,8 +501,8 @@ map("n", prefix .. "fn", function()
   end)
 end, { desc = "Create new file" })
 
-vim.keymap.set("n", prefix .. "ff", file_diff, { desc = "Diff two files (fzf)" })
-vim.keymap.set("n", prefix .. "fd", folder_diff, { desc = "Diff two folders" })
+vim.keymap.set("n", prefix .. "df", file_diff, { desc = "Diff two files (fzf)" })
+vim.keymap.set("n", prefix .. "dd", folder_diff, { desc = "Diff two folders" })
 
 
 map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all and exit Vim" })
