@@ -592,6 +592,25 @@ map("v", prefix .. "rm", function()
   end
 end, { desc = "Remove - and + from beginning of selected lines" })
 
+
+table.insert(personal_keymaps, {
+  "rw",
+  function()
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    for i, line in ipairs(lines) do
+      -- Only remove whitespace inside the line, not leading indentation
+      local indent = line:match("^(%s*)") or ""
+      local content = line:sub(#indent + 1)
+      content = content:gsub("%s+", "")
+      lines[i] = indent .. content
+    end
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+    vim.notify("All inner whitespace removed from buffer (indentation preserved).", vim.log.levels.INFO)
+  end,
+  "Remove all inner whitespace from buffer (preserve indentation)"
+})
+
+
 -- Copy LSP error
 map("n", prefix .. "E", function()
   local bufnr = vim.api.nvim_get_current_buf()
