@@ -138,11 +138,12 @@ local function get_globs_for_filetype(ft)
     return { "*.php", "*.blade.php", "*.ctp" }
   elseif ft == "python" then
     return { "*.py" }
+  elseif ft == "javascript" then
+    return { "*.js", "*.jsx" }
   else
     return { "*" }
   end
 end
-
 
 local function file_diff()
   local ok, fzf = pcall(require, "fzf-lua")
