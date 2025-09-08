@@ -428,7 +428,7 @@ map("n", prefix .. "fw", function()
   require("fzf-lua").live_grep({ cwd = "~/web/" })
 end, { desc = "Live Grep in Web Files" })
 
-map("n", prefix .. "<leader>fx", function()
+map("n", prefix .. "fx", function()
   require("fzf-lua").live_grep({ cwd = "~/Desktop/obs-v1/" })
 end, { desc = "Live Grep in Notes Files" })
 
@@ -436,7 +436,7 @@ map("n", prefix .. "fs", function()
   require("fzf-lua").live_grep({ cwd = "~/Desktop/snippets/" })
 end, { desc = "Live Grep in Snippets Files" })
 
-map("n", prefix .. "<leader>ba", function()
+map("n", prefix .. "ba", function()
   require("fzf-lua").blines()
 end, { desc = "Live Grep in Current Buffer" })
 
