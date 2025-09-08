@@ -452,6 +452,59 @@ map("n", prefix .. "se", function()
   require("scissors").editSnippet()
 end, { desc = "Snippet: Edit" })
 
+local function get_globs_for_filetype(ft)
+  if ft == "typescript" or ft == "typescriptreact" then
+    return { "*.ts", "*.tsx" }
+  elseif ft == "php" then
+    return { "*.php", "*.blade.php", "*.ctp" }
+  elseif ft == "python" then
+    return { "*.py" }
+  else
+    return { "*" }
+  end
+end
+
+vim.keymap.set("n", prefix .. "sw", function()
+  local ft = vim.bo.filetype
+  local word = vim.fn.expand("<cword>")
+  local globs = {}
+
+  globs = get_globs_for_filetype(ft)
+
+  -- Build the glob args for ripgrep
+  local glob_args = ""
+  for _, g in ipairs(globs) do
+    glob_args = glob_args .. string.format(" --glob '%s'", g)
+  end
+
+  -- Use ripgrep as grepprg
+  vim.o.grepprg = "rg --vimgrep"
+  vim.cmd("silent grep! -w " .. vim.fn.shellescape(word) .. glob_args)
+  vim.cmd("copen")
+end, { noremap = true, silent = true, desc = "Search for word under cursor in project files" })
+
+vim.keymap.set("n", prefix .. "si", function()
+  vim.ui.input({ prompt = "Search for: " }, function(input)
+    if not input or input == "" then
+      vim.notify("No search term entered.", vim.log.levels.WARN)
+      return
+    end
+
+    local ft = vim.bo.filetype
+    local globs = get_globs_for_filetype(ft)
+
+    local glob_args = ""
+    for _, g in ipairs(globs) do
+      glob_args = glob_args .. string.format(" --glob '%s'", g)
+    end
+
+    vim.o.grepprg = "rg --vimgrep"
+    vim.cmd("silent grep! -w " .. vim.fn.shellescape(input) .. glob_args)
+    vim.cmd("copen")
+  end)
+end, { noremap = true, silent = true, desc = "Input search term for project files" })
+
+
 -- Yazi keymaps
 local yazi_keymaps = {
   { "yf", "<cmd>Yazi<cr>", "Open yazi at the current file" },
