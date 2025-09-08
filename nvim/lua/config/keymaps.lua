@@ -1,3 +1,7 @@
+
+-- Define a prefix for personal keymaps
+local prefix = "<leader>j"
+
 -- Utility function to simplify keymap definitions
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}
@@ -127,6 +131,168 @@ local function copy_to_s3()
   upload_to_s3(file)
 end
 
+local function get_globs_for_filetype(ft)
+  if ft == "typescript" or ft == "typescriptreact" then
+    return { "*.ts", "*.tsx" }
+  elseif ft == "php" then
+    return { "*.php", "*.blade.php", "*.ctp" }
+  elseif ft == "python" then
+    return { "*.py" }
+  else
+    return { "*" }
+  end
+end
+
+
+local function file_diff()
+  local ok, fzf = pcall(require, "fzf-lua")
+  if not ok then
+    vim.notify("fzf-lua not installed!", vim.log.levels.ERROR)
+    return
+  end
+
+  local first_file = nil
+
+  local file_opts = {
+    prompt = "Select first file to diff: ",
+    file_icons = false,
+    git_icons = false,
+    actions = {
+      ["default"] = function(selected)
+        if not selected or #selected == 0 then
+          vim.notify("No first file selected", vim.log.levels.WARN)
+          return
+        end
+        
+        first_file = selected[1]
+        vim.notify("First file: " .. first_file, vim.log.levels.INFO)
+        
+        fzf.files({
+          prompt = "Select second file to diff: ",
+          file_icons = false,
+          git_icons = false,
+          actions = {
+            ["default"] = function(selected2)
+              if not selected2 or #selected2 == 0 then
+                vim.notify("No second file selected", vim.log.levels.WARN)
+                return
+              end
+              
+              local second_file = selected2[1]
+              vim.notify("Second file: " .. second_file, vim.log.levels.INFO)
+              
+              local abs_first = vim.fn.fnamemodify(first_file, ":p")
+              local abs_second = vim.fn.fnamemodify(second_file, ":p")
+              
+              vim.schedule(function()
+                local success, err = pcall(function()
+                  vim.cmd("tabnew " .. vim.fn.fnameescape(abs_first))
+                  vim.cmd("vert diffsplit " .. vim.fn.fnameescape(abs_second))
+                  
+                  -- Get both buffer numbers for this diff
+                  local buf1 = vim.api.nvim_get_current_buf()
+                  vim.cmd("wincmd w")
+                  local buf2 = vim.api.nvim_get_current_buf()
+                  vim.cmd("wincmd w")
+                  
+                  -- Disable diagnostics initially
+                  vim.diagnostic.disable(buf1)
+                  vim.diagnostic.disable(buf2)
+                  
+                  -- Create toggle function for this diff session
+                  local diagnostics_enabled = false
+                  local function toggle_diff_diagnostics()
+                    if diagnostics_enabled then
+                      vim.diagnostic.disable(buf1)
+                      vim.diagnostic.disable(buf2)
+                      diagnostics_enabled = false
+                      vim.notify("Diff diagnostics disabled", vim.log.levels.INFO)
+                    else
+                      vim.diagnostic.enable(buf1)
+                      vim.diagnostic.enable(buf2)
+                      diagnostics_enabled = true
+                      vim.notify("Diff diagnostics enabled", vim.log.levels.INFO)
+                    end
+                  end
+                  
+                  -- Add keybinding to toggle diagnostics (only in this tab)
+                  vim.keymap.set('n', prefix .. 'td', toggle_diff_diagnostics, { 
+                    buffer = buf1, 
+                    desc = 'Toggle diff diagnostics' 
+                  })
+                  vim.keymap.set('n', prefix .. 'td', toggle_diff_diagnostics, { 
+                    buffer = buf2, 
+                    desc = 'Toggle diff diagnostics' 
+                  })
+                  
+                  vim.notify("Diff opened (diagnostics disabled). Use <leader>td to toggle.", vim.log.levels.INFO)
+                end)
+                
+                if not success then
+                  vim.notify("Error: " .. tostring(err), vim.log.levels.ERROR)
+                end
+              end)
+            end,
+          },
+        })
+      end,
+    },
+  }
+
+  fzf.files(file_opts)
+end
+
+local function folder_diff()
+  vim.ui.input({ prompt = "First folder: " }, function(first)
+    if not first or first == "" then return end
+    vim.ui.input({ prompt = "Second folder: " }, function(second)
+      if not second or second == "" then return end
+
+      -- Merge STDERR to STDOUT
+      local cmd = "diff -qr " .. vim.fn.shellescape(first) .. " " .. vim.fn.shellescape(second) .. " 2>&1"
+      local handle = io.popen(cmd)
+      if not handle then
+        vim.notify("Failed to run diff.", vim.log.levels.ERROR)
+        return
+      end
+
+      local result = handle:read("*a")
+      handle:close()
+
+      local diffs = {}
+      for line in result:gmatch("[^\r\n]+") do
+        local f1, f2 = line:match("^Files%s+(.+)%s+and%s+(.+)%s+differ")
+        if f1 and f2 then
+          table.insert(diffs, { f1, f2 })
+        end
+      end
+
+      if #diffs == 0 then
+        vim.notify("No differing files found.", vim.log.levels.INFO)
+        return
+      end
+
+      local items = {}
+      for _, pair in ipairs(diffs) do
+        table.insert(items, pair[1] .. " <-> " .. pair[2])
+      end
+
+      vim.ui.select(items, { prompt = "Select file pair to diff:" }, function(choice, idx)
+        if not choice or not idx then return end
+        local pair = diffs[idx]
+        if not pair then return end
+        -- Open diff in new tab
+        vim.cmd("tabnew " .. vim.fn.fnameescape(pair[1]))
+        vim.cmd("vert diffsplit " .. vim.fn.fnameescape(pair[2]))
+        vim.notify("Diff opened for: " .. pair[1] .. " <-> " .. pair[2], vim.log.levels.INFO)
+      end)
+    end)
+  end)
+end
+
+
+
+
 -- General keymaps
 map("n", "q", "<nop>", { noremap = true })
 map("n", "Q", "q", { noremap = true, desc = "Record macro" })
@@ -138,8 +304,7 @@ map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
 map("n", "<leader>be", "<Cmd>Neotree buffers float<CR>")
 
 -- ===============================Personal keymaps===================================
--- Define a prefix for personal keymaps
-local prefix = "<leader>j"
+
 
 -- ======================================== TODO
 map("n", prefix .. "tx", function()
@@ -336,6 +501,9 @@ map("n", prefix .. "fn", function()
   end)
 end, { desc = "Create new file" })
 
+vim.keymap.set("n", prefix .. "ff", file_diff, { desc = "Diff two files (fzf)" })
+vim.keymap.set("n", prefix .. "fd", folder_diff, { desc = "Diff two folders" })
+
 
 map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all and exit Vim" })
 
@@ -452,17 +620,7 @@ map("n", prefix .. "se", function()
   require("scissors").editSnippet()
 end, { desc = "Snippet: Edit" })
 
-local function get_globs_for_filetype(ft)
-  if ft == "typescript" or ft == "typescriptreact" then
-    return { "*.ts", "*.tsx" }
-  elseif ft == "php" then
-    return { "*.php", "*.blade.php", "*.ctp" }
-  elseif ft == "python" then
-    return { "*.py" }
-  else
-    return { "*" }
-  end
-end
+
 
 vim.keymap.set("n", prefix .. "sw", function()
   local ft = vim.bo.filetype
