@@ -454,9 +454,21 @@ local personal_keymaps = {
   { "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>" },
   { "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
   { "U", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
-  { "f1", ':let @+=expand("%:p")<CR>', "Copy file absolute path" },
-  { "f2", ':let @+=expand("%:." )<CR>', "Copy file relative path" },
-  { "f3", ':let @+=expand("%:t")<CR>', "Copy file name" },
+  { "f1", function()
+    local path = vim.fn.expand("%:p")
+    vim.fn.setreg("+", path)
+    vim.notify("Copied absolute path: " .. path, vim.log.levels.INFO)
+    end, "Copy file absolute path" },
+  { "f2", function()
+    local path = vim.fn.expand("%:.")
+    vim.fn.setreg("+", path)
+    vim.notify("Copied relative path: " .. path, vim.log.levels.INFO)
+    end, "Copy file relative path" },
+  { "f3", function()
+    local path = vim.fn.expand("%:t")
+    vim.fn.setreg("+", path)
+    vim.notify("Copied file name: " .. path, vim.log.levels.INFO)
+    end, "Copy file name" },
   { "lh", "<Cmd>checkhealth<CR>", "Check health" },
   { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
   { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
