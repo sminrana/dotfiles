@@ -480,6 +480,23 @@ local personal_keymaps = {
   { "m3", "<Cmd>ObsidianToday<CR>" },
 }
 
+table.insert(personal_keymaps, {
+  "rw",
+  function()
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    for i, line in ipairs(lines) do
+      -- Only remove whitespace inside the line, not leading indentation
+      local indent = line:match("^(%s*)") or ""
+      local content = line:sub(#indent + 1)
+      content = content:gsub("%s+", "")
+      lines[i] = indent .. content
+    end
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+    vim.notify("All inner whitespace removed from buffer (indentation preserved).", vim.log.levels.INFO)
+  end,
+  "Remove all inner whitespace from buffer (preserve indentation)"
+})
+
 for _, keymap in ipairs(personal_keymaps) do
   map("n", prefix .. keymap[1], keymap[2], { noremap = true, silent = true, desc = keymap[3] })
 end
