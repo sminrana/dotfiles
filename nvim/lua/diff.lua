@@ -17,20 +17,46 @@ local function setup_diff_buffer(buf)
 end
 
 -- Helper: open and configure diff view for two files
+
 local function open_diff_view(file1, file2, label1, label2)
   vim.schedule(function()
     local success, err = pcall(function()
       -- open first file in new tab
       vim.cmd("tabnew " .. vim.fn.fnameescape(file1))
+      local tabnr = vim.api.nvim_get_current_tabpage()
       local buf1 = vim.api.nvim_get_current_buf()
       vim.cmd("file " .. vim.fn.fnameescape(label1 or file1))
       setup_diff_buffer(buf1)
+      
+      -- Set statusline for left buffer
+      vim.api.nvim_buf_set_option(buf1, 'statusline', 'DIFF LEFT: %f')
+
+      -- Add virtual text label at the top of left buffer
+      local left_name = vim.fn.fnamemodify(label1 or file1, ':t')
+      vim.api.nvim_buf_clear_namespace(buf1, -1, 0, 1)
+      vim.api.nvim_buf_set_extmark(buf1, vim.api.nvim_create_namespace('DiffLabel'), 0, 0, {
+        virt_text = { { 'LEFT: ' .. left_name, 'Title' } },
+        virt_text_pos = 'overlay',
+        hl_mode = 'combine',
+      })
 
       -- open second file in vertical diff split
       vim.cmd("vert diffsplit " .. vim.fn.fnameescape(file2))
       local buf2 = vim.api.nvim_get_current_buf()
       vim.cmd("file " .. vim.fn.fnameescape(label2 or file2))
       setup_diff_buffer(buf2)
+
+      -- Set statusline for right buffer
+      vim.api.nvim_buf_set_option(buf2, 'statusline', 'DIFF RIGHT: %f')
+
+      -- Add virtual text label at the top of right buffer
+      local right_name = vim.fn.fnamemodify(label2 or file2, ':t')
+      vim.api.nvim_buf_clear_namespace(buf2, -1, 0, 1)
+      vim.api.nvim_buf_set_extmark(buf2, vim.api.nvim_create_namespace('DiffLabel'), 0, 0, {
+        virt_text = { { 'RIGHT: ' .. right_name, 'Title' } },
+        virt_text_pos = 'overlay',
+        hl_mode = 'combine',
+      })
 
       -- Equalize split sizes
       vim.cmd("wincmd =")
@@ -83,9 +109,25 @@ local function open_diff_view(file1, file2, label1, label2)
 
       -- keymaps (scoped to buffers in this tab)
       local opts = { buffer = true }
-      vim.keymap.set('n', prefix .. 'td', toggle_diff_diagnostics, vim.tbl_extend("force", opts, { desc = 'Toggle diff diagnostics' }))
+      vim.keymap.set('n', prefix .. 'dt', toggle_diff_diagnostics, vim.tbl_extend("force", opts, { desc = 'Toggle diff diagnostics' }))
       vim.keymap.set('n', prefix .. 'dg', ':diffget<CR>', vim.tbl_extend("force", opts, { desc = "Diff get (pull from other side)" }))
       vim.keymap.set('n', prefix .. 'dp', ':diffput<CR>', vim.tbl_extend("force", opts, { desc = "Diff put (push to other side)" }))
+      vim.keymap.set('n', prefix .. 'dc', ':q<CR>',  vim.tbl_extend("force", opts, { desc = "Close diff view" }))
+      vim.keymap.set('n', ']c', ']c', vim.tbl_extend("force", opts, { desc = "Next difference" }))
+      vim.keymap.set('n', '[c', '[c', vim.tbl_extend("force", opts, { desc = "Previous difference" }))
+
+      -- Autocmd to close diff buffers when tab is closed
+      local close_group = vim.api.nvim_create_augroup("DiffTabClose" .. tabnr, { clear = true })
+      vim.api.nvim_create_autocmd("TabClosed", {
+        group = close_group,
+        callback = function(args)
+          -- Only act if the closed tab is the one we opened
+          if tonumber(args.file) == tabnr then
+            pcall(vim.api.nvim_buf_delete, buf1, { force = true })
+            pcall(vim.api.nvim_buf_delete, buf2, { force = true })
+          end
+        end,
+      })
 
       vim.notify("Diff opened for: " .. (label1 or file1) .. " <-> " .. (label2 or file2) .. ". Use " .. prefix .. "td to toggle diagnostics.", vim.log.levels.INFO)
     end)
