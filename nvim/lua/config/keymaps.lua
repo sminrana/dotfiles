@@ -186,15 +186,40 @@ local function file_diff()
               local abs_second = vim.fn.fnamemodify(second_file, ":p")
               
               vim.schedule(function()
-                local success, err = pcall(function()
+                 local success, err = pcall(function()
+                 -- Helper to configure buffer options for diff
+                  local function setup_diff_buffer(buf)
+                    vim.api.nvim_buf_set_option(buf, 'diff', true)
+                    vim.api.nvim_buf_set_option(buf, 'list', true)
+                    vim.api.nvim_buf_set_option(buf, 'cursorline', true)
+                    vim.api.nvim_buf_set_option(buf, 'number', true)          -- absolute numbers
+                    vim.api.nvim_buf_set_option(buf, 'relativenumber', false) -- no relative numbers
+                    vim.api.nvim_buf_set_option(buf, 'filetype', vim.bo.filetype)
+                    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+                    vim.api.nvim_buf_set_option(buf, 'buftype', '')
+                    vim.api.nvim_buf_set_option(buf, 'listchars', "tab:»·,trail:·,extends:>,precedes:<,nbsp:␣")
+                    -- remove diagonal filler lines
+                    vim.api.nvim_buf_set_option(buf, 'fillchars', "diff: ")
+                  end
+
+                  -- Open first file in new tab
                   vim.cmd("tabnew " .. vim.fn.fnameescape(abs_first))
-                  vim.cmd("vert diffsplit " .. vim.fn.fnameescape(abs_second))
-                  
-                  -- Get both buffer numbers for this diff
                   local buf1 = vim.api.nvim_get_current_buf()
-                  vim.cmd("wincmd w")
+                  vim.cmd("file " .. vim.fn.fnameescape(abs_first))
+                  setup_diff_buffer(buf1)
+
+                  -- Open second file in vertical diff split
+                  vim.cmd("vert diffsplit " .. vim.fn.fnameescape(abs_second))
                   local buf2 = vim.api.nvim_get_current_buf()
-                  vim.cmd("wincmd w")
+                  vim.cmd("file " .. vim.fn.fnameescape(abs_second))
+                  setup_diff_buffer(buf2)
+
+                  -- Resize splits for better visibility
+                  vim.cmd("wincmd =")
+
+                  -- Style whitespace in dark gray
+                  vim.cmd("highlight! SpecialKey guifg=#555555 ctermfg=240") -- invisible chars
+                  vim.cmd("highlight! NonText guifg=#555555 ctermfg=240")    -- extra EOL chars
                   
                   -- Disable diagnostics initially
                   vim.diagnostic.disable(buf1)
