@@ -177,13 +177,40 @@ local function folder_diff()
         table.insert(items, pair[1] .. " <-> " .. pair[2])
       end
 
-      vim.ui.select(items, { prompt = "Select file pair to diff:" }, function(choice, idx)
+      -- Use vim.ui.select, but for large lists, prefer fzf-lua if available
+      local function select_pair(callback)
+        local ok, fzf = pcall(require, "fzf-lua")
+        if ok then
+          fzf.fzf_exec(items, {
+        prompt = "Select file pair to diff: ",
+        actions = {
+          ["default"] = function(selected)
+            if not selected or #selected == 0 then return end
+            -- Find index in items
+            local idx
+            for i, v in ipairs(items) do
+          if v == selected[1] then idx = i break end
+            end
+            if not idx then return end
+            callback(diffs[idx], idx)
+          end,
+        },
+          })
+        else
+          vim.ui.select(items, { prompt = "Select file pair to diff:" }, function(choice, idx)
         if not choice or not idx then return end
-        local pair = diffs[idx]
+        callback(diffs[idx], idx)
+          end)
+        end
+      end
+
+      select_pair(function(pair, idx)
         if not pair then return end
         -- Open diff in new tab
         vim.cmd("tabnew " .. vim.fn.fnameescape(pair[1]))
+        local buf1 = vim.api.nvim_get_current_buf()
         vim.cmd("vert diffsplit " .. vim.fn.fnameescape(pair[2]))
+        local buf2 = vim.api.nvim_get_current_buf()
 
         -- Equalize split sizes
         vim.cmd("wincmd =")
@@ -197,12 +224,11 @@ local function folder_diff()
         vim.cmd("highlight! ExtraWhitespace guibg=#553333 ctermbg=52")
         vim.fn.matchadd("ExtraWhitespace", "\\s\\+$")
 
-          -- Improved diff highlighting for better visibility
+        -- Improved diff highlighting for better visibility
         vim.cmd("highlight DiffAdd    guifg=#00ff5f guibg=NONE gui=bold,underline ctermfg=46 ctermbg=NONE cterm=bold,underline")
         vim.cmd("highlight DiffChange guifg=#ff00ff guibg=NONE gui=bold,italic    ctermfg=201 ctermbg=NONE cterm=bold,italic")
         vim.cmd("highlight DiffDelete guifg=#ff005f guibg=NONE gui=bold           ctermfg=197 ctermbg=NONE cterm=bold")
         vim.cmd("highlight DiffText   guifg=#00dfff guibg=NONE gui=bold,italic    ctermfg=45  ctermbg=NONE cterm=bold,italic")
-
 
         -- Sync scrolling in Lua
         vim.api.nvim_create_augroup("DiffSyncScroll", { clear = true })
