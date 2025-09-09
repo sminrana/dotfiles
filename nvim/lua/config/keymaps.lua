@@ -309,6 +309,7 @@ local personal_keymaps = {
   { "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>" },
   { "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
   { "U", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
+  { "W", "<cmd>wa<cr>", "Save all buffers" },
   { "f1", function()
     local path = vim.fn.expand("%:p")
     vim.fn.setreg("+", path)
