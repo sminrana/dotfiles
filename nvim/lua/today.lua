@@ -10,6 +10,7 @@ local function insert_today()
   local template = string.format([[
 ## %s
 
+
 ✅ 3 MIT (Most Important Tasks)
 - [ ] 
 - [ ] 
@@ -57,6 +58,7 @@ local function insert_week()
   local template = string.format([[
 %s
 
+
 ## 🎯 Focus
 - Main focus for the week
 
@@ -94,6 +96,5 @@ local function insert_week()
   vim.cmd("edit " .. weekly_file)
   vim.cmd("/" .. header)
 end
-
 
 vim.api.nvim_create_user_command("Week", insert_week, {})
