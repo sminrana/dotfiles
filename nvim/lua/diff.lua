@@ -51,6 +51,12 @@ local function file_diff()
         vim.cmd("highlight! ExtraWhitespace guibg=#553333 ctermbg=52")
         vim.fn.matchadd("ExtraWhitespace", "\\s\\+$")
 
+        -- Improved diff highlighting for better visibility
+        vim.cmd("highlight DiffAdd    guifg=#00ff5f guibg=NONE gui=bold,underline ctermfg=46 ctermbg=NONE cterm=bold,underline")
+        vim.cmd("highlight DiffChange guifg=#ff00ff guibg=NONE gui=bold,italic    ctermfg=201 ctermbg=NONE cterm=bold,italic")
+        vim.cmd("highlight DiffDelete guifg=#ff005f guibg=NONE gui=bold           ctermfg=197 ctermbg=NONE cterm=bold")
+        vim.cmd("highlight DiffText   guifg=#00dfff guibg=NONE gui=bold,italic    ctermfg=45  ctermbg=NONE cterm=bold,italic")
+
         -- Sync scrolling in Lua
         vim.api.nvim_create_augroup("DiffSyncScroll", { clear = true })
         vim.api.nvim_create_autocmd("WinScrolled", {
@@ -190,6 +196,13 @@ local function folder_diff()
         vim.cmd("highlight! NonText guifg=#555555 ctermfg=240")
         vim.cmd("highlight! ExtraWhitespace guibg=#553333 ctermbg=52")
         vim.fn.matchadd("ExtraWhitespace", "\\s\\+$")
+
+          -- Improved diff highlighting for better visibility
+        vim.cmd("highlight DiffAdd    guifg=#00ff5f guibg=NONE gui=bold,underline ctermfg=46 ctermbg=NONE cterm=bold,underline")
+        vim.cmd("highlight DiffChange guifg=#ff00ff guibg=NONE gui=bold,italic    ctermfg=201 ctermbg=NONE cterm=bold,italic")
+        vim.cmd("highlight DiffDelete guifg=#ff005f guibg=NONE gui=bold           ctermfg=197 ctermbg=NONE cterm=bold")
+        vim.cmd("highlight DiffText   guifg=#00dfff guibg=NONE gui=bold,italic    ctermfg=45  ctermbg=NONE cterm=bold,italic")
+
 
         -- Sync scrolling in Lua
         vim.api.nvim_create_augroup("DiffSyncScroll", { clear = true })
