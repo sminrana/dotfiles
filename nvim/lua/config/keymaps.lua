@@ -133,13 +133,13 @@ end
 
 local function get_globs_for_filetype(ft)
   if ft == "typescript" or ft == "typescriptreact" then
-    return { "*.ts", "*.tsx" }
+    return { "*.ts", "*.tsx", "*.svelte" }
   elseif ft == "php" then
     return { "*.php", "*.blade.php", "*.ctp" }
   elseif ft == "python" then
     return { "*.py" }
   elseif ft == "javascript" then
-    return { "*.js", "*.jsx" }
+    return { "*.js", "*.jsx",  "*.svelte" }
   else
     return { "*" }
   end
