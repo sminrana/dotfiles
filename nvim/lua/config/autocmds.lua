@@ -72,6 +72,24 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Insert '- [ ] ' on the next line in markdown if the current line starts with '- [ ]'
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  group = vim.api.nvim_create_augroup("MarkdownAutoCheckbox", { clear = true }),
+  callback = function(args)
+    vim.keymap.set("i", "<CR>", function()
+      local prev = vim.api.nvim_get_current_line()
+      local indent, box = prev:match("^(%s*)(%- %[ %])")
+      if indent and box then
+        -- Insert newline, indent, and '- [ ] ', then place cursor after the space
+        return "<CR>" .. indent .. "- [ ] " 
+      else
+        return "<CR>"
+      end
+    end, { buffer = args.buf, expr = true, desc = "Auto '- [ ] ' after lines that start with '- [ ]'" })
+  end,
+})
+
 -- Highlight trailing whitespace
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "*",
