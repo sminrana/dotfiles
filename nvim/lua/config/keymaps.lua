@@ -1,4 +1,3 @@
-
 -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
 
@@ -51,7 +50,6 @@ local function do_upload(finalFile)
 end
 
 local function upload_to_s3(file)
-
   if file:match("%.mov$") then
     local mp4_file = file:gsub("%.mov$", ".mp4")
     local ffmpeg_cmd = { "ffmpeg", "-y", "-i", file, "-vcodec", "libx264", "-acodec", "aac", mp4_file }
@@ -139,7 +137,7 @@ local function get_globs_for_filetype(ft)
   elseif ft == "python" then
     return { "*.py" }
   elseif ft == "javascript" then
-    return { "*.js", "*.jsx",  "*.svelte" }
+    return { "*.js", "*.jsx", "*.svelte" }
   else
     return { "*" }
   end
@@ -147,7 +145,6 @@ end
 
 vim.keymap.set("n", prefix .. "df", ":FileDiff<CR>", { desc = "Diff two files (fzf)" })
 vim.keymap.set("n", prefix .. "dd", ":FolderDiff<CR>", { desc = "Diff two folders" })
-
 
 -- General keymaps
 map("n", "q", "<nop>", { noremap = true })
@@ -160,7 +157,6 @@ map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
 map("n", "<leader>be", "<Cmd>Neotree buffers float<CR>")
 
 -- ===============================Personal keymaps===================================
-
 
 -- ======================================== TODO
 map("n", prefix .. "tx", function()
@@ -246,7 +242,6 @@ vim.keymap.set("n", prefix .. "tw", ":Week<CR>", { desc = "Insert This Week's Pl
 
 -- end of todo
 
-
 -- =========================================== Markdown
 vim.keymap.set("n", prefix .. "m4", function()
   local line = vim.api.nvim_get_current_line()
@@ -273,7 +268,6 @@ vim.keymap.set("n", prefix .. "m7", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
-
 
 -- FZF keymaps
 map("n", prefix .. "fa", function()
@@ -310,21 +304,33 @@ local personal_keymaps = {
   { "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
   { "U", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
   { "W", "<cmd>wa<cr>", "Save all buffers" },
-  { "f1", function()
-    local path = vim.fn.expand("%:p")
-    vim.fn.setreg("+", path)
-    vim.notify("Copied absolute path: " .. path, vim.log.levels.INFO)
-    end, "Copy file absolute path" },
-  { "f2", function()
-    local path = vim.fn.expand("%:.")
-    vim.fn.setreg("+", path)
-    vim.notify("Copied relative path: " .. path, vim.log.levels.INFO)
-    end, "Copy file relative path" },
-  { "f3", function()
-    local path = vim.fn.expand("%:t")
-    vim.fn.setreg("+", path)
-    vim.notify("Copied file name: " .. path, vim.log.levels.INFO)
-    end, "Copy file name" },
+  {
+    "f1",
+    function()
+      local path = vim.fn.expand("%:p")
+      vim.fn.setreg("+", path)
+      vim.notify("Copied absolute path: " .. path, vim.log.levels.INFO)
+    end,
+    "Copy file absolute path",
+  },
+  {
+    "f2",
+    function()
+      local path = vim.fn.expand("%:.")
+      vim.fn.setreg("+", path)
+      vim.notify("Copied relative path: " .. path, vim.log.levels.INFO)
+    end,
+    "Copy file relative path",
+  },
+  {
+    "f3",
+    function()
+      local path = vim.fn.expand("%:t")
+      vim.fn.setreg("+", path)
+      vim.notify("Copied file name: " .. path, vim.log.levels.INFO)
+    end,
+    "Copy file name",
+  },
   { "lh", "<Cmd>checkhealth<CR>", "Check health" },
   { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
   { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
@@ -350,13 +356,12 @@ table.insert(personal_keymaps, {
     vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
     vim.notify("All inner whitespace removed from buffer (indentation preserved).", vim.log.levels.INFO)
   end,
-  "Remove all inner whitespace from buffer (preserve indentation)"
+  "Remove all inner whitespace from buffer (preserve indentation)",
 })
 
 for _, keymap in ipairs(personal_keymaps) do
   map("n", prefix .. keymap[1], keymap[2], { noremap = true, silent = true, desc = keymap[3] })
 end
-
 
 -- Open File
 map("n", prefix .. "fo", function()
@@ -387,7 +392,6 @@ map("n", prefix .. "fn", function()
   end)
 end, { desc = "Create new file" })
 
-
 map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all and exit Vim" })
 
 -- Open Search and Replace
@@ -407,7 +411,7 @@ map("n", prefix .. "rc", function()
       vim.notify("No pattern entered.", vim.log.levels.WARN)
       return
     end
-    vim.cmd("cfdo %s/" .. input .. ' | update')
+    vim.cmd("cfdo %s/" .. input .. " | update")
   end)
 end, { desc = "cfdo :%s substitution (all quickfix files)" })
 
@@ -417,7 +421,7 @@ map("n", prefix .. "rd", function()
       vim.notify("No pattern entered.", vim.log.levels.WARN)
       return
     end
-    vim.cmd("cdo s/" .. input .. ' | update')
+    vim.cmd("cdo s/" .. input .. " | update")
   end)
 end, { desc = "cdo :%s substitution (all quickfix matches/lines)" })
 
@@ -427,7 +431,7 @@ map("n", prefix .. "ra", function()
       vim.notify("No pattern entered.", vim.log.levels.WARN)
       return
     end
-    vim.cmd("argdo %s/" .. input .. ' | update')
+    vim.cmd("argdo %s/" .. input .. " | update")
   end)
 end, { desc = "argdo :%s substitution" })
 
@@ -445,7 +449,6 @@ map("v", prefix .. "rm", function()
   end
 end, { desc = "Remove - and + from beginning of selected lines" })
 
-
 table.insert(personal_keymaps, {
   "rw",
   function()
@@ -460,9 +463,8 @@ table.insert(personal_keymaps, {
     vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
     vim.notify("All inner whitespace removed from buffer (indentation preserved).", vim.log.levels.INFO)
   end,
-  "Remove all inner whitespace from buffer (preserve indentation)"
+  "Remove all inner whitespace from buffer (preserve indentation)",
 })
-
 
 -- Copy LSP error
 map("n", prefix .. "E", function()
@@ -512,7 +514,6 @@ map("n", prefix .. "E", function()
   vim.notify("Copied LSP error(s) to clipboard.", vim.log.levels.INFO)
 end, { desc = "Copy LSP error(s) on line or code block" })
 
-
 -- Snippet keymaps
 map({ "n", "x" }, prefix .. "sa", function()
   require("scissors").addNewSnippet()
@@ -521,8 +522,6 @@ end, { desc = "Snippet: Add" })
 map("n", prefix .. "se", function()
   require("scissors").editSnippet()
 end, { desc = "Snippet: Edit" })
-
-
 
 vim.keymap.set("n", prefix .. "sw", function()
   local ft = vim.bo.filetype
@@ -563,7 +562,6 @@ vim.keymap.set("n", prefix .. "si", function()
     vim.cmd("copen")
   end)
 end, { noremap = true, silent = true, desc = "Input search term for project files" })
-
 
 -- Yazi keymaps
 local yazi_keymaps = {

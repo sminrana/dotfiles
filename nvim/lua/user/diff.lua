@@ -1,19 +1,18 @@
 local prefix = "<leader>j"
 
-
 -- Helper: setup buffer for diff view
 local function setup_diff_buffer(buf)
-  vim.api.nvim_buf_set_option(buf, 'diff', true)
-  vim.api.nvim_buf_set_option(buf, 'list', true)
-  vim.api.nvim_buf_set_option(buf, 'cursorline', true)
-  vim.api.nvim_buf_set_option(buf, 'number', true)
-  vim.api.nvim_buf_set_option(buf, 'relativenumber', false)
-  vim.api.nvim_buf_set_option(buf, 'filetype', vim.bo.filetype)
-  vim.api.nvim_buf_set_option(buf, 'modifiable', true)
-  vim.api.nvim_buf_set_option(buf, 'buftype', '')
-  vim.api.nvim_buf_set_option(buf, 'listchars', "tab:»·,trail:·,extends:>,precedes:<,nbsp:␣")
-  vim.api.nvim_buf_set_option(buf, 'fillchars', "diff: ")
-  vim.api.nvim_buf_set_option(buf, 'foldmethod', 'diff')
+  vim.api.nvim_buf_set_option(buf, "diff", true)
+  vim.api.nvim_buf_set_option(buf, "list", true)
+  vim.api.nvim_buf_set_option(buf, "cursorline", true)
+  vim.api.nvim_buf_set_option(buf, "number", true)
+  vim.api.nvim_buf_set_option(buf, "relativenumber", false)
+  vim.api.nvim_buf_set_option(buf, "filetype", vim.bo.filetype)
+  vim.api.nvim_buf_set_option(buf, "modifiable", true)
+  vim.api.nvim_buf_set_option(buf, "buftype", "")
+  vim.api.nvim_buf_set_option(buf, "listchars", "tab:»·,trail:·,extends:>,precedes:<,nbsp:␣")
+  vim.api.nvim_buf_set_option(buf, "fillchars", "diff: ")
+  vim.api.nvim_buf_set_option(buf, "foldmethod", "diff")
 end
 
 -- Helper: open and configure diff view for two files
@@ -27,17 +26,17 @@ local function open_diff_view(file1, file2, label1, label2)
       local buf1 = vim.api.nvim_get_current_buf()
       vim.cmd("file " .. vim.fn.fnameescape(label1 or file1))
       setup_diff_buffer(buf1)
-      
+
       -- Set statusline for left buffer
-      vim.api.nvim_buf_set_option(buf1, 'statusline', 'DIFF LEFT: %f')
+      vim.api.nvim_buf_set_option(buf1, "statusline", "DIFF LEFT: %f")
 
       -- Add virtual text label at the top of left buffer
-      local left_name = vim.fn.fnamemodify(label1 or file1, ':t')
+      local left_name = vim.fn.fnamemodify(label1 or file1, ":t")
       vim.api.nvim_buf_clear_namespace(buf1, -1, 0, 1)
-      vim.api.nvim_buf_set_extmark(buf1, vim.api.nvim_create_namespace('DiffLabel'), 0, 0, {
-        virt_text = { { 'LEFT: ' .. left_name, 'Title' } },
-        virt_text_pos = 'overlay',
-        hl_mode = 'combine',
+      vim.api.nvim_buf_set_extmark(buf1, vim.api.nvim_create_namespace("DiffLabel"), 0, 0, {
+        virt_text = { { "LEFT: " .. left_name, "Title" } },
+        virt_text_pos = "overlay",
+        hl_mode = "combine",
       })
 
       -- open second file in vertical diff split
@@ -47,15 +46,15 @@ local function open_diff_view(file1, file2, label1, label2)
       setup_diff_buffer(buf2)
 
       -- Set statusline for right buffer
-      vim.api.nvim_buf_set_option(buf2, 'statusline', 'DIFF RIGHT: %f')
+      vim.api.nvim_buf_set_option(buf2, "statusline", "DIFF RIGHT: %f")
 
       -- Add virtual text label at the top of right buffer
-      local right_name = vim.fn.fnamemodify(label2 or file2, ':t')
+      local right_name = vim.fn.fnamemodify(label2 or file2, ":t")
       vim.api.nvim_buf_clear_namespace(buf2, -1, 0, 1)
-      vim.api.nvim_buf_set_extmark(buf2, vim.api.nvim_create_namespace('DiffLabel'), 0, 0, {
-        virt_text = { { 'RIGHT: ' .. right_name, 'Title' } },
-        virt_text_pos = 'overlay',
-        hl_mode = 'combine',
+      vim.api.nvim_buf_set_extmark(buf2, vim.api.nvim_create_namespace("DiffLabel"), 0, 0, {
+        virt_text = { { "RIGHT: " .. right_name, "Title" } },
+        virt_text_pos = "overlay",
+        hl_mode = "combine",
       })
 
       -- Equalize split sizes
@@ -71,10 +70,16 @@ local function open_diff_view(file1, file2, label1, label2)
       vim.fn.matchadd("ExtraWhitespace", "\\s\\+$")
 
       -- Improved diff highlighting for better visibility
-      vim.cmd("highlight DiffAdd    guifg=#00ff5f guibg=NONE gui=bold,underline ctermfg=46 ctermbg=NONE cterm=bold,underline")
-      vim.cmd("highlight DiffChange guifg=#ff00ff guibg=NONE gui=bold,italic    ctermfg=201 ctermbg=NONE cterm=bold,italic")
+      vim.cmd(
+        "highlight DiffAdd    guifg=#00ff5f guibg=NONE gui=bold,underline ctermfg=46 ctermbg=NONE cterm=bold,underline"
+      )
+      vim.cmd(
+        "highlight DiffChange guifg=#ff00ff guibg=NONE gui=bold,italic    ctermfg=201 ctermbg=NONE cterm=bold,italic"
+      )
       vim.cmd("highlight DiffDelete guifg=#ff005f guibg=NONE gui=bold           ctermfg=197 ctermbg=NONE cterm=bold")
-      vim.cmd("highlight DiffText   guifg=#00dfff guibg=NONE gui=bold,italic    ctermfg=45  ctermbg=NONE cterm=bold,italic")
+      vim.cmd(
+        "highlight DiffText   guifg=#00dfff guibg=NONE gui=bold,italic    ctermfg=45  ctermbg=NONE cterm=bold,italic"
+      )
 
       -- Sync scrolling in Lua
       vim.api.nvim_create_augroup("DiffSyncScroll", { clear = true })
@@ -109,12 +114,27 @@ local function open_diff_view(file1, file2, label1, label2)
 
       -- keymaps (scoped to buffers in this tab)
       local opts = { buffer = true }
-      vim.keymap.set('n', prefix .. 'dt', toggle_diff_diagnostics, vim.tbl_extend("force", opts, { desc = 'Toggle diff diagnostics' }))
-      vim.keymap.set('n', prefix .. 'dg', ':diffget<CR>', vim.tbl_extend("force", opts, { desc = "Diff get (pull from other side)" }))
-      vim.keymap.set('n', prefix .. 'dp', ':diffput<CR>', vim.tbl_extend("force", opts, { desc = "Diff put (push to other side)" }))
-      vim.keymap.set('n', prefix .. 'dc', ':q<CR>',  vim.tbl_extend("force", opts, { desc = "Close diff view" }))
-      vim.keymap.set('n', ']c', ']c', vim.tbl_extend("force", opts, { desc = "Next difference" }))
-      vim.keymap.set('n', '[c', '[c', vim.tbl_extend("force", opts, { desc = "Previous difference" }))
+      vim.keymap.set(
+        "n",
+        prefix .. "dt",
+        toggle_diff_diagnostics,
+        vim.tbl_extend("force", opts, { desc = "Toggle diff diagnostics" })
+      )
+      vim.keymap.set(
+        "n",
+        prefix .. "dg",
+        ":diffget<CR>",
+        vim.tbl_extend("force", opts, { desc = "Diff get (pull from other side)" })
+      )
+      vim.keymap.set(
+        "n",
+        prefix .. "dp",
+        ":diffput<CR>",
+        vim.tbl_extend("force", opts, { desc = "Diff put (push to other side)" })
+      )
+      vim.keymap.set("n", prefix .. "dc", ":q<CR>", vim.tbl_extend("force", opts, { desc = "Close diff view" }))
+      vim.keymap.set("n", "]c", "]c", vim.tbl_extend("force", opts, { desc = "Next difference" }))
+      vim.keymap.set("n", "[c", "[c", vim.tbl_extend("force", opts, { desc = "Previous difference" }))
 
       -- Autocmd to close diff buffers when tab is closed
       local close_group = vim.api.nvim_create_augroup("DiffTabClose" .. tabnr, { clear = true })
@@ -129,7 +149,16 @@ local function open_diff_view(file1, file2, label1, label2)
         end,
       })
 
-      vim.notify("Diff opened for: " .. (label1 or file1) .. " <-> " .. (label2 or file2) .. ". Use " .. prefix .. "td to toggle diagnostics.", vim.log.levels.INFO)
+      vim.notify(
+        "Diff opened for: "
+          .. (label1 or file1)
+          .. " <-> "
+          .. (label2 or file2)
+          .. ". Use "
+          .. prefix
+          .. "td to toggle diagnostics.",
+        vim.log.levels.INFO
+      )
     end)
     if not success then
       vim.notify("Error: " .. tostring(err), vim.log.levels.ERROR)
@@ -196,19 +225,28 @@ local function file_diff_input()
   end)
 end
 
-
 vim.api.nvim_create_user_command("FileDiffInput", file_diff_input, {})
-
 
 local function folder_diff()
   vim.ui.input({ prompt = "First folder: " }, function(first)
-    if not first or first == "" then return end
+    if not first or first == "" then
+      return
+    end
     vim.ui.input({ prompt = "Second folder: " }, function(second)
-      if not second or second == "" then return end
+      if not second or second == "" then
+        return
+      end
 
       -- Exclude hidden dirs, .git, node_modules, vendor, python packages
-      local exclude = [[--exclude='.*' --exclude='.git' --exclude='node_modules' --exclude='vendor' --exclude='__pycache__' --exclude='*.egg-info' --exclude='env' --exclude='venv']]
-      local cmd = "diff -qr " .. exclude .. " " .. vim.fn.shellescape(first) .. " " .. vim.fn.shellescape(second) .. " 2>&1"
+      local exclude =
+        [[--exclude='.*' --exclude='.git' --exclude='node_modules' --exclude='vendor' --exclude='__pycache__' --exclude='*.egg-info' --exclude='env' --exclude='venv']]
+      local cmd = "diff -qr "
+        .. exclude
+        .. " "
+        .. vim.fn.shellescape(first)
+        .. " "
+        .. vim.fn.shellescape(second)
+        .. " 2>&1"
       local handle = io.popen(cmd)
       if not handle then
         vim.notify("Failed to run diff.", vim.log.levels.ERROR)
@@ -243,31 +281,41 @@ local function folder_diff()
             prompt = "Select file pair to diff: ",
             actions = {
               ["default"] = function(selected)
-                if not selected or #selected == 0 then return end
+                if not selected or #selected == 0 then
+                  return
+                end
                 local idx
                 for i, v in ipairs(items) do
-                  if v == selected[1] then idx = i break end
+                  if v == selected[1] then
+                    idx = i
+                    break
+                  end
                 end
-                if not idx then return end
+                if not idx then
+                  return
+                end
                 callback(diffs[idx], idx)
               end,
             },
           })
         else
           vim.ui.select(items, { prompt = "Select file pair to diff:" }, function(choice, idx)
-            if not choice or not idx then return end
+            if not choice or not idx then
+              return
+            end
             callback(diffs[idx], idx)
           end)
         end
       end
 
       select_pair(function(pair, idx)
-        if not pair then return end
+        if not pair then
+          return
+        end
         open_diff_view(pair[1], pair[2], pair[1], pair[2])
       end)
     end)
   end)
 end
-
 
 vim.api.nvim_create_user_command("FolderDiff", folder_diff, {})

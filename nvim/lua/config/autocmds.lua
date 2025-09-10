@@ -43,7 +43,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 -- Auto save on focus lost
 vim.api.nvim_create_autocmd("FocusLost", {
   pattern = "*",
-  command = "silent! wa"
+  command = "silent! wa",
 })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
@@ -82,7 +82,7 @@ vim.api.nvim_create_autocmd("FileType", {
       local indent, box = prev:match("^(%s*)(%- %[ %])")
       if indent and box then
         -- Insert newline, indent, and '- [ ] ', then place cursor after the space
-        return "<CR>" .. indent .. "- [ ] " 
+        return "<CR>" .. indent .. "- [ ] "
       else
         return "<CR>"
       end
@@ -94,7 +94,7 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "*",
   callback = function(args)
-    vim.cmd [[match ErrorMsg /\s\+$/]]
+    vim.cmd([[match ErrorMsg /\s\+$/]])
   end,
 })
 
@@ -102,7 +102,7 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*",
   callback = function()
-    vim.cmd [[silent! %s#\($\n\s*\)\+\%$##]]
+    vim.cmd([[silent! %s#\($\n\s*\)\+\%$##]])
   end,
 })
 
@@ -132,4 +132,3 @@ vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     vim.opt.relativenumber = true
   end,
 })
-

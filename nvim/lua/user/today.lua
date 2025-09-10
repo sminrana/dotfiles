@@ -7,18 +7,21 @@ local weekly_file = notes_dir .. "weekly.md"
 -- :Today command
 local function insert_today()
   local today = os.date("%Y-%m-%d")
-  local template = string.format([[
+  local template = string.format(
+    [[
 ## %s
 
 
 ✅ 3 MIT (Most Important Tasks)
-- [ ] 
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
+- [ ]
 
 🪶 Notes
 -
-]], today)
+]],
+    today
+  )
 
   local lines = {}
   if vim.fn.filereadable(daily_file) == 1 then
@@ -45,7 +48,6 @@ local function insert_today()
   vim.cmd("/" .. today_header)
 end
 
-
 vim.api.nvim_create_user_command("Today", insert_today, {})
 
 -- :Week command
@@ -55,7 +57,8 @@ local function insert_week()
   local year = os.date("%Y")
   local header = string.format("# 📅 Week %s (%s)", week, year)
 
-  local template = string.format([[
+  local template = string.format(
+    [[
 %s
 
 
@@ -63,13 +66,15 @@ local function insert_week()
 - Main focus for the week
 
 ## ✅ Tasks
-- [ ] 
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
+- [ ]
 
 ## 📝 Notes
 -
-]], header)
+]],
+    header
+  )
 
   local lines = {}
   if vim.fn.filereadable(weekly_file) == 1 then
