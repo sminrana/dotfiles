@@ -41,7 +41,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 })
 
 -- Auto save on focus lost
-vim.api.nvim_create_autocmd("FocusLost", {
+vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave" }, {
   pattern = "*",
   command = "silent! wa",
 })
