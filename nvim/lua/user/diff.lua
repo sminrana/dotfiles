@@ -96,6 +96,23 @@ local function open_diff_view(file1, file2, label1, label2)
       vim.diagnostic.disable(buf1)
       vim.diagnostic.disable(buf2)
 
+      -- ensure diagnostics stay disabled when LSP attaches
+      local diag_group = vim.api.nvim_create_augroup("DiffDiagnostics" .. tabnr, { clear = true })
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = diag_group,
+        buffer = buf1,
+        callback = function()
+          vim.diagnostic.disable(buf1)
+        end,
+      })
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = diag_group,
+        buffer = buf2,
+        callback = function()
+          vim.diagnostic.disable(buf2)
+        end,
+      })
+
       -- toggle diagnostics function
       local diagnostics_enabled = false
       local function toggle_diff_diagnostics()
