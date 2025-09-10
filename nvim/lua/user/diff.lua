@@ -187,8 +187,9 @@ local function folder_diff()
     vim.ui.input({ prompt = "Second folder: " }, function(second)
       if not second or second == "" then return end
 
-      -- Merge STDERR to STDOUT
-      local cmd = "diff -qr " .. vim.fn.shellescape(first) .. " " .. vim.fn.shellescape(second) .. " 2>&1"
+      -- Exclude hidden dirs, .git, node_modules, vendor, python packages
+      local exclude = [[--exclude='.*' --exclude='.git' --exclude='node_modules' --exclude='vendor' --exclude='__pycache__' --exclude='*.egg-info' --exclude='env' --exclude='venv']]
+      local cmd = "diff -qr " .. exclude .. " " .. vim.fn.shellescape(first) .. " " .. vim.fn.shellescape(second) .. " 2>&1"
       local handle = io.popen(cmd)
       if not handle then
         vim.notify("Failed to run diff.", vim.log.levels.ERROR)
