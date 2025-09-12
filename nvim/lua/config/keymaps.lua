@@ -143,9 +143,6 @@ local function get_globs_for_filetype(ft)
   end
 end
 
-vim.keymap.set("n", prefix .. "df", ":FileDiff<CR>", { desc = "Diff two files (fzf)" })
-vim.keymap.set("n", prefix .. "dd", ":FolderDiff<CR>", { desc = "Diff two folders" })
-
 -- General keymaps
 map("n", "q", "<nop>", { noremap = true })
 map("n", "Q", "q", { noremap = true, desc = "Record macro" })

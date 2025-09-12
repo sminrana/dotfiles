@@ -223,7 +223,7 @@ local function file_diff()
   })
 end
 
-vim.api.nvim_create_user_command("FileDiff", file_diff, {})
+--- vim.api.nvim_create_user_command("FileDiff", file_diff, {})
 
 -- New function: prompt for absolute paths for both files
 local function file_diff_input()
@@ -242,7 +242,7 @@ local function file_diff_input()
   end)
 end
 
-vim.api.nvim_create_user_command("FileDiffInput", file_diff_input, {})
+-- vim.api.nvim_create_user_command("FileDiffInput", file_diff_input, {})
 
 local function folder_diff()
   vim.ui.input({ prompt = "First folder: " }, function(first)
@@ -335,4 +335,4 @@ local function folder_diff()
   end)
 end
 
-vim.api.nvim_create_user_command("FolderDiff", folder_diff, {})
+-- vim.api.nvim_create_user_command("FolderDiff", folder_diff, {})
