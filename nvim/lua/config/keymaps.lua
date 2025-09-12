@@ -337,6 +337,7 @@ local personal_keymaps = {
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "ls", "<cmd>Lazy sync<CR>", "Lazy sync" },
+  { "lf", "<cmd>FzfLua<CR>", "FzfLua" },
   { "m1", "<Cmd>MarkdownPreview<CR>" },
   { "m2", "<Cmd>ObsidianNew<CR>" },
   { "m3", "<Cmd>ObsidianToday<CR>" },
