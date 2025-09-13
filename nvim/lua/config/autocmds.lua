@@ -132,3 +132,24 @@ vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     vim.opt.relativenumber = true
   end,
 })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  callback = function(event)
+    local dir = vim.fn.fnamemodify(event.match, ":p:h")
+    if vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, "p")
+    end
+  end,
+  desc = "Auto-create parent dirs on save"
+})
+
+-- Auto trim trailing newline at EOF (single newline only)
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  callback = function()
+    local lastline = vim.fn.getline("$")
+    if lastline == "" then
+      vim.cmd([[%s/\%$/\r/e]])
+    end
+  end,
+})
