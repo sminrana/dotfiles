@@ -153,3 +153,27 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     end
   end,
 })
+
+-- List of buffer and quick switch using <leader>1..9
+vim.api.nvim_create_autocmd("BufAdd", {
+  callback = function()
+    -- Clear old mappings first
+    for i = 1, 9 do
+      pcall(vim.keymap.del, "n", "<leader>" .. i)
+    end
+
+    -- Get all listed buffers
+    local bufs = vim.fn.getbufinfo({ buflisted = 1 })
+    for i, buf in ipairs(bufs) do
+      if i <= 9 then
+        local id = buf.bufnr
+        local name = vim.fn.fnamemodify(buf.name, ":t")
+        vim.keymap.set("n", "<leader>" .. i, function()
+          vim.cmd("buffer " .. id)
+        end, {
+          desc = "Go " .. id .. (name ~= "" and (": " .. name) or ""),
+        })
+      end
+    end
+  end,
+})
