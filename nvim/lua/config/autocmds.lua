@@ -140,7 +140,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
       vim.fn.mkdir(dir, "p")
     end
   end,
-  desc = "Auto-create parent dirs on save"
+  desc = "Auto-create parent dirs on save",
 })
 
 -- Auto trim trailing newline at EOF (single newline only)
@@ -154,26 +154,31 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
--- List of buffer and quick switch using <leader>1..9
-vim.api.nvim_create_autocmd("BufAdd", {
-  callback = function()
-    -- Clear old mappings first
-    for i = 1, 9 do
-      pcall(vim.keymap.del, "n", "<leader>" .. i)
-    end
+-- Auto-assign <leader>1..9 to listed buffers
+local function setup_buffer_mappings()
+  -- Clear old mappings
+  for i = 1, 9 do
+    pcall(vim.keymap.del, "n", "<leader>" .. i)
+  end
 
-    -- Get all listed buffers
-    local bufs = vim.fn.getbufinfo({ buflisted = 1 })
-    for i, buf in ipairs(bufs) do
-      if i <= 9 then
-        local id = buf.bufnr
-        local name = vim.fn.fnamemodify(buf.name, ":t")
-        vim.keymap.set("n", "<leader>" .. i, function()
-          vim.cmd("buffer " .. id)
-        end, {
-          desc = "Go " .. id .. (name ~= "" and (": " .. name) or ""),
-        })
-      end
+  -- Get all listed buffers
+  local bufs = vim.fn.getbufinfo({ buflisted = 1 })
+
+  for i, buf in ipairs(bufs) do
+    if i <= 9 then
+      local id = buf.bufnr
+      local name = vim.fn.fnamemodify(buf.name, ":t")
+
+      vim.keymap.set("n", "<leader>" .. i, function()
+        vim.cmd("buffer " .. id)
+      end, {
+        desc = "Go " .. id .. (name ~= "" and (": " .. name) or ""),
+      })
     end
-  end,
+  end
+end
+
+-- Listen to both BufAdd and BufDelete
+vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete" }, {
+  callback = setup_buffer_mappings,
 })
