@@ -50,6 +50,30 @@ end
 
 vim.api.nvim_create_user_command("Today", insert_today, {})
 
+-- :TaskFile command
+local function create_task_file()
+  vim.ui.input({ prompt = "Enter task file name (without .md): " }, function(input)
+    if not input or input == "" then
+      print("No file name provided.")
+      return
+    end
+    local filename = input:gsub("%s+", "_") .. ".md"
+    local filepath = vim.fn.expand("~/Desktop/obs-v1/tasks/" .. filename)
+    local today = os.date("%Y-%m-%d %H:%M")
+    local title = "# " .. input
+    local content = string.format("%s\n\nDate: %s\n\n", title, today)
+    if vim.fn.filereadable(filepath) == 1 then
+      print("File already exists: " .. filepath)
+      vim.cmd("edit " .. filepath)
+      return
+    end
+    vim.fn.writefile(vim.split(content, "\n", { trimempty = false }), filepath)
+    vim.cmd("edit " .. filepath)
+  end)
+end
+
+vim.api.nvim_create_user_command("NewTask", create_task_file, {})
+
 -- :Week command
 local function insert_week()
   -- ISO week number (e.g. W34)

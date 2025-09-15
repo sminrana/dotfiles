@@ -236,6 +236,7 @@ end)
 
 vim.keymap.set("n", prefix .. "td", ":Today<CR>", { desc = "Insert Today's Log" })
 vim.keymap.set("n", prefix .. "tw", ":Week<CR>", { desc = "Insert This Week's Plan" })
+vim.keymap.set("n", prefix .. "tn", ":NewTask<CR>", { desc = "Insert New Task" })
 
 -- end of todo
 
