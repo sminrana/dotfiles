@@ -198,7 +198,7 @@ end, { desc = "Mark it as delayed" })
 
 map("n", prefix .. "tp", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  local emoji = "🛠️" .. date
+  local emoji = "🛠️ in progress... " .. date
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_set_current_line(line .. " " .. emoji)
 end, { desc = "Mark it as in progress" })
@@ -232,7 +232,7 @@ map("n", prefix .. "t0", function()
     line = line:gsub("%[x%]", "[ ]", 1)
   end
   vim.api.nvim_set_current_line(line)
-end)
+end, { desc = "Mark it [x]" })
 
 vim.keymap.set("n", prefix .. "td", ":Today<CR>", { desc = "Insert Today's Log" })
 vim.keymap.set("n", prefix .. "tw", ":Week<CR>", { desc = "Insert This Week's Plan" })
