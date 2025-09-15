@@ -296,7 +296,6 @@ local personal_keymaps = {
   { "X", "<Cmd>%d<CR>", "Cut All" },
   { "S", "ggVG", "Select All" },
   { "P", "ggVGp", "Select All and Paste" },
-  { "G", "<Cmd>tabe ~/Desktop/obs-v1/goals/goals.md<CR>" },
   { "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>" },
   { "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
   { "U", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
