@@ -8,7 +8,7 @@ font-family-bold-italic = JetBrainsMono NFM Bold Italic
 font-style = "Regular"
 font-style-bold = "Bold"
 font-style-italic = "Italic"
-font-thicken = true
+font-thicken = false
 font-size = 15
 font-feature = calt
 font-feature = liga
@@ -35,7 +35,7 @@ mouse-hide-while-typing = true
 
 background-opacity = 1.0
 unfocused-split-opacity = 0.35
-background-blur=0
+background-blur=1
 
 
 adjust-cell-width = 0
@@ -68,4 +68,3 @@ keybind = super+shift+down=resize_split:down,10
 keybind = super+shift+e=equalize_splits
 keybind = super+shift+t=toggle_tab_overview
 keybind = global:cmd+shift+e=toggle_quick_terminal
-
