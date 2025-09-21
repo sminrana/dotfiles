@@ -4,5 +4,5 @@ show_symlink = true
 
 
 [preview]
-max_width = 1500 # Or some other higher number
-max_height = 1500
+max_width = 500 # Or some other higher number
+max_height = 500

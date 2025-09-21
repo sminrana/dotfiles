@@ -589,3 +589,5 @@ map("n", prefix .. "c2", function()
     vim.cmd("terminal bash '" .. script_path .. "'")
   end)
 end, { desc = "Run shell script from ~/Desktop/scripts" })
+
+vim.keymap.set("n", "<leader>ac", "<cmd>CodeCompanionActions<CR>", { desc = "CodeCompanionActions" })
