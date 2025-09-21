@@ -10,8 +10,8 @@ transparent_background_colors = true
 draw_bold_text_with_bright_colors = false
 
 [window]
-padding.x = 0
-padding.y = 0
+padding.x = 2
+padding.y = 2
 decorations = "Buttonless"
 opacity = 1.0
 blur = true
@@ -55,7 +55,21 @@ thickness = 0.2
 
 [keyboard]
 bindings = [
+  # Cmd-s → send Ctrl-s (your existing one)
   { key = "s", mods = "Command", chars = "\u0013" },
+
+  # Cmd-t → tmux new window (prefix + c)
+  { key = "t", mods = "Command", chars = "\u000Ac" },
+
+  # Cmd-[ → previous window (prefix + p)
+  { key = "[", mods = "Command", chars = "\u000Ap" },
+
+  # Cmd-] → next window (prefix + n)
+  { key = "]", mods = "Command", chars = "\u000An" },
+
+  # Cmd-d → detach (prefix + d)
+  { key = "d", mods = "Command", chars = "\u000A&" },
+
   { key = "f", mods = "Command|Shift", action = "ToggleSimpleFullscreen" },
 ]
 
