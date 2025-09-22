@@ -58,17 +58,23 @@ bindings = [
   # Cmd-s → send Ctrl-s (your existing one)
   { key = "s", mods = "Command", chars = "\u0013" },
 
-  # Cmd-t → tmux new window (prefix + c)
-  { key = "t", mods = "Command", chars = "\u000Ac" },
+   # Cmd-a → send Ctrl-a (prefix in tmux)
+  { key = "a", mods = "Command", chars = "\u0001" },
 
-  # Cmd-[ → previous window (prefix + p)
-  { key = "[", mods = "Command", chars = "\u000Ap" },
+   # --- Window management ---
+  { key = "t", mods = "Command", chars = "\u0001c" },   # Cmd-t → new window
+  { key = "[", mods = "Command", chars = "\u0001p" },   # Cmd-[ → prev window
+  { key = "]", mods = "Command", chars = "\u0001n" },   # Cmd-] → next window
+  { key = "d", mods = "Command", chars = "\u0001&" },   # Cmd-d → close window
 
-  # Cmd-] → next window (prefix + n)
-  { key = "]", mods = "Command", chars = "\u000An" },
+   # --- Pane management ---
+  { key = ",", mods = "Command", chars = "\u0001;" },
+  { key = ".", mods = "Command", chars = "\u0001o" },
+  { key = "x", mods = "Command", chars = "\u0001x" },
 
-  # Cmd-d → detach (prefix + d)
-  { key = "d", mods = "Command", chars = "\u000A&" },
+  # Cmd-Shift-x → instant kill (no confirm)
+  { key = "x", mods = "Command|Shift", chars = "\u0001X" },
+  
 
   { key = "f", mods = "Command|Shift", action = "ToggleSimpleFullscreen" },
 ]
