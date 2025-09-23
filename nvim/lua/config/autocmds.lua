@@ -85,7 +85,6 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Automatically remove trailing blank lines on save
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.php", "*.tsx", "*.lua", "*.py", "*.js", "*.ts" },
   callback = function()
     if vim.fn.line("$") < 2500 then
       vim.cmd([[silent! %s#\($\n\s*\)\+\%$##]])
@@ -105,9 +104,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- Auto trim trailing newline at EOF (single newline only)
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.php", "*.tsx", "*.lua", "*.py", "*.js", "*.ts" },
   callback = function()
     local lastline = vim.fn.getline("$")
     if lastline == "" then
