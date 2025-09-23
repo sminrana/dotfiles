@@ -3,7 +3,7 @@ TERM = "xterm-256color"
 
 [general]
 live_config_reload = true
-working_directory = "/Users/smin"
+working_directory = "~"
 
 [colors]
 transparent_background_colors = true
@@ -13,20 +13,15 @@ draw_bold_text_with_bright_colors = false
 padding.x = 2
 padding.y = 2
 decorations = "Buttonless"
-opacity = 1.0
-blur = true
+opacity = 0.98
+blur = false
 startup_mode = "SimpleFullscreen"
 dynamic_padding = true
 dynamic_title = true
 option_as_alt = "OnlyLeft"
 
-
-[selection]
-save_to_clipboard = true
-
 [font]
 size = 15.0
-
 
 [font.normal]
 family = "JetBrainsMono Nerd Font"
@@ -52,34 +47,35 @@ style = "Beam"
 unfocused_hollow = false
 thickness = 0.2
 
+[selection]
+save_to_clipboard = true
 
 [keyboard]
 bindings = [
   # Cmd-s → send Ctrl-s (your existing one)
   { key = "s", mods = "Command", chars = "\u0013" },
 
-   # Cmd-a → send Ctrl-a (prefix in tmux)
+  # Cmd-a → send Ctrl-a (prefix in tmux)
   { key = "a", mods = "Command", chars = "\u0001" },
 
-   # --- Window management ---
-  { key = "t", mods = "Command", chars = "\u0001c" },   # Cmd-t → new window
-  { key = "[", mods = "Command", chars = "\u0001p" },   # Cmd-[ → prev window
-  { key = "]", mods = "Command", chars = "\u0001n" },   # Cmd-] → next window
-  { key = "d", mods = "Command", chars = "\u0001&" },   # Cmd-d → close window
+  # --- Window management ---
+  { key = "t", mods = "Command", chars = "\u0001c" }, # Cmd-t → new window
+  { key = "[", mods = "Command", chars = "\u0001p" }, # Cmd-[ → prev window
+  { key = "]", mods = "Command", chars = "\u0001n" }, # Cmd-] → next window
+  { key = "d", mods = "Command", chars = "\u0001&" }, # Cmd-d → close window
 
-   # --- Pane management ---
+  # --- Pane management ---
   { key = ",", mods = "Command", chars = "\u0001;" },
   { key = ".", mods = "Command", chars = "\u0001o" },
   { key = "x", mods = "Command", chars = "\u0001x" },
 
   # Cmd-Shift-x → instant kill (no confirm)
   { key = "x", mods = "Command|Shift", chars = "\u0001X" },
-  
 
   { key = "f", mods = "Command|Shift", action = "ToggleSimpleFullscreen" },
 ]
 
-
+# Run the function t in .zshrc to open tmux session
 [terminal.shell]
 program = "/bin/zsh"
 args = ["-i", "-c", "t; exec zsh"]
