@@ -40,21 +40,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
--- Auto save on focus lost
-vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave" }, {
-  pattern = "*",
-  command = "silent! wa",
-})
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*",
-  callback = function()
-    local save = vim.fn.winsaveview()
-    vim.cmd([[%s/\s\+$//e]])
-    vim.fn.winrestview(save)
-  end,
-})
-
 -- Insert `$` on the next line only when the current line starts with `$` (ignoring leading spaces)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "php",
@@ -92,7 +77,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Highlight trailing whitespace
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "*",
+  pattern = { "php", "typescriptreact", "lua", "python", "javascript", "typescript" },
   callback = function(args)
     vim.cmd([[match ErrorMsg /\s\+$/]])
   end,
@@ -100,9 +85,11 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Automatically remove trailing blank lines on save
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*",
+  pattern = { "*.php", "*.tsx", "*.lua", "*.py", "*.js", "*.ts" },
   callback = function()
-    vim.cmd([[silent! %s#\($\n\s*\)\+\%$##]])
+    if vim.fn.line("$") < 2500 then
+      vim.cmd([[silent! %s#\($\n\s*\)\+\%$##]])
+    end
   end,
 })
 
@@ -118,34 +105,9 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- Set relative number in normal mode, absolute in insert mode
-vim.api.nvim_create_autocmd({ "InsertEnter" }, {
-  pattern = "*",
-  callback = function()
-    vim.opt.relativenumber = false
-  end,
-})
-
-vim.api.nvim_create_autocmd({ "InsertLeave" }, {
-  pattern = "*",
-  callback = function()
-    vim.opt.relativenumber = true
-  end,
-})
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-  callback = function(event)
-    local dir = vim.fn.fnamemodify(event.match, ":p:h")
-    if vim.fn.isdirectory(dir) == 0 then
-      vim.fn.mkdir(dir, "p")
-    end
-  end,
-  desc = "Auto-create parent dirs on save",
-})
-
 -- Auto trim trailing newline at EOF (single newline only)
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*",
+  pattern = { "*.php", "*.tsx", "*.lua", "*.py", "*.js", "*.ts" },
   callback = function()
     local lastline = vim.fn.getline("$")
     if lastline == "" then
