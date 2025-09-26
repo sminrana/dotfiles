@@ -1,21 +1,8 @@
 lastupdatecheck: 0
 recentrepos:
     - /Users/smin/.config
-    - /Users/smin/web/ccy
-    - /Users/smin/app/scoutz
-    - /Users/smin/app/mm-alias/mm-android
-    - /Users/smin/app/mm-alias/ssa-android
-    - /Users/smin/app/mm-alias/matrix-android
-    - /Users/smin/app/mm/matrix-android
-    - /Users/smin/github/nvim-filediff
-    - /Users/smin/web/kp/or-newtilus
-    - /Users/smin/app/mm-alias/usm-android
-    - /Users/smin/app/mm/usm-ios
-    - /Users/smin/app/mm/matrix-ios
-    - /Users/smin/web/main
 startuppopupversion: 5
-didshowhunkstaginghint: true
+didshowhunkstaginghint: false
 lastversion: 0.55.1
-customcommandshistory:
-    - qa
-hidecommandlog: true
+customcommandshistory: []
+hidecommandlog: false
