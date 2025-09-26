@@ -40,23 +40,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
--- Insert `$` on the next line only when the current line starts with `$` (ignoring leading spaces)
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "php",
-  group = vim.api.nvim_create_augroup("PhpAutoDollarOnNewline", { clear = true }),
-  callback = function(args)
-    vim.keymap.set("i", "<CR>", function()
-      local prev = vim.api.nvim_get_current_line()
-      if prev:match("^%s*%$") then
-        -- Let Neovim do its normal newline + indent, then insert $
-        return "<CR>$"
-      else
-        return "<CR>"
-      end
-    end, { buffer = args.buf, expr = true, desc = "Auto `$` after lines that start with `$`" })
-  end,
-})
-
 -- Insert '- [ ] ' on the next line in markdown if the current line starts with '- [ ]'
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
