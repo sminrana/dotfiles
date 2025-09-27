@@ -43,7 +43,11 @@ local function do_upload(finalFile)
         vim.fn.setreg("+", url)
         vim.notify("Public URL copied: " .. url, vim.log.levels.INFO)
       else
-        vim.notify("Failed to upload: exit code " .. code, vim.log.levels.ERROR)
+        vim.notify(
+          "Failed to upload: exit code " .. code .. (signal ~= 0 and (", signal: " .. signal) or ""),
+          vim.log.levels.ERROR
+        )
+        vim.notify("Check your AWS credentials, network connection, or S3 permissions.", vim.log.levels.ERROR)
       end
     end)
   end)
