@@ -43,10 +43,6 @@ style = "Italic"
 [mouse]
 hide_when_typing = true
 
-[cursor]
-style = { shape = "Beam", blinking = "On" }
-unfocused_hollow = false
-thickness = 0.2
 
 [selection]
 semantic_escape_chars = ",│`|:\"' ()[]{}<>" # Better word selections
