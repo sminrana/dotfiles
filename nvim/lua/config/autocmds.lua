@@ -124,3 +124,13 @@ end
 vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete" }, {
   callback = setup_buffer_mappings,
 })
+
+vim.api.nvim_create_autocmd({ "FocusLost", "WinLeave" }, {
+  desc = "Switch to Normal mode on focus/tab/window leave if in Insert mode",
+  callback = function()
+    local mode = vim.api.nvim_get_mode().mode
+    if mode == "i" or mode == "ic" then
+      vim.cmd("stopinsert")
+    end
+  end,
+})
