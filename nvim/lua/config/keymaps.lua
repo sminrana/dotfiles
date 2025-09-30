@@ -595,3 +595,20 @@ map("n", prefix .. "c2", function()
 end, { desc = "Run shell script from ~/Desktop/scripts" })
 
 vim.keymap.set("n", "<leader>ac", "<cmd>CodeCompanionActions<CR>", { desc = "CodeCompanionActions" })
+
+vim.keymap.set("n", prefix .. "go", function()
+  -- open a single new empty tab
+  vim.cmd("tabnew")
+
+  -- get all modified + staged files
+  local files = vim.fn.systemlist("git diff --name-only HEAD")
+
+  -- load each file into the buffer list (without creating multiple tabs)
+  for _, f in ipairs(files) do
+    if vim.fn.filereadable(f) == 1 then
+      vim.cmd("edit " .. vim.fn.fnameescape(f))
+      -- keep previous ones in buffer list instead of replacing
+      vim.cmd("bprevious")
+    end
+  end
+end, { desc = "Open modified git files in new tabs" })
