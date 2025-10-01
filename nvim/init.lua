@@ -1,6 +1,7 @@
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")
 
+-- Load all lua files in user directory
 local user_dir = vim.fn.stdpath("config") .. "/lua/user"
 local uv = vim.loop
 
