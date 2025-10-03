@@ -13,7 +13,7 @@ draw_bold_text_with_bright_colors = false
 padding.x = 2
 padding.y = 0
 decorations = "Buttonless"
-opacity = 0.98
+opacity = 1.0
 blur = false
 startup_mode = "SimpleFullscreen"
 dynamic_padding = true
@@ -21,7 +21,7 @@ dynamic_title = true
 option_as_alt = "OnlyLeft"
 
 [font]
-size = 16.0
+size = 18.0
 builtin_box_drawing = true
 
 [font.normal]
