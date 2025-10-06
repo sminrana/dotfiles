@@ -69,10 +69,10 @@ bindings = [
   { key = "V", mods = "Command", action = "Paste" },
 
   # --- Window management ---
-  { key = "t", mods = "Command", chars = "\u0001c" }, # Cmd-t → new window
-  { key = "[", mods = "Command", chars = "\u0001p" }, # Cmd-[ → prev window
-  { key = "]", mods = "Command", chars = "\u0001n" }, # Cmd-] → next window
-  { key = "d", mods = "Command", chars = "\u0001&" }, # Cmd-d → close window
+  { key = "t", mods = "Command", chars = "\u0001c" },       # Cmd-t → new window
+  { key = "[", mods = "Command", chars = "\u0001p" },       # Cmd-[ → prev window
+  { key = "]", mods = "Command", chars = "\u0001n" },       # Cmd-] → next window
+  { key = "d", mods = "Command|Shift", chars = "\u0001W" }, # Cmd-d → close window
 
   # --- Pane management ---
   { key = ",", mods = "Command", chars = "\u0001;" },
