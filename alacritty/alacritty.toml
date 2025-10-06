@@ -20,6 +20,7 @@ dynamic_padding = true
 dynamic_title = true
 option_as_alt = "OnlyLeft"
 
+
 [font]
 size = 18.0
 builtin_box_drawing = true
@@ -39,6 +40,14 @@ style = "Bold Italic"
 [font.italic]
 family = "JetBrainsMono Nerd Font"
 style = "Italic"
+
+[font.offset]
+x = 0
+y = 0
+
+[font.glyph_offset]
+x = 0
+y = 0
 
 [mouse]
 hide_when_typing = true
