@@ -83,6 +83,16 @@ bindings = [
   { key = "x", mods = "Command|Shift", chars = "\u0001X" },
 
   { key = "f", mods = "Command|Shift", action = "ToggleSimpleFullscreen" },
+
+  { key = "Key1", mods = "Command", chars = "\u00011" },
+  { key = "Key2", mods = "Command", chars = "\u00012" },
+  { key = "Key3", mods = "Command", chars = "\u00013" },
+  { key = "Key4", mods = "Command", chars = "\u00014" },
+  { key = "Key5", mods = "Command", chars = "\u00015" },
+  { key = "Key6", mods = "Command", chars = "\u00016" },
+  { key = "Key7", mods = "Command", chars = "\u00017" },
+  { key = "Key8", mods = "Command", chars = "\u00018" },
+  { key = "Key9", mods = "Command", chars = "\u00019" },
 ]
 
 # Run the function t in .zshrc to open tmux session
