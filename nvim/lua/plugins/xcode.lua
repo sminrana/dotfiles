@@ -14,6 +14,10 @@ return {
     config = function()
       require("xcodebuild").setup({
         -- put some options here or leave it empty to use default settings
+        vim.api.nvim_set_keymap("n", "<leader>jxb", "<cmd>XcodebuildBuild<cr>", { noremap = true, silent = true }),
+        vim.api.nvim_set_keymap("n", "<leader>jxr", "<cmd>XcodebuildBuildRun<cr>", { noremap = true, silent = true }),
+        vim.api.nvim_set_keymap("n", "<leader>jxc", "<cmd>XcodebuildCancel<cr>", { noremap = true, silent = true }),
+        vim.api.nvim_set_keymap("n", "<leader>jxx", "<cmd>XcodebuildCleanBuild<cr>", { noremap = true, silent = true }),
       })
     end,
   },
