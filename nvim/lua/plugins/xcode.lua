@@ -37,10 +37,17 @@ return {
           end
         end,
       })
-
-      vim.keymap.set("n", "<leader>ml", function()
-        require("lint").try_lint()
-      end, { desc = "Lint file" })
+    end,
+  },
+  {
+    "neovim/nvim-lspconfig",
+    opts = function(_, opts)
+      opts.servers = opts.servers or {}
+      opts.servers.sourcekit = {
+        cmd = { "sourcekit-lsp" },
+        filetypes = { "swift", "c", "cpp", "objective-c", "objective-cpp" },
+        root_dir = function(fname) end,
+      }
     end,
   },
 }
