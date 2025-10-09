@@ -1,26 +1,22 @@
 return {
+  -- Xcode build/run integration
   {
     "wojciech-kulik/xcodebuild.nvim",
     dependencies = {
-      -- Uncomment a picker that you want to use, snacks.nvim might be additionally
-      -- useful to show previews and failing snapshots.
-
-      -- You must select at least one:
-      -- "nvim-telescope/telescope.nvim",
-      "ibhagwan/fzf-lua",
-      "folke/snacks.nvim", -- (optional) to show previews
       "MunifTanjim/nui.nvim",
     },
     config = function()
-      require("xcodebuild").setup({
-        -- put some options here or leave it empty to use default settings
-        vim.api.nvim_set_keymap("n", "<leader>jxb", "<cmd>XcodebuildBuild<cr>", { noremap = true, silent = true }),
-        vim.api.nvim_set_keymap("n", "<leader>jxr", "<cmd>XcodebuildBuildRun<cr>", { noremap = true, silent = true }),
-        vim.api.nvim_set_keymap("n", "<leader>jxc", "<cmd>XcodebuildCancel<cr>", { noremap = true, silent = true }),
-        vim.api.nvim_set_keymap("n", "<leader>jxx", "<cmd>XcodebuildCleanBuild<cr>", { noremap = true, silent = true }),
-      })
+      require("xcodebuild").setup({})
+      -- Keymaps must be defined outside the setup() table
+      local map = vim.keymap.set
+      map("n", "<leader>jxb", "<cmd>XcodebuildBuild<cr>", { desc = "Xcode Build" })
+      map("n", "<leader>jxr", "<cmd>XcodebuildBuildRun<cr>", { desc = "Xcode Build & Run" })
+      map("n", "<leader>jxc", "<cmd>XcodebuildCancel<cr>", { desc = "Xcode Cancel Build" })
+      map("n", "<leader>jxx", "<cmd>XcodebuildCleanBuild<cr>", { desc = "Xcode Clean Build" })
     end,
   },
+
+  -- Swift linting via nvim-lint
   {
     "mfussenegger/nvim-lint",
     event = { "BufReadPre", "BufNewFile" },
@@ -33,25 +29,22 @@ return {
 
       local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
 
-      vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave", "TextChanged" }, {
+      vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
         group = lint_augroup,
         callback = function()
-          if not vim.endswith(vim.fn.bufname(), "swiftinterface") then
-            require("lint").try_lint()
+          local buf = vim.api.nvim_get_current_buf()
+          local name = vim.api.nvim_buf_get_name(buf)
+          if not name:match("%.swiftinterface$") then
+            lint.try_lint()
           end
         end,
       })
     end,
   },
+
+  -- Swift syntax highlighting
   {
-    "neovim/nvim-lspconfig",
-    opts = function(_, opts)
-      opts.servers = opts.servers or {}
-      opts.servers.sourcekit = {
-        cmd = { "sourcekit-lsp" },
-        filetypes = { "swift", "c", "cpp", "objective-c", "objective-cpp" },
-        root_dir = function(fname) end,
-      }
-    end,
+    "keith/swift.vim",
+    ft = "swift",
   },
 }

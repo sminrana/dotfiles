@@ -20,11 +20,6 @@ return {
         command = "npx",
         args = { "prettier", "--stdin-filepath", "$FILENAME" },
       }),
-
-      null_ls.builtins.formatting.swift_format.with({
-        command = "swift-format",
-        args = { "format", "--stdin", "--assume-filename", "$FILENAME" },
-      }),
     })
   end,
 }
