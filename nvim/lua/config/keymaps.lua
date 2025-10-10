@@ -156,6 +156,7 @@ map("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 map("n", "go", "<Cmd>call append(line('.'), repeat([''], v:count1))<CR>")
 map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
 map("n", "<leader>be", "<Cmd>Neotree buffers float<CR>")
+map("n", "<leader>F", "<Cmd>FzfLua<CR>")
 
 -- ===============================Personal keymaps===================================
 
@@ -338,7 +339,6 @@ local personal_keymaps = {
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "ls", "<cmd>Lazy sync<CR>", "Lazy sync" },
-  { "lf", "<cmd>FzfLua<CR>", "FzfLua" },
   { "m1", "<Cmd>MarkdownPreview<CR>" },
   { "m2", "<Cmd>ObsidianNew<CR>" },
   { "m3", "<Cmd>ObsidianToday<CR>" },
