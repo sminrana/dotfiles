@@ -133,16 +133,9 @@ return {
           K = { vim.lsp.buf.hover, "Hover info" },
           gd = { vim.lsp.buf.definition, "Go to definition" },
           gD = { vim.lsp.buf.declaration, "Go to declaration" },
-          gi = { vim.lsp.buf.implementation, "Go to implementation" },
+          gI = { vim.lsp.buf.implementation, "Go to implementation" },
           gr = { vim.lsp.buf.references, "List references" },
-          gs = { vim.lsp.buf.signature_help, "Signature help" },
-          gn = { vim.lsp.buf.rename, "Rename symbol" },
-          ["<leader>lf"] = {
-            function()
-              vim.lsp.buf.format({ async = true })
-            end,
-            "Format buffer",
-          },
+          gK = { vim.lsp.buf.signature_help, "Signature help" },
         }, opts)
       end,
     })
