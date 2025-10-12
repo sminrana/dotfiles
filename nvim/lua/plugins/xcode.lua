@@ -13,6 +13,7 @@ return {
       map("n", "<leader>jxr", "<cmd>XcodebuildBuildRun<cr>", { desc = "Xcode Build & Run" })
       map("n", "<leader>jxc", "<cmd>XcodebuildCancel<cr>", { desc = "Xcode Cancel Build" })
       map("n", "<leader>jxx", "<cmd>XcodebuildCleanBuild<cr>", { desc = "Xcode Clean Build" })
+      map("n", "<leader>jxa", "<cmd>XcodebuildCreateNewFile<cr>", { desc = "Xcode Add New File" })
     end,
   },
 

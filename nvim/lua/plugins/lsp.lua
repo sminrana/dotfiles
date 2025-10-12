@@ -135,6 +135,8 @@ return {
         gopls = {},
         vuels = {},
         svelte = {},
+        jdtls = {},
+        kotlin_language_server = {},
       }
 
       -- Setup all servers
@@ -149,16 +151,30 @@ return {
       vim.api.nvim_create_autocmd("LspAttach", {
         desc = "LSP Actions",
         callback = function(args)
-          local wk = require("which-key")
-          local opts = { buffer = args.buf, silent = true }
-          wk.register({
-            K = { vim.lsp.buf.hover, "Hover info" },
-            gd = { vim.lsp.buf.definition, "Go to definition" },
-            gD = { vim.lsp.buf.declaration, "Go to declaration" },
-            gI = { vim.lsp.buf.implementation, "Go to implementation" },
-            gr = { vim.lsp.buf.references, "List references" },
-            gK = { vim.lsp.buf.signature_help, "Signature help" },
-          }, opts)
+          local buf = args.buf
+          local function n(lhs, rhs, desc)
+            vim.keymap.set("n", lhs, rhs, { buffer = buf, silent = true, noremap = true, desc = desc })
+          end
+          n("K", vim.lsp.buf.hover, "Hover info")
+          n("gd", vim.lsp.buf.definition, "Go to definition")
+          n("gD", vim.lsp.buf.declaration, "Go to declaration")
+          n("gI", vim.lsp.buf.implementation, "Go to implementation")
+          n("gR", function()
+            require("fzf-lua").lsp_references({ jump_to_single_result = true })
+          end, "List references (fzf)")
+          n("gK", vim.lsp.buf.signature_help, "Signature help")
+          n("gS", function()
+            require("fzf-lua").lsp_document_symbols()
+          end, "List document symbols (fzf)")
+          n("gW", function()
+            require("fzf-lua").lsp_workspace_symbols()
+          end, "List workspace symbols (fzf)")
+          n("gL", function()
+            require("fzf-lua").lsp_live_workspace_symbols()
+          end, "List live workspace symbols (fzf)")
+          n("gA", function()
+            require("fzf-lua").lsp_code_actions()
+          end, "List code actions (fzf)")
         end,
       })
     end,

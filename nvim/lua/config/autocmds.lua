@@ -29,17 +29,6 @@ vim.api.nvim_exec2("Neotree reveal float", {})
 vim.cmd("wincmd p") -- Switch focus to the previous window (the newly opened Neotree)
 vim.cmd("wincmd p") -- Sometimes needs to be called twice depending on window layout
 
--- Format svelte file
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.svelte" },
-  callback = function()
-    local clients = vim.lsp.get_active_clients({ bufnr = 0 })
-    if #clients > 0 then
-      vim.lsp.buf.format()
-    end
-  end,
-})
-
 -- Insert '- [ ] ' on the next line in markdown if the current line starts with '- [ ]'
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
