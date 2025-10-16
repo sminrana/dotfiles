@@ -22,7 +22,7 @@ return {
 
       -- === Diagnostics & UI ===
       vim.diagnostic.config({
-        virtual_text = false,
+        virtual_text = { spacing = 2, prefix = "●", source = "if_many" },
         underline = true,
         update_in_insert = false,
         severity_sort = true,
