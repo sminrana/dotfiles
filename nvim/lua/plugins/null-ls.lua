@@ -2,7 +2,13 @@ return {
   "nvimtools/none-ls.nvim",
   opts = function(_, opts)
     local null_ls = require("null-ls")
+
     opts.sources = vim.list_extend(opts.sources or {}, {
+      null_ls.builtins.diagnostics.markdownlint_cli2.with({
+        filetypes = { "markdown" },
+        args = { "--disable", "*" },
+      }),
+
       null_ls.builtins.formatting.phpcsfixer.with({
         command = "php-cs-fixer",
         extra_args = { "fix", "--using-cache=no" },
