@@ -74,9 +74,7 @@ bindings = [
   { key = "]", mods = "Command", chars = "\u0001n" },       # Cmd-] → next window
 
   # --- Pane management ---
-  { key = ",", mods = "Command", chars = "\u0001;" },
   { key = ".", mods = "Command", chars = "\u0001o" },
-  { key = "x", mods = "Command", chars = "\u0001x" },
 
   # Cmd-Shift-x → instant kill (no confirm)
   { key = "x", mods = "Command|Shift", chars = "\u0001X" },
