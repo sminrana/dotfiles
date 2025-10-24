@@ -160,7 +160,7 @@ map("n", "<leader>F", "<Cmd>FzfLua<CR>")
 
 -- ===============================Personal keymaps===================================
 
--- ======================================== TODO
+-- =========================================== Markdown & TODO ====================================
 map("n", prefix .. "tx", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   local emoji = "✅ Done - " .. date
@@ -243,9 +243,11 @@ vim.keymap.set("n", prefix .. "td", ":Today<CR>", { desc = "Insert Today's Log" 
 vim.keymap.set("n", prefix .. "tw", ":Week<CR>", { desc = "Insert This Week's Plan" })
 vim.keymap.set("n", prefix .. "tn", ":NewTask<CR>", { desc = "Insert New Task" })
 
--- end of todo
+vim.keymap.set("n", prefix .. "t4", function()
+  local date = os.date("%b %d, %Y %H:%M:%S %Z")
+  vim.api.nvim_put({ date }, "c", true, true)
+end, { desc = "Add date here" })
 
--- =========================================== Markdown
 vim.keymap.set("n", prefix .. "m4", function()
   local line = vim.api.nvim_get_current_line()
   if not (vim.startswith(line, "~~") and vim.endswith(line, "~~")) then
@@ -266,11 +268,7 @@ vim.keymap.set("n", prefix .. "m6", function()
     vim.api.nvim_set_current_line("*" .. line .. "*")
   end
 end, { desc = "Wrap current line with * for markdown italic" })
-
-vim.keymap.set("n", prefix .. "m7", function()
-  local date = os.date("%b %d, %Y %H:%M:%S %Z")
-  vim.api.nvim_put({ date }, "c", true, true)
-end, { desc = "Add date here" })
+-- =========================================== Markdown & TODO End ====================================
 
 -- FZF keymaps
 map("n", prefix .. "fa", function()
@@ -339,7 +337,6 @@ local personal_keymaps = {
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "ls", "<cmd>Lazy sync<CR>", "Lazy sync" },
-  { "m1", "<Cmd>MarkdownPreview<CR>" },
   { "m2", "<Cmd>ObsidianNew<CR>" },
   { "m3", "<Cmd>ObsidianToday<CR>" },
 }
