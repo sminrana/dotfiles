@@ -609,3 +609,30 @@ vim.keymap.set("n", prefix .. "go", function()
     end
   end
 end, { desc = "Open modified git files in new tabs" })
+
+-- Indentation: tabs/spaces conversion helpers
+local function tabs_to_spaces()
+  local ts = vim.bo.tabstop
+  vim.bo.expandtab = true
+  vim.cmd("retab")
+  vim.notify(string.format("Converted tabs to spaces (ts=%d).", ts), vim.log.levels.INFO)
+end
+
+local function spaces_to_tabs()
+  local ts = vim.bo.tabstop
+  vim.bo.expandtab = false
+  vim.cmd("retab!")
+  vim.notify(string.format("Converted spaces to tabs (ts=%d).", ts), vim.log.levels.INFO)
+end
+
+local function toggle_indent_mode()
+  if vim.bo.expandtab then
+    spaces_to_tabs()
+  else
+    tabs_to_spaces()
+  end
+end
+
+map("n", prefix .. "b<tab>", toggle_indent_mode, { desc = "Toggle tabs/spaces and retab" })
+map("n", prefix .. "bs", tabs_to_spaces, { desc = "Convert tabs → spaces (retab)" })
+map("n", prefix .. "bt", spaces_to_tabs, { desc = "Convert spaces → tabs (retab!)" })
