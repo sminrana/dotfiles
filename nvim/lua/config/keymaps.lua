@@ -636,3 +636,14 @@ end
 map("n", prefix .. "b<tab>", toggle_indent_mode, { desc = "Toggle tabs/spaces and retab" })
 map("n", prefix .. "bs", tabs_to_spaces, { desc = "Convert tabs → spaces (retab)" })
 map("n", prefix .. "bt", spaces_to_tabs, { desc = "Convert spaces → tabs (retab!)" })
+
+map("n", prefix .. "bf", function()
+  local path = vim.fn.expand("%:p")
+  if path == "" or vim.fn.filereadable(path) == 0 then
+    vim.notify("Current buffer is not a file.", vim.log.levels.WARN)
+    return
+  end
+  -- Reveal file in Finder (macOS)
+  vim.fn.system({ "open", "-R", path })
+  vim.notify("Revealed in Finder: " .. path, vim.log.levels.INFO)
+end, { desc = "Reveal buffer in Finder (macOS)" })
