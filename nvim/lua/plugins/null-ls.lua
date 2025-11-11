@@ -4,10 +4,6 @@ return {
     local null_ls = require("null-ls")
 
     opts.sources = vim.list_extend(opts.sources or {}, {
-      null_ls.builtins.diagnostics.markdownlint_cli2.with({
-        filetypes = { "markdown" },
-        args = { "--disable", "*" },
-      }),
 
       null_ls.builtins.formatting.phpcsfixer.with({
         command = "php-cs-fixer",
@@ -43,7 +39,6 @@ return {
           "typescriptreact",
           "json",
           "yaml",
-          "markdown",
           "svelte",
         },
         extra_args = {
