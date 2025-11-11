@@ -337,8 +337,6 @@ local personal_keymaps = {
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "ls", "<cmd>Lazy sync<CR>", "Lazy sync" },
-  { "m2", "<Cmd>ObsidianNew<CR>" },
-  { "m3", "<Cmd>ObsidianToday<CR>" },
 }
 
 table.insert(personal_keymaps, {
