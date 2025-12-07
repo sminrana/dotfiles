@@ -18,7 +18,7 @@ local function to_html(text)
     local tmp_in = vim.fn.tempname() .. ".md"
     local tmp_out = vim.fn.tempname() .. ".html"
     vim.fn.writefile(vim.split(text, "\n"), tmp_in)
-    local cmd = { "pandoc", tmp_in, "-f", "markdown", "-t", "html", "-o", tmp_out }
+    local cmd = { "pandoc", tmp_in, "-f", "markdown+raw_html", "-t", "html", "--wrap", "none", "-o", tmp_out }
     local ok = vim.fn.system(cmd)
     if vim.v.shell_error == 0 and vim.fn.filereadable(tmp_out) == 1 then
       local html = table.concat(vim.fn.readfile(tmp_out), "\n")
@@ -51,10 +51,18 @@ local function build_post_payload(html)
   title = title:gsub("[_.%-]+", " ")
   title = title:gsub("%s+", " ")
   title = title:gsub("%.+$", "")
-  title = title:gsub("^(.)", function(c) return string.upper(c) end)
-  title = title:gsub("(%s)(%a)", function(space, c) return space .. string.upper(c) end)
+  title = title:gsub("^(.)", function(c)
+    return string.upper(c)
+  end)
+  title = title:gsub("(%s)(%a)", function(space, c)
+    return space .. string.upper(c)
+  end)
   if title == "" then
     title = os.date("Post %Y-%m-%d %H:%M:%S")
+  end
+  -- Wrap in Gutenberg HTML block if not already a block
+  if not html:match("<!%-%-%s*wp:") then
+    html = "<!-- wp:html -->\n" .. html .. "\n<!-- /wp:html -->"
   end
   local payload = vim.fn.json_encode({
     token = vim.env.WP_UPLOAD_TOKEN,
