@@ -46,7 +46,13 @@ local function require_wp_env()
 end
 
 local function build_post_payload(html)
-  local title = vim.fn.expand("%:t")
+  local title = vim.fn.expand("%:t:r")
+  title = title:gsub("^%s+", ""):gsub("%s+$", "")
+  title = title:gsub("[_.%-]+", " ")
+  title = title:gsub("%s+", " ")
+  title = title:gsub("%.+$", "")
+  title = title:gsub("^(.)", function(c) return string.upper(c) end)
+  title = title:gsub("(%s)(%a)", function(space, c) return space .. string.upper(c) end)
   if title == "" then
     title = os.date("Post %Y-%m-%d %H:%M:%S")
   end
