@@ -43,8 +43,8 @@ return {
             pcall(ih.enable, bufnr, true)
           end
         end
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
+        client.server_capabilities.documentFormattingProvider = true
+        client.server_capabilities.documentRangeFormattingProvider = true
       end
 
       -- === Server configurations ===

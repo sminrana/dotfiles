@@ -240,7 +240,6 @@ map("n", prefix .. "t0", function()
 end, { desc = "Mark it [x]" })
 
 vim.keymap.set("n", prefix .. "td", ":Today<CR>", { desc = "Insert Today's Log" })
-vim.keymap.set("n", prefix .. "tw", ":Week<CR>", { desc = "Insert This Week's Plan" })
 vim.keymap.set("n", prefix .. "tn", ":NewTask<CR>", { desc = "Insert New Task" })
 
 vim.keymap.set("n", prefix .. "t4", function()
@@ -344,7 +343,6 @@ table.insert(personal_keymaps, {
   function()
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     for i, line in ipairs(lines) do
-      -- Only remove whitespace inside the line, not leading indentation
       local indent = line:match("^(%s*)") or ""
       local content = line:sub(#indent + 1)
       content = content:gsub("%s+", "")
@@ -364,7 +362,7 @@ end
 map("n", prefix .. "fo", function()
   local fzf = require("fzf-lua")
   fzf.files({
-    cwd = "~", -- Set search directory to home folder
+    cwd = "~",
     prompt = "Open file: ",
     actions = {
       ["default"] = function(selected)
@@ -451,7 +449,6 @@ table.insert(personal_keymaps, {
   function()
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     for i, line in ipairs(lines) do
-      -- Only remove whitespace inside the line, not leading indentation
       local indent = line:match("^(%s*)") or ""
       local content = line:sub(#indent + 1)
       content = content:gsub("%s+", "")
@@ -471,14 +468,12 @@ map("n", prefix .. "E", function()
   local diagnostics = vim.diagnostic.get(bufnr)
   local errors = {}
 
-  -- Find diagnostics on the current line
   for _, d in ipairs(diagnostics) do
     if d.lnum + 1 == line_nr then
       table.insert(errors, d)
     end
   end
 
-  -- If no diagnostics on the line, try to get diagnostics in the current function or class
   if #errors == 0 and vim.treesitter then
     local ts_utils = require("nvim-treesitter.ts_utils")
     local node = ts_utils.get_node_at_cursor()
@@ -592,23 +587,16 @@ end, { desc = "Run shell script from ~/Desktop/scripts" })
 vim.keymap.set("n", "<leader>ac", "<cmd>CodeCompanionActions<CR>", { desc = "CodeCompanionActions" })
 
 vim.keymap.set("n", prefix .. "go", function()
-  -- open a single new empty tab
   vim.cmd("tabnew")
-
-  -- get all modified + staged files
   local files = vim.fn.systemlist("git diff --name-only HEAD")
-
-  -- load each file into the buffer list (without creating multiple tabs)
   for _, f in ipairs(files) do
     if vim.fn.filereadable(f) == 1 then
       vim.cmd("edit " .. vim.fn.fnameescape(f))
-      -- keep previous ones in buffer list instead of replacing
       vim.cmd("bprevious")
     end
   end
 end, { desc = "Open modified git files in new tabs" })
 
--- Indentation: tabs/spaces conversion helpers
 local function tabs_to_spaces()
   local ts = vim.bo.tabstop
   vim.bo.expandtab = true
@@ -641,7 +629,87 @@ map("n", prefix .. "bf", function()
     vim.notify("Current buffer is not a file.", vim.log.levels.WARN)
     return
   end
-  -- Reveal file in Finder (macOS)
   vim.fn.system({ "open", "-R", path })
   vim.notify("Revealed in Finder: " .. path, vim.log.levels.INFO)
 end, { desc = "Reveal buffer in Finder (macOS)" })
+
+local function printfile()
+  local file = vim.fn.expand("%:p")
+  if vim.fn.has("macunix") == 1 then
+    vim.fn.system({ "open", "-a", "TextEdit", file })
+    vim.notify("Opened in TextEdit. Use File → Print to save as PDF.", vim.log.levels.INFO)
+  elseif vim.fn.has("unix") == 1 then
+    vim.notify("Print dialog not supported on Linux from Neovim.", vim.log.levels.ERROR)
+  elseif vim.fn.has("win32") == 1 then
+    vim.fn.system({ "powershell", "-Command", "Start-Process", file, "-Verb", "Print" })
+    vim.notify("Opened print dialog (Windows).", vim.log.levels.INFO)
+  else
+    vim.notify("Printing not supported on this OS", vim.log.levels.ERROR)
+  end
+end
+
+map("n", prefix .. "p", printfile, { desc = "Print current buffer" })
+
+local function spotlight_app()
+  local dirs = { "/Applications", "~/Applications" }
+  local items = {}
+  -- Collect applications
+  for _, d in ipairs(dirs) do
+    local ed = vim.fn.expand(d)
+    local p = io.popen('ls -1 "' .. ed .. '"')
+    if p then
+      for f in p:lines() do
+        if f:match("%.app$") then
+          table.insert(items, ed .. "/" .. f)
+        end
+      end
+      p:close()
+    end
+  end
+  -- Collect top-level home directories (non-hidden)
+  local home = vim.fn.expand("~")
+  local hp = io.popen('ls -1 "' .. home .. '"')
+  if hp then
+    for f in hp:lines() do
+      local full = home .. "/" .. f
+      local stat = vim.loop.fs_stat(full)
+      if stat and stat.type == "directory" and not f:match("^%.") then
+        table.insert(items, full)
+      end
+    end
+    hp:close()
+  end
+  if #items == 0 then
+    vim.notify("No applications or folders found", vim.log.levels.WARN)
+    return
+  end
+  table.sort(items, function(a, b)
+    return a:lower() < b:lower()
+  end)
+  local fzf = require("fzf-lua")
+  fzf.fzf_exec(items, {
+    prompt = "Open App/Dir> ",
+    actions = {
+      ["default"] = function(sel)
+        if not sel or #sel == 0 then
+          return
+        end
+        local full = sel[1]
+        if full:match("%.app$") then
+          local name = full:match("([^/]+)%.app$")
+          if not name then
+            vim.notify("Invalid app selection", vim.log.levels.ERROR)
+            return
+          end
+          vim.fn.system({ "open", "-a", name })
+          vim.notify("Opened app: " .. name, vim.log.levels.INFO)
+        else
+          vim.fn.system({ "open", full })
+          vim.notify("Opened folder: " .. full, vim.log.levels.INFO)
+        end
+      end,
+    },
+  })
+end
+
+map("n", "<Leader>A", spotlight_app, { desc = "Open macOS Application (Spotlight-like)" })

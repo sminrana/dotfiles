@@ -14,10 +14,10 @@ return {
       },
     },
     daily_notes = {
-      folder = "dailies",
+      folder = "journal",
       date_format = "%Y-%m-%d",
       alias_format = "%B %-d, %Y",
-      default_tags = { "daily-notes" },
+      default_tags = { "journal" },
       template = nil,
     },
   },

@@ -1,48 +1,47 @@
--- today.lua
+-- today.lua (daily file per date)
 
-local notes_dir = vim.fn.expand("~/Desktop/obs-v1/goals/")
-local daily_file = notes_dir .. "daily.md"
-local weekly_file = notes_dir .. "weekly.md"
+local notes_dir = vim.fn.expand("~/Desktop/obs-v1/tasks/")
 
--- :Today command
+-- :Today command with full daily planner in a date-named file
 local function insert_today()
-  local today = os.date("%Y-%m-%d")
+  local date = os.date("%Y-%m-%d")
+  local daily_file = notes_dir .. date .. "-daily.md"
+  local today_header = "## " .. date
+
+  -- Minimal daily template focused on essentials
   local template = string.format(
-    [[
-## %s
+    [[%s
 
+## Top 1 Goal
+- [ ]
 
-✅ 3 MIT (Most Important Tasks)
+## Three Tasks
 - [ ]
 - [ ]
 - [ ]
 
-🪶 Notes
+## Non-negotiable Habit
+- [ ]
+
+## Notes
 -
+
+## End of Day
+- [ ] Top 1 done?
+- Tomorrow’s top 1:
 ]],
-    today
+    today_header
   )
 
-  local lines = {}
+  -- If file exists, just open it
   if vim.fn.filereadable(daily_file) == 1 then
-    lines = vim.fn.readfile(daily_file)
+    vim.cmd("edit " .. daily_file)
+    vim.cmd("/" .. today_header)
+    return
   end
 
-  local today_header = "## " .. today
-  for _, line in ipairs(lines) do
-    if line:match(today_header) then
-      vim.cmd("edit " .. daily_file)
-      vim.cmd("/" .. today_header)
-      return
-    end
-  end
-
-  -- split template into separate lines
-  local template_lines = vim.split(template, "\n", { trimempty = false })
-  for _, l in ipairs(template_lines) do
-    table.insert(lines, l)
-  end
-
+  -- Split template into lines and write file
+  local lines = vim.split(template, "\n", { trimempty = false })
   vim.fn.writefile(lines, daily_file)
   vim.cmd("edit " .. daily_file)
   vim.cmd("/" .. today_header)
@@ -73,57 +72,3 @@ local function create_task_file()
 end
 
 vim.api.nvim_create_user_command("NewTask", create_task_file, {})
-
--- :Week command
-local function insert_week()
-  -- ISO week number (e.g. W34)
-  local week = os.date("W%V")
-  local year = os.date("%Y")
-  local header = string.format("# 📅 Week %s (%s)", week, year)
-
-  local template = string.format(
-    [[
-%s
-
-
-## 🎯 Focus
-- Main focus for the week
-
-## ✅ Tasks
-- [ ]
-- [ ]
-- [ ]
-
-## 📝 Notes
--
-]],
-    header
-  )
-
-  local lines = {}
-  if vim.fn.filereadable(weekly_file) == 1 then
-    lines = vim.fn.readfile(weekly_file)
-  end
-
-  -- Check if this week's header already exists
-  for _, line in ipairs(lines) do
-    if line:match(header) then
-      print("This week's entry already exists!")
-      vim.cmd("edit " .. weekly_file)
-      vim.cmd("/" .. header)
-      return
-    end
-  end
-
-  -- Split template into separate lines (fixes newline issues)
-  local template_lines = vim.split(template, "\n", { trimempty = false })
-  for _, l in ipairs(template_lines) do
-    table.insert(lines, l)
-  end
-
-  vim.fn.writefile(lines, weekly_file)
-  vim.cmd("edit " .. weekly_file)
-  vim.cmd("/" .. header)
-end
-
-vim.api.nvim_create_user_command("Week", insert_week, {})
