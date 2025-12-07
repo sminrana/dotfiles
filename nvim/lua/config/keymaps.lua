@@ -1,4 +1,4 @@
--- Define a prefix for personal keymaps
+ -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
 
 -- Utility function to simplify keymap definitions
@@ -293,6 +293,56 @@ end, { desc = "Live Grep in Current Buffer" })
 map("n", prefix .. "f7", copy_to_s3, { desc = "Upload current buffer to S3" })
 map("n", prefix .. "f6", select_file_to_move_to_s3, { desc = "Upload file from /scr to S3" })
 map("n", prefix .. "f5", send_file_to_s3, { desc = "Choose any file to S3" })
+
+-- Convert .mov to YouTube-ready .mp4 with external audio
+map("n", prefix .. "f8", function()
+  if vim.fn.executable("ffmpeg") ~= 1 then
+    vim.notify("ffmpeg is not installed or not in PATH.", vim.log.levels.ERROR)
+    return
+  end
+  local mov = vim.fn.input("Input .mov file: ", "", "file")
+  if mov == "" or vim.fn.filereadable(mov) == 0 then
+    vim.notify("Invalid .mov file: " .. mov, vim.log.levels.ERROR)
+    return
+  end
+  local audio = vim.fn.input("Input audio file (wav/mp3/m4a): ", "", "file")
+  if audio == "" or vim.fn.filereadable(audio) == 0 then
+    vim.notify("Invalid audio file: " .. audio, vim.log.levels.ERROR)
+    return
+  end
+  local out = mov:gsub("%.mov$", "") .. "-yt.mp4"
+  local args = {
+    "-y",
+    "-i", mov,
+    "-stream_loop", "-1", -- loop audio if shorter
+    "-i", audio,
+    "-map", "0:v:0",
+    "-map", "1:a:0",
+    "-c:v", "libx264",
+    "-pix_fmt", "yuv420p",
+    "-profile:v", "high",
+    "-level", "4.1",
+    "-preset", "medium",
+    "-crf", "20",
+    "-c:a", "aac",
+    "-b:a", "192k",
+    "-ar", "48000",
+    "-movflags", "+faststart",
+    "-shortest", -- trim when audio is longer
+    out,
+  }
+  vim.notify("Converting to YouTube-ready MP4: " .. out, vim.log.levels.INFO)
+  vim.loop.spawn("ffmpeg", { args = args, stdio = { nil, nil, nil } }, function(code, signal)
+    vim.schedule(function()
+      if code == 0 and vim.fn.filereadable(out) == 1 then
+        vim.notify("Conversion complete: " .. out, vim.log.levels.INFO)
+        vim.fn.setreg("+", out)
+      else
+        vim.notify("ffmpeg failed (exit " .. code .. ")", vim.log.levels.ERROR)
+      end
+    end)
+  end)
+end, { desc = "Convert MOV→MP4 + external audio (YouTube)" })
 
 local personal_keymaps = {
   { "C", "<Cmd>%y<CR>", "Copy All" },
