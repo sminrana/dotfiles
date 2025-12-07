@@ -67,7 +67,7 @@ local function build_post_payload(html)
   local payload = vim.fn.json_encode({
     token = vim.env.WP_UPLOAD_TOKEN,
     title = title,
-    status = "published",
+    status = "publish",
     content_html = html,
     author = 1,
   })
