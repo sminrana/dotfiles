@@ -48,7 +48,7 @@ end
 local function build_post_payload(html)
   local title = vim.fn.expand("%:t:r")
   title = title:gsub("^%s+", ""):gsub("%s+$", "")
-  title = title:gsub("[_.%-]+", " ")
+  title = title:gsub("[_.]+", " ")
   title = title:gsub("%s+", " ")
   title = title:gsub("%.+$", "")
   title = title:gsub("^(.)", function(c)
