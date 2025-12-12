@@ -12,6 +12,21 @@ return {
       }),
 
       -- Prettier for blade and html with 4 spaces
+      null_ls.builtins.formatting.blade_formatter.with({
+        filetypes = {
+          "blade",
+        },
+        extra_args = {
+          "--single-quote",
+          "true",
+          "--trailing-comma",
+          "all",
+          "--print-width",
+          "100",
+          "--tab-width",
+          "4",
+        },
+      }),
       null_ls.builtins.formatting.prettier.with({
         filetypes = {
           "blade",
@@ -64,33 +79,37 @@ return {
       }),
     })
 
-     null_ls.builtins.formatting.black.with({
-        filetypes = { "python" },
-        extra_args = {
-          "--line-length", "88",  -- default is 88, can change to 79, 100, 120, etc.
-          "--skip-string-normalization",  -- keeps your quote style
-          "--target-version", "py39",  -- specify Python version
-        },
-      })
+    null_ls.builtins.formatting.black.with({
+      filetypes = { "python" },
+      extra_args = {
+        "--line-length",
+        "88", -- default is 88, can change to 79, 100, 120, etc.
+        "--skip-string-normalization", -- keeps your quote style
+        "--target-version",
+        "py39", -- specify Python version
+      },
+    })
 
-       null_ls.builtins.formatting.isort.with({
-        filetypes = { "python" },
-        extra_args = {
-          "--profile", "black",  -- compatible with black
-          "--line-length", "88",
-          "--multi-line", "3",
-        },
-      })
+    null_ls.builtins.formatting.isort.with({
+      filetypes = { "python" },
+      extra_args = {
+        "--profile",
+        "black", -- compatible with black
+        "--line-length",
+        "88",
+        "--multi-line",
+        "3",
+      },
+    })
 
-
-       -- Python diagnostics/linting
-      -- null_ls.builtins.diagnostics.flake8.with({
-      --   filetypes = { "python" },
-      --   extra_args = {
-      --     "--max-line-length", "88",
-      --     "--extend-ignore", "E203,W503",  -- ignore conflicts with black
-      --   },
-      -- })
+    -- Python diagnostics/linting
+    -- null_ls.builtins.diagnostics.flake8.with({
+    --   filetypes = { "python" },
+    --   extra_args = {
+    --     "--max-line-length", "88",
+    --     "--extend-ignore", "E203,W503",  -- ignore conflicts with black
+    --   },
+    -- })
 
     -- Autoformat on save
     opts.on_attach = function(client, bufnr)

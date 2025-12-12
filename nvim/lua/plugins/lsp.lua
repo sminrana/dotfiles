@@ -26,7 +26,7 @@ return {
         underline = true,
         update_in_insert = false,
         severity_sort = true,
-        float = { border = "rounded", source = "always" },
+        float = { border = "rounded" },
       })
       local borders = { border = "rounded" }
       vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, borders)
@@ -91,10 +91,29 @@ return {
         },
 
         -- 🐘 PHP
+        -- Use Intelephense for robust PHP indexing/completion
+        intelephense = {
+          cmd = { "intelephense", "--stdio" },
+          filetypes = { "php" },
+          root_dir = function(fname)
+            return util.root_pattern("composer.json", "artisan", ".git")(fname) or vim.fn.getcwd()
+          end,
+          settings = {
+            intelephense = {
+              environment = { memoryLimit = 2048 },
+              files = { maxSize = 5000000 },
+              diagnostics = { enable = true },
+            },
+          },
+        },
+
+        -- Keep Phpactor for refactors/code actions
         phpactor = {
           cmd = { "phpactor", "language-server" },
           filetypes = { "php" },
-          root_dir = util.root_pattern("composer.json", ".git", ".phpactor.json"),
+          root_dir = function(fname)
+            return util.root_pattern("composer.json", "artisan", ".git", ".phpactor.json")(fname) or vim.fn.getcwd()
+          end,
           init_options = {
             ["language_server_phpstan.enabled"] = false,
             ["language_server_psalm.enabled"] = false,
@@ -121,6 +140,7 @@ return {
             },
           },
         },
+
         sourcekit = {
           cmd = { "xcrun", "sourcekit-lsp" },
           filetypes = { "swift", "objective-c", "objective-cpp" },
