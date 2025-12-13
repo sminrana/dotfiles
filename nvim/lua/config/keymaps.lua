@@ -1,4 +1,4 @@
- -- Define a prefix for personal keymaps
+-- Define a prefix for personal keymaps
 local prefix = "<leader>j"
 
 -- Utility function to simplify keymap definitions
@@ -239,8 +239,8 @@ map("n", prefix .. "t0", function()
   vim.api.nvim_set_current_line(line)
 end, { desc = "Mark it [x]" })
 
-vim.keymap.set("n", prefix .. "td", ":Today<CR>", { desc = "Insert Today's Log" })
-vim.keymap.set("n", prefix .. "tn", ":NewTask<CR>", { desc = "Insert New Task" })
+vim.keymap.set("n", prefix .. "td", ":Tasks<CR>", { desc = "Open TODO" })
+vim.keymap.set("n", prefix .. "tn", ":TaskAdd<CR>", { desc = "Add New Date Label" })
 
 vim.keymap.set("n", prefix .. "t4", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
@@ -313,21 +313,36 @@ map("n", prefix .. "f8", function()
   local out = mov:gsub("%.mov$", "") .. "-yt.mp4"
   local args = {
     "-y",
-    "-i", mov,
-    "-stream_loop", "-1", -- loop audio if shorter
-    "-i", audio,
-    "-map", "0:v:0",
-    "-map", "1:a:0",
-    "-c:v", "libx264",
-    "-pix_fmt", "yuv420p",
-    "-profile:v", "high",
-    "-level", "4.1",
-    "-preset", "medium",
-    "-crf", "20",
-    "-c:a", "aac",
-    "-b:a", "192k",
-    "-ar", "48000",
-    "-movflags", "+faststart",
+    "-i",
+    mov,
+    "-stream_loop",
+    "-1", -- loop audio if shorter
+    "-i",
+    audio,
+    "-map",
+    "0:v:0",
+    "-map",
+    "1:a:0",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-profile:v",
+    "high",
+    "-level",
+    "4.1",
+    "-preset",
+    "medium",
+    "-crf",
+    "20",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-ar",
+    "48000",
+    "-movflags",
+    "+faststart",
     "-shortest", -- trim when audio is longer
     out,
   }
