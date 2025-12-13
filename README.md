@@ -1,5 +1,8 @@
+
 # tmux and alacritty
 I used tmux and alacrity on my Mac. Other terminal configurations, such as Wezterm (my second favorite) and Ghostly, also work great on my Mac.
+
+[Read My Blog](https://sminrana.com)
 
 ## Keybinding
 
