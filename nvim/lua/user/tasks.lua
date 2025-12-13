@@ -3,24 +3,6 @@
 local task_file = vim.fn.expand("~/Desktop/obs-v1/tasks/TODO.md")
 
 local function ensure_tasks()
-  if vim.fn.filereadable(task_file) == 1 then
-    vim.cmd("edit " .. task_file)
-    return
-  end
-  local template = [[# Tasks
-
-## Top 1
-- [ ]
-
-## Next 3
-- [ ]
-- [ ]
-- [ ]
-
-## Notes
--
-]]
-  vim.fn.writefile(vim.split(template, "\n", { trimempty = false }), task_file)
   vim.cmd("edit " .. task_file)
 end
 
