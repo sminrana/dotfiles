@@ -1,4 +1,4 @@
-# Terminal + Neovim Workflow
+# Terminal + Neovim + Tmux Workflow
 
 This repo contains my daily driver setup on macOS: Alacritty + tmux + Neovim (LazyVim). It’s tuned for fast window/pane navigation, clipboard integration, and a rich Neovim keymap for search, snippets, notes, and utilities.
 
@@ -111,3 +111,5 @@ This repo contains my daily driver setup on macOS: Alacritty + tmux + Neovim (La
 - S3 uploads: requires `aws` CLI and proper credentials; ffmpeg for video conversion.
 
 Enjoy the workflow, and tweak bindings to taste.
+
+![Workflow Screenshot](image.png)
