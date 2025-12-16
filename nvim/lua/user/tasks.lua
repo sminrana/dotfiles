@@ -21,12 +21,25 @@ local function append_dated_section()
 ### Notes
 -
 ]]
-  local lines = vim.split(section, "\n", { trimempty = false })
-  -- Ensure file exists first
+  local new_lines = vim.split(section, "\n", { trimempty = false })
+  -- Ensure file exists first (open buffer)
   if vim.fn.filereadable(task_file) == 0 then
     ensure_tasks()
   end
-  vim.fn.writefile(lines, task_file, "a")
+  -- Read existing file lines (if any)
+  local existing = {}
+  if vim.fn.filereadable(task_file) == 1 then
+    existing = vim.fn.readfile(task_file)
+  end
+  -- Prepend new section to existing content
+  local all = {}
+  for _, l in ipairs(new_lines) do
+    table.insert(all, l)
+  end
+  for _, l in ipairs(existing) do
+    table.insert(all, l)
+  end
+  vim.fn.writefile(all, task_file)
   vim.cmd("edit " .. task_file)
   vim.cmd("/## " .. date)
 end
