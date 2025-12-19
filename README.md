@@ -3,6 +3,7 @@
 This repo contains my daily driver setup on macOS: Alacritty + tmux + Neovim (LazyVim). It’s tuned for fast window/pane navigation, clipboard integration, and a rich Neovim keymap for search, snippets, notes, and utilities.
 
 [Read My Blog](https://sminrana.com)
+[FileDiff Neovim plugin](https://github.com/sminrana/nvim-filediff)
 
 **Quick Start**
 
