@@ -110,10 +110,10 @@ end
 vim.api.nvim_create_autocmd("VimEnter", {
   desc = "Backup Helium data on start (async)",
   callback = function()
-    local ok, err = pcall(backup_helium_async)
-    if not ok then
-      vim.notify("Helium backup error: " .. tostring(err), vim.log.levels.ERROR)
-    end
+    -- local ok, err = pcall(backup_helium_async)
+    -- if not ok then
+    --   vim.notify("Helium backup error: " .. tostring(err), vim.log.levels.ERROR)
+    -- end
     -- Purge Downloads on start
     purge_downloads_async(15)
   end,
