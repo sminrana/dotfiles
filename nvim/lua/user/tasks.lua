@@ -1,15 +1,20 @@
 -- Single simple tasks file management
 
-local task_file = vim.fn.expand("~/Desktop/obs-v1/tasks/TODO.md")
+local tasks_dir = vim.fn.expand("~/Desktop/obs-v1/tasks")
+
+local function today_file()
+  local date = os.date("%Y-%m-%d")
+  return tasks_dir .. "/todo-" .. date .. ".md"
+end
 
 local function ensure_tasks()
+  local task_file = today_file()
   vim.cmd("edit " .. task_file)
 end
 
 local function append_dated_section()
-  local date = os.date("%Y-%m-%d")
-  local header = string.format("\n## %s\n", date)
-  local section = header .. [[
+  local task_file = today_file()
+  local section = [[
 ### Top 1
 - [ ]
 
@@ -22,26 +27,12 @@ local function append_dated_section()
 -
 ]]
   local new_lines = vim.split(section, "\n", { trimempty = false })
-  -- Ensure file exists first (open buffer)
+  -- If today's file does not exist, create it with the template
   if vim.fn.filereadable(task_file) == 0 then
-    ensure_tasks()
+    vim.fn.writefile(new_lines, task_file)
   end
-  -- Read existing file lines (if any)
-  local existing = {}
-  if vim.fn.filereadable(task_file) == 1 then
-    existing = vim.fn.readfile(task_file)
-  end
-  -- Prepend new section to existing content
-  local all = {}
-  for _, l in ipairs(new_lines) do
-    table.insert(all, l)
-  end
-  for _, l in ipairs(existing) do
-    table.insert(all, l)
-  end
-  vim.fn.writefile(all, task_file)
+  -- Open today's file
   vim.cmd("edit " .. task_file)
-  vim.cmd("/## " .. date)
 end
 
 vim.api.nvim_create_user_command("Tasks", ensure_tasks, {})
