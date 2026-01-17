@@ -16,29 +16,6 @@ return {
       return string.format("%d/%d/%d%s", ts, sw, sts, et)
     end
 
-    -- pick a section to put the info in (here: lualine_x)
-    -- make sure we don't clobber existing config - merge the component
-    opts.sections = opts.sections or {}
-    opts.sections.lualine_x = opts.sections.lualine_x or {}
-    -- add pomodoro timer component
-    local function pomo()
-      local handle = io.popen("pomo-status 2>/dev/null")
-      if not handle then
-        return ""
-      end
-      local result = handle:read("*a") or ""
-      handle:close()
-      result = result:gsub("\n", "")
-      return result
-    end
-
-    -- append components at the end of lualine_x
-    table.insert(opts.sections.lualine_x, {
-      pomo,
-      cond = function()
-        return true
-      end,
-    })
     table.insert(opts.sections.lualine_x, {
       tabinfo,
       cond = function()
