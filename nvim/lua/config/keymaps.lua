@@ -160,7 +160,7 @@ map("n", "<leader>F", "<Cmd>FzfLua<CR>")
 
 -- ===============================Personal keymaps===================================
 
-vim.keymap.set("n", prefix .. "t4", function()
+vim.keymap.set("n", prefix .. "md", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   vim.api.nvim_put({ date }, "c", true, true)
 end, { desc = "Add date here" })
