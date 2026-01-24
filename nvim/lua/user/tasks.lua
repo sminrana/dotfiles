@@ -453,7 +453,10 @@ end
 function M.start(id)
   ensure_db()
   local ts = now()
-  db_exec(string.format("UPDATE tasks SET status='in_progress', started_at=%d WHERE id=%d", ts, tonumber(id)))
+  -- Starting a task should make it active (remove from backlog)
+  db_exec(
+    string.format("UPDATE tasks SET status='in_progress', started_at=%d, backlog=0 WHERE id=%d", ts, tonumber(id))
+  )
   return true
 end
 
