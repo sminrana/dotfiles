@@ -1013,6 +1013,25 @@ function M.dashboard()
   local buf = render(build_lines(), "TaskFlow:Dashboard")
   -- Keep dashboard buffer around when hidden to avoid invalid buffer id during keymap setup
   pcall(vim.api.nvim_buf_set_option, buf, "bufhidden", "hide")
+  local function apply_header_highlights()
+    if not (buf and vim.api.nvim_buf_is_valid(buf)) then
+      return
+    end
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    local function add_hl_for_header(text, group)
+      for i = 1, #lines do
+        if lines[i] == text then
+          -- i-1 for 0-based row; highlight whole line
+          pcall(vim.api.nvim_buf_add_highlight, buf, -1, group, i - 1, 0, -1)
+          break
+        end
+      end
+    end
+    add_hl_for_header("Active:", "TaskflowActiveHeader")
+    add_hl_for_header("Deleted:", "TaskflowDeletedHeader")
+    add_hl_for_header("Archived:", "TaskflowArchivedHeader")
+    add_hl_for_header("Completed:", "TaskflowCompletedHeader")
+  end
   local function id_at_cursor()
     local line = vim.api.nvim_get_current_line()
     local id = line:match("%[(%d+)%]")
@@ -1042,6 +1061,7 @@ function M.dashboard()
     local new_lines = build_lines()
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, new_lines)
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
+    apply_header_highlights()
   end
   local function buf_map(lhs, fn)
     if not (buf and vim.api.nvim_buf_is_valid(buf)) then
@@ -1057,6 +1077,8 @@ function M.dashboard()
       redraw()
     end
   end)
+  -- initial highlight application
+  apply_header_highlights()
   buf_map("r", function()
     local id = id_at_cursor()
     if not id then
@@ -1596,6 +1618,11 @@ function M.setup(opts)
   apply_config(opts)
   ensure_db()
   load_state()
+  -- Define simple highlight groups for section headers
+  pcall(vim.api.nvim_set_hl, 0, "TaskflowActiveHeader", { fg = "#61afef", bold = true })
+  pcall(vim.api.nvim_set_hl, 0, "TaskflowDeletedHeader", { fg = "#e06c75", bold = true })
+  pcall(vim.api.nvim_set_hl, 0, "TaskflowArchivedHeader", { fg = "#7f848e", bold = true })
+  pcall(vim.api.nvim_set_hl, 0, "TaskflowCompletedHeader", { fg = "#98c379", bold = true })
   -- archive cleanup on setup
   M.archive(config.archive_after_days)
   vim.api.nvim_create_user_command("TodoAdd", function()
