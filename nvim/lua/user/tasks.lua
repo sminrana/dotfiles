@@ -833,7 +833,8 @@ function M.dashboard()
   local function collect_active()
     local items = {}
     for _, t in ipairs(state.tasks) do
-      if t.status ~= "completed" and not t.backlog then
+      -- Active section shows only started tasks
+      if t.status == "in_progress" then
         table.insert(items, t)
       end
     end
@@ -1031,13 +1032,16 @@ function M.dashboard()
     end)
     table.insert(lines, "Report (last 30d):")
     table.insert(lines, sep)
-    table.insert(lines, string.format(
-      "  Points earned: %d | Completed: %d | Started: %d | In Progress: %d",
-      pts_since,
-      #completed_since,
-      #started_since,
-      #inprog
-    ))
+    table.insert(
+      lines,
+      string.format(
+        "  Points earned: %d | Completed: %d | Started: %d | In Progress: %d",
+        pts_since,
+        #completed_since,
+        #started_since,
+        #inprog
+      )
+    )
     -- Rewards summary in report
     local pts_total = state.points or 0
     table.insert(lines, string.format("  Rewards (total points: %d):", pts_total))
@@ -1054,7 +1058,9 @@ function M.dashboard()
       if t.why and #t.why > 0 then
         table.insert(lines, "      Why:")
         for s in tostring(t.why):gmatch("([^\n]*)\n?") do
-          if s ~= nil then table.insert(lines, "        " .. s) end
+          if s ~= nil then
+            table.insert(lines, "        " .. s)
+          end
         end
       end
       if t.impact and #t.impact > 0 then
@@ -1074,7 +1080,9 @@ function M.dashboard()
       if t.why and #t.why > 0 then
         table.insert(lines, "      Why:")
         for s in tostring(t.why):gmatch("([^\n]*)\n?") do
-          if s ~= nil then table.insert(lines, "        " .. s) end
+          if s ~= nil then
+            table.insert(lines, "        " .. s)
+          end
         end
       end
       table.insert(lines, "")
@@ -1470,7 +1478,6 @@ function M.rewards()
   render(lines, "TaskFlow:Rewards")
 end
 
-
 function M.postpone_overdue(days)
   ensure_db()
   local d = tonumber(days) or 1
@@ -1810,9 +1817,12 @@ function M.setup(opts)
       vim.notify("No selection", vim.log.levels.WARN)
       return
     end
-    local first_line = sel:match("^(.-)\n") or sel
-    local title = (first_line:gsub("^%s+", ""):gsub("%s+$", ""))
-    local body = sel
+    -- Flatten selection into a single-line title (title + description), keep full body in why
+    local normalized = sel:gsub("\r\n", "\n"):gsub("\r", "\n")
+    local flat_title = normalized:gsub("\n+", " ")
+    flat_title = (flat_title:gsub("^%s+", ""):gsub("%s+$", ""))
+    local title = flat_title
+    local body = normalized
     local ok, err = M.add_text(title, body)
     if not ok then
       vim.notify("TaskFlow: failed to add from selection: " .. tostring(err or "unknown"), vim.log.levels.ERROR)
