@@ -859,6 +859,7 @@ function M.dashboard()
     local completed = collect_completed()
     local archived = collect_archived()
     local deleted = collect_deleted()
+    local sep = string.rep("-", 60)
     local lines = {}
     table.insert(
       lines,
@@ -876,6 +877,7 @@ function M.dashboard()
     table.insert(lines, string.format("Store: %s", get_data_path()))
     table.insert(lines, "---")
     table.insert(lines, "Active:")
+    table.insert(lines, sep)
     for _, t in ipairs(active) do
       local tag = is_overdue(t) and " [OVERDUE]" or ""
       if t.status == "in_progress" then
@@ -901,6 +903,7 @@ function M.dashboard()
     end
     table.insert(lines, "")
     table.insert(lines, "Backlog:")
+    table.insert(lines, sep)
     for _, t in ipairs(back) do
       local tag = is_overdue(t) and " [OVERDUE]" or ""
       if t.status == "in_progress" then
@@ -926,6 +929,7 @@ function M.dashboard()
     end
     table.insert(lines, "")
     table.insert(lines, "All (Pending, Not Backlogged):")
+    table.insert(lines, sep)
     for _, t in ipairs(allp) do
       if t.status ~= "in_progress" then
         local tag = is_overdue(t) and " [OVERDUE]" or ""
@@ -950,6 +954,7 @@ function M.dashboard()
     end
     table.insert(lines, "")
     table.insert(lines, "Completed:")
+    table.insert(lines, sep)
     for _, t in ipairs(completed) do
       table.insert(lines, fmt_task_line(t))
       if expanded and t.id and expanded[t.id] then
@@ -965,6 +970,7 @@ function M.dashboard()
     end
     table.insert(lines, "")
     table.insert(lines, "Archived:")
+    table.insert(lines, sep)
     for _, t in ipairs(archived) do
       table.insert(lines, fmt_task_line(t))
       if expanded and t.id and expanded[t.id] then
@@ -980,6 +986,7 @@ function M.dashboard()
     end
     table.insert(lines, "")
     table.insert(lines, "Deleted:")
+    table.insert(lines, sep)
     for _, t in ipairs(deleted) do
       table.insert(lines, fmt_task_line(t))
       if expanded and t.id and expanded[t.id] then
@@ -994,14 +1001,92 @@ function M.dashboard()
       end
     end
     table.insert(lines, "")
-    table.insert(lines, "Rewards:")
-    local pts = state.points or 0
-    table.insert(lines, string.format("  Total points: %d", pts))
-    for _, r in ipairs(config.rewards or {}) do
-      local claimed = state.rewards_claimed and state.rewards_claimed[tostring(r.threshold)]
-      local status = claimed and "(claimed)" or ((pts >= r.threshold) and "(available)" or "(locked)")
-      table.insert(lines, string.format("  - %d: %s %s", r.threshold, r.suggestion, status))
+    -- Progress report (last 30 days), appended at end
+    local since = now() - 30 * 24 * 3600
+    local since_str = os.date("%Y-%m-%d", since)
+    local completed_since, started_since, inprog = {}, {}, {}
+    local pts_since = 0
+    local area_counts = {}
+    local prio_counts = { low = 0, medium = 0, high = 0 }
+    for _, t in ipairs(state.tasks) do
+      if t.status == "completed" and (t.completed_at or 0) >= since then
+        table.insert(completed_since, t)
+        pts_since = pts_since + (t.points or 0)
+        area_counts[t.area or "general"] = (area_counts[t.area or "general"] or 0) + 1
+        local p = t.priority or "medium"
+        prio_counts[p] = (prio_counts[p] or 0) + 1
+      end
+      if (t.started_at or 0) >= since and (t.status ~= "completed") then
+        table.insert(started_since, t)
+      end
+      if t.status == "in_progress" then
+        table.insert(inprog, t)
+      end
     end
+    table.sort(completed_since, function(a, b)
+      return (a.completed_at or 0) > (b.completed_at or 0)
+    end)
+    table.sort(started_since, function(a, b)
+      return (a.started_at or 0) > (b.started_at or 0)
+    end)
+    table.insert(lines, "Report (last 30d):")
+    table.insert(lines, sep)
+    table.insert(lines, string.format(
+      "  Points earned: %d | Completed: %d | Started: %d | In Progress: %d",
+      pts_since,
+      #completed_since,
+      #started_since,
+      #inprog
+    ))
+    -- Rewards summary in report
+    local pts_total = state.points or 0
+    table.insert(lines, string.format("  Rewards (total points: %d):", pts_total))
+    local claimed = state.rewards_claimed or {}
+    for _, r in ipairs(config.rewards or {}) do
+      local is_claimed = claimed and claimed[tostring(r.threshold)]
+      local status = is_claimed and "(claimed)" or ((pts_total >= r.threshold) and "(available)" or "(locked)")
+      table.insert(lines, string.format("    - %d: %s %s", r.threshold, r.suggestion, status))
+    end
+    table.insert(lines, "")
+    table.insert(lines, "  Completed Details:")
+    for _, t in ipairs(completed_since) do
+      table.insert(lines, "    " .. fmt_task_line(t))
+      if t.why and #t.why > 0 then
+        table.insert(lines, "      Why:")
+        for s in tostring(t.why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then table.insert(lines, "        " .. s) end
+        end
+      end
+      if t.impact and #t.impact > 0 then
+        table.insert(lines, "      Impact: " .. t.impact)
+      end
+      if t.reward and #t.reward > 0 then
+        table.insert(lines, "      Reward: " .. t.reward .. string.format(" (pts:%d)", tonumber(t.points) or 0))
+      else
+        table.insert(lines, string.format("      Points: %d", tonumber(t.points) or 0))
+      end
+      table.insert(lines, "")
+    end
+    table.insert(lines, "  Started Details:")
+    for _, t in ipairs(started_since) do
+      local tag = is_overdue(t) and " [OVERDUE]" or ""
+      table.insert(lines, "    " .. fmt_task_line(t) .. tag)
+      if t.why and #t.why > 0 then
+        table.insert(lines, "      Why:")
+        for s in tostring(t.why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then table.insert(lines, "        " .. s) end
+        end
+      end
+      table.insert(lines, "")
+    end
+    table.insert(lines, "  Area Breakdown (completed):")
+    for a, c in pairs(area_counts) do
+      table.insert(lines, string.format("    %s: %d", a, c))
+    end
+    table.insert(lines, "  Priority Breakdown (completed):")
+    table.insert(lines, string.format("    low: %d", prio_counts.low or 0))
+    table.insert(lines, string.format("    medium: %d", prio_counts.medium or 0))
+    table.insert(lines, string.format("    high: %d", prio_counts.high or 0))
     table.insert(lines, "")
     table.insert(
       lines,
@@ -1385,6 +1470,7 @@ function M.rewards()
   render(lines, "TaskFlow:Rewards")
 end
 
+
 function M.postpone_overdue(days)
   ensure_db()
   local d = tonumber(days) or 1
@@ -1691,10 +1777,6 @@ function M.setup(opts)
       M.rewards()
     end
   end, { nargs = 1 })
-  -- UI deprecated; use the interactive dashboard instead
-  vim.api.nvim_create_user_command("TodoPick", function()
-    M.pick()
-  end, {})
   vim.api.nvim_create_user_command("TodoDelete", function(opts)
     local ok = M.delete(tonumber(opts.args))
     if ok then
