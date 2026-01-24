@@ -98,6 +98,23 @@ CREATE TABLE IF NOT EXISTS tasks (
   due INTEGER,
   backlog INTEGER
 );
+CREATE TABLE IF NOT EXISTS deleted (
+  id INTEGER,
+  uid TEXT,
+  title TEXT,
+  area TEXT,
+  status TEXT,
+  priority TEXT,
+  points INTEGER,
+  reward TEXT,
+  impact TEXT,
+  why TEXT,
+  created_at INTEGER,
+  started_at INTEGER,
+  completed_at INTEGER,
+  due INTEGER,
+  backlog INTEGER
+);
 CREATE TABLE IF NOT EXISTS archive (
   id INTEGER,
   uid TEXT,
@@ -159,6 +176,23 @@ COMMIT;]]
     { "backlog", "INTEGER" },
   })
   ensure_columns("archive", {
+    { "id", "INTEGER" },
+    { "uid", "TEXT" },
+    { "title", "TEXT" },
+    { "area", "TEXT" },
+    { "status", "TEXT" },
+    { "priority", "TEXT" },
+    { "points", "INTEGER" },
+    { "reward", "TEXT" },
+    { "impact", "TEXT" },
+    { "why", "TEXT" },
+    { "created_at", "INTEGER" },
+    { "started_at", "INTEGER" },
+    { "completed_at", "INTEGER" },
+    { "due", "INTEGER" },
+    { "backlog", "INTEGER" },
+  })
+  ensure_columns("deleted", {
     { "id", "INTEGER" },
     { "uid", "TEXT" },
     { "title", "TEXT" },
@@ -279,6 +313,7 @@ local function render(lines, title)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.api.nvim_buf_set_option(buf, "modifiable", false)
   vim.api.nvim_set_current_buf(buf)
+  return buf
 end
 
 local function render_float(lines, title)
@@ -313,20 +348,18 @@ end
 
 local function fmt_task_line(t)
   local due = (t.due and tonumber(t.due)) and os.date("%Y-%m-%d", tonumber(t.due)) or "-"
-  local why = (t.why and #t.why > 0) and (" | why: " .. t.why) or ""
   local impact = (t.impact and #t.impact > 0) and (" | impact: " .. t.impact) or ""
   local reward = (t.reward and #t.reward > 0) and (" | reward: " .. t.reward) or ""
   local pts = tonumber(t.points) or 0
   local id_str = (t.id and tostring(t.id)) or "?"
   return string.format(
-    "[%s] (%s/%s) %s | pts:%d | due:%s%s%s%s",
+    "[%s] (%s/%s) %s | pts:%d | due:%s%s%s",
     id_str,
     t.area or "general",
     t.priority or "medium",
     t.title or "",
     pts,
     due,
-    why,
     impact,
     reward
   )
@@ -464,7 +497,123 @@ function M.delete(id)
   if #before == 0 or tonumber(before[1].c or 0) == 0 then
     return false, "Task not found"
   end
-  db_exec(string.format("DELETE FROM tasks WHERE id=%d", rid))
+  db_exec(string.format(
+    [[BEGIN;
+    INSERT INTO deleted (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM tasks WHERE id=%d;
+    DELETE FROM tasks WHERE id=%d;
+  COMMIT;]],
+    rid,
+    rid
+  ))
+  return true
+end
+
+local function get_visual_selection()
+  local bufnr = 0
+  local s = vim.fn.getpos("'<")
+  local e = vim.fn.getpos("'>")
+  local start_line, start_col = s[2], s[3]
+  local end_line, end_col = e[2], e[3]
+  if start_line > end_line or (start_line == end_line and start_col > end_col) then
+    return nil
+  end
+  local lines = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
+  if #lines == 0 then
+    return nil
+  end
+  lines[1] = string.sub(lines[1], start_col)
+  lines[#lines] = string.sub(lines[#lines], 1, end_col)
+  return table.concat(lines, "\n")
+end
+
+function M.add_text(title, body)
+  local t = {
+    title = title or "Untitled",
+    why = body or "",
+    impact = "",
+    reward = "",
+    points = 3,
+    priority = "medium",
+    area = "general",
+    backlog = false,
+    due = os.time() + 24 * 3600,
+  }
+  local added, err = M.add(t)
+  return added, err
+end
+
+local function next_task_id()
+  ensure_db()
+  local rows = db_select("SELECT COALESCE(MAX(id),0) AS m FROM tasks")
+  local maxid = 0
+  if #rows > 0 and rows[1].m then
+    maxid = tonumber(rows[1].m) or 0
+  end
+  return maxid + 1
+end
+
+function M.restore_archived(id)
+  ensure_db()
+  local rid = tonumber(id)
+  if not rid then
+    return false, "invalid id"
+  end
+  local exists = db_select(string.format("SELECT COUNT(*) AS c FROM archive WHERE id=%d", rid))
+  if #exists == 0 or tonumber(exists[1].c or 0) == 0 then
+    return false, "not found"
+  end
+  local new_id = next_task_id()
+  db_exec(string.format(
+    [[BEGIN;
+    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
+      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0 FROM archive WHERE id=%d;
+    DELETE FROM archive WHERE id=%d;
+  COMMIT;]],
+    new_id,
+    rid,
+    rid
+  ))
+  return true
+end
+
+function M.restore_deleted(id)
+  ensure_db()
+  local rid = tonumber(id)
+  if not rid then
+    return false, "invalid id"
+  end
+  local exists = db_select(string.format("SELECT COUNT(*) AS c FROM deleted WHERE id=%d", rid))
+  if #exists == 0 or tonumber(exists[1].c or 0) == 0 then
+    return false, "not found"
+  end
+  local new_id = next_task_id()
+  db_exec(string.format(
+    [[BEGIN;
+    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
+      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0 FROM deleted WHERE id=%d;
+    DELETE FROM deleted WHERE id=%d;
+  COMMIT;]],
+    new_id,
+    rid,
+    rid
+  ))
+  return true
+end
+
+function M.reopen_completed(id)
+  ensure_db()
+  local rid = tonumber(id)
+  if not rid then
+    return false, "invalid id"
+  end
+  local exists = db_select(string.format("SELECT COUNT(*) AS c FROM tasks WHERE id=%d AND status='completed'", rid))
+  if #exists == 0 or tonumber(exists[1].c or 0) == 0 then
+    return false, "not found"
+  end
+  db_exec(
+    string.format("UPDATE tasks SET status='pending', started_at=NULL, completed_at=NULL, backlog=0 WHERE id=%d", rid)
+  )
   return true
 end
 
@@ -494,6 +643,27 @@ function M.archive(days)
   return true
 end
 
+function M.archive_task(id)
+  ensure_db()
+  local rid = tonumber(id)
+  if not rid then
+    return false, "invalid id"
+  end
+  local before = db_select(string.format("SELECT COUNT(*) AS c FROM tasks WHERE id=%d", rid))
+  if #before == 0 or tonumber(before[1].c or 0) == 0 then
+    return false, "Task not found"
+  end
+  db_exec(string.format(
+    [[BEGIN;
+    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM tasks WHERE id=%d;
+    DELETE FROM tasks WHERE id=%d;
+  COMMIT;]],
+    rid,
+    rid
+  ))
+  return true
+end
 function M.list(filter)
   load_state()
   local items = {}
@@ -562,90 +732,415 @@ end
 
 function M.dashboard()
   load_state()
-  local lines = {}
-  table.insert(lines, string.format("TaskFlow Dashboard | points: %d", state.points or 0))
-  table.insert(lines, string.format("Store: %s", get_data_path()))
-  table.insert(lines, "")
-  table.insert(lines, "Important (top by score):")
-  local important = {}
-  for _, t in ipairs(state.tasks) do
-    if t.priority == "high" and t.status ~= "completed" then
-      table.insert(important, t)
+  local function sort_tasks(items)
+    table.sort(items, function(a, b)
+      local sa, sb = score_for(a), score_for(b)
+      if sa == sb then
+        local da = a.due or 0
+        local db = b.due or 0
+        if da == db then
+          return (a.created_at or 0) < (b.created_at or 0)
+        end
+        return da < db
+      end
+      return sa > sb
+    end)
+  end
+
+  local function collect_all_pending_non_backlog()
+    local items = {}
+    for _, t in ipairs(state.tasks) do
+      if t.status ~= "completed" and (t.status == "pending" or t.status == nil) and not t.backlog then
+        table.insert(items, t)
+      end
     end
+    sort_tasks(items)
+    return items
   end
-  table.sort(important, function(a, b)
-    return score_for(a) > score_for(b)
-  end)
-  for i = 1, math.min(#important, 7) do
-    local t = important[i]
-    local tag = is_overdue(t) and " [OVERDUE]" or ""
-    table.insert(lines, "  " .. fmt_task_line(t) .. tag)
-  end
-  table.insert(lines, "")
-  table.insert(lines, "Next 7 Days:")
-  local next7 = {}
-  for _, t in ipairs(state.tasks) do
-    if t.due and t.status ~= "completed" and t.due <= (now() + 7 * 24 * 3600) then
-      table.insert(next7, t)
+
+  local function collect_completed()
+    local items = {}
+    for _, t in ipairs(state.tasks) do
+      if t.status == "completed" then
+        table.insert(items, t)
+      end
     end
+    table.sort(items, function(a, b)
+      return (a.completed_at or 0) > (b.completed_at or 0)
+    end)
+    return items
   end
-  table.sort(next7, function(a, b)
-    if a.due == b.due then
-      return score_for(a) > score_for(b)
+
+  local function collect_archived()
+    ensure_db()
+    local rows = db_select(
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM archive ORDER BY completed_at DESC"
+    )
+    local items = {}
+    for _, r in ipairs(rows) do
+      table.insert(items, {
+        id = tonumber(r.id),
+        uid = r.uid,
+        title = r.title,
+        area = r.area,
+        status = r.status,
+        priority = r.priority,
+        points = tonumber(r.points),
+        reward = r.reward,
+        impact = r.impact,
+        why = r.why,
+        created_at = tonumber(r.created_at),
+        started_at = tonumber(r.started_at),
+        completed_at = tonumber(r.completed_at),
+        due = tonumber(r.due),
+        backlog = tonumber(r.backlog) == 1,
+      })
     end
-    return (a.due or 0) < (b.due or 0)
-  end)
-  for i = 1, math.min(#next7, 10) do
-    local t = next7[i]
-    local tag = is_overdue(t) and " [OVERDUE]" or ""
-    table.insert(lines, "  " .. fmt_task_line(t) .. tag)
+    return items
   end
-  table.insert(lines, "")
-  table.insert(lines, "Overdue:")
-  local overdue = {}
-  for _, t in ipairs(state.tasks) do
-    if is_overdue(t) then
-      table.insert(overdue, t)
+
+  local function collect_deleted()
+    ensure_db()
+    local rows = db_select(
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM deleted ORDER BY created_at DESC"
+    )
+    local items = {}
+    for _, r in ipairs(rows) do
+      table.insert(items, {
+        id = tonumber(r.id),
+        uid = r.uid,
+        title = r.title,
+        area = r.area,
+        status = r.status,
+        priority = r.priority,
+        points = tonumber(r.points),
+        reward = r.reward,
+        impact = r.impact,
+        why = r.why,
+        created_at = tonumber(r.created_at),
+        started_at = tonumber(r.started_at),
+        completed_at = tonumber(r.completed_at),
+        due = tonumber(r.due),
+        backlog = tonumber(r.backlog) == 1,
+      })
     end
+    return items
   end
-  table.sort(overdue, function(a, b)
-    return (a.due or 0) < (b.due or 0)
-  end)
-  for i = 1, math.min(#overdue, 10) do
-    local t = overdue[i]
-    table.insert(lines, "  " .. fmt_task_line(t) .. " [OVERDUE]")
+
+  local function collect_active()
+    local items = {}
+    for _, t in ipairs(state.tasks) do
+      if t.status ~= "completed" and not t.backlog then
+        table.insert(items, t)
+      end
+    end
+    sort_tasks(items)
+    return items
   end
-  table.insert(lines, "")
-  table.insert(lines, "Backlog:")
-  for _, t in ipairs(state.tasks) do
-    if t.backlog and t.status ~= "completed" then
+
+  local function collect_backlog()
+    local items = {}
+    for _, t in ipairs(state.tasks) do
+      if t.status ~= "completed" and t.backlog then
+        table.insert(items, t)
+      end
+    end
+    sort_tasks(items)
+    return items
+  end
+
+  local function build_lines()
+    local active = collect_active()
+    local back = collect_backlog()
+    local allp = collect_all_pending_non_backlog()
+    local completed = collect_completed()
+    local archived = collect_archived()
+    local deleted = collect_deleted()
+    local lines = {}
+    table.insert(
+      lines,
+      string.format(
+        "TaskFlow Dashboard | active: %d | backlog: %d | all(pending): %d | completed: %d | archived: %d | deleted: %d | points: %d",
+        #active,
+        #back,
+        #allp,
+        #completed,
+        #archived,
+        #deleted,
+        state.points or 0
+      )
+    )
+    table.insert(lines, string.format("Store: %s", get_data_path()))
+    table.insert(lines, "---")
+    table.insert(lines, "Active:")
+    for _, t in ipairs(active) do
       local tag = is_overdue(t) and " [OVERDUE]" or ""
-      table.insert(lines, "  " .. fmt_task_line(t) .. tag)
+      if t.status == "in_progress" then
+        tag = tag .. " [IN PROGRESS]"
+      end
+      table.insert(lines, fmt_task_line(t) .. tag)
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        if t.impact and #t.impact > 0 then
+          table.insert(lines, "  Impact: " .. t.impact)
+        end
+        if t.reward and #t.reward > 0 then
+          table.insert(lines, "  Reward: " .. t.reward)
+        end
+        table.insert(lines, "")
+      end
     end
-  end
-  table.insert(lines, "")
-  table.insert(lines, "In Progress:")
-  for _, t in ipairs(state.tasks) do
-    if t.status == "in_progress" then
+    table.insert(lines, "")
+    table.insert(lines, "Backlog:")
+    for _, t in ipairs(back) do
       local tag = is_overdue(t) and " [OVERDUE]" or ""
-      table.insert(lines, "  " .. fmt_task_line(t) .. tag)
+      if t.status == "in_progress" then
+        tag = tag .. " [IN PROGRESS]"
+      end
+      table.insert(lines, fmt_task_line(t) .. tag)
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        if t.impact and #t.impact > 0 then
+          table.insert(lines, "  Impact: " .. t.impact)
+        end
+        if t.reward and #t.reward > 0 then
+          table.insert(lines, "  Reward: " .. t.reward)
+        end
+        table.insert(lines, "")
+      end
     end
-  end
-  table.insert(lines, "")
-  table.insert(lines, "Completed (recent 5):")
-  local completed = {}
-  for _, t in ipairs(state.tasks) do
-    if t.status == "completed" then
-      table.insert(completed, t)
+    table.insert(lines, "")
+    table.insert(lines, "All (Pending, Not Backlogged):")
+    for _, t in ipairs(allp) do
+      if t.status ~= "in_progress" then
+        local tag = is_overdue(t) and " [OVERDUE]" or ""
+        table.insert(lines, fmt_task_line(t) .. tag)
+        if expanded and t.id and expanded[t.id] then
+          table.insert(lines, "  Why:")
+          local why = t.why or ""
+          for s in tostring(why):gmatch("([^\n]*)\n?") do
+            if s ~= nil then
+              table.insert(lines, "    " .. s)
+            end
+          end
+          if t.impact and #t.impact > 0 then
+            table.insert(lines, "  Impact: " .. t.impact)
+          end
+          if t.reward and #t.reward > 0 then
+            table.insert(lines, "  Reward: " .. t.reward)
+          end
+          table.insert(lines, "")
+        end
+      end
     end
+    table.insert(lines, "")
+    table.insert(lines, "Completed:")
+    for _, t in ipairs(completed) do
+      table.insert(lines, fmt_task_line(t))
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        table.insert(lines, "")
+      end
+    end
+    table.insert(lines, "")
+    table.insert(lines, "Archived:")
+    for _, t in ipairs(archived) do
+      table.insert(lines, fmt_task_line(t))
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        table.insert(lines, "")
+      end
+    end
+    table.insert(lines, "")
+    table.insert(lines, "Deleted:")
+    for _, t in ipairs(deleted) do
+      table.insert(lines, fmt_task_line(t))
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        table.insert(lines, "")
+      end
+    end
+    table.insert(lines, "")
+    table.insert(lines, "Rewards:")
+    local pts = state.points or 0
+    table.insert(lines, string.format("  Total points: %d", pts))
+    for _, r in ipairs(config.rewards or {}) do
+      local claimed = state.rewards_claimed and state.rewards_claimed[tostring(r.threshold)]
+      local status = claimed and "(claimed)" or ((pts >= r.threshold) and "(available)" or "(locked)")
+      table.insert(lines, string.format("  - %d: %s %s", r.threshold, r.suggestion, status))
+    end
+    table.insert(lines, "")
+    table.insert(
+      lines,
+      "Controls: s=start, x=complete, b=toggle backlog, p=postpone Nd, a=archive, d=delete, r=restore/reopen (in Completed/Archived/Deleted), <CR>=toggle details, q=close"
+    )
+    return lines
   end
-  table.sort(completed, function(a, b)
-    return (a.completed_at or 0) > (b.completed_at or 0)
+
+  local buf = render(build_lines(), "TaskFlow:Dashboard")
+  -- Keep dashboard buffer around when hidden to avoid invalid buffer id during keymap setup
+  pcall(vim.api.nvim_buf_set_option, buf, "bufhidden", "hide")
+  local function id_at_cursor()
+    local line = vim.api.nvim_get_current_line()
+    local id = line:match("%[(%d+)%]")
+    return id and tonumber(id) or nil
+  end
+  local function section_at_cursor()
+    local row = (vim.api.nvim_win_get_cursor(0) or { 1, 0 })[1]
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    local current = ""
+    for i = 1, math.min(row, #lines) do
+      local l = lines[i]
+      if
+        l == "Active:"
+        or l == "Backlog:"
+        or l == "All (Pending, Not Backlogged):"
+        or l == "Completed:"
+        or l == "Archived:"
+        or l == "Deleted:"
+      then
+        current = l
+      end
+    end
+    return current
+  end
+  local function redraw()
+    vim.api.nvim_buf_set_option(buf, "modifiable", true)
+    local new_lines = build_lines()
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, new_lines)
+    vim.api.nvim_buf_set_option(buf, "modifiable", false)
+  end
+  local function buf_map(lhs, fn)
+    if not (buf and vim.api.nvim_buf_is_valid(buf)) then
+      return
+    end
+    vim.keymap.set("n", lhs, fn, { buffer = buf, silent = true })
+  end
+  buf_map("<CR>", function()
+    local id = id_at_cursor()
+    if id then
+      expanded = expanded or {}
+      expanded[id] = not expanded[id]
+      redraw()
+    end
   end)
-  for i = 1, math.min(#completed, 5) do
-    table.insert(lines, "  " .. fmt_task_line(completed[i]))
-  end
-  render(lines, "TaskFlow:Dashboard")
+  buf_map("r", function()
+    local id = id_at_cursor()
+    if not id then
+      return
+    end
+    local section = section_at_cursor()
+    if section == "Completed:" then
+      M.reopen_completed(id)
+    elseif section == "Archived:" then
+      M.restore_archived(id)
+    elseif section == "Deleted:" then
+      M.restore_deleted(id)
+    else
+      -- In other sections, 'r' does nothing
+      return
+    end
+    load_state()
+    redraw()
+  end)
+  buf_map("q", function()
+    vim.api.nvim_buf_delete(buf, { force = true })
+  end)
+  buf_map("s", function()
+    local id = id_at_cursor()
+    if id then
+      M.start(id)
+      load_state()
+      redraw()
+    end
+  end)
+  buf_map("x", function()
+    local id = id_at_cursor()
+    if id then
+      M.complete(id)
+      load_state()
+      redraw()
+    end
+  end)
+  buf_map("b", function()
+    local id = id_at_cursor()
+    if id then
+      M.set_backlog(id, "toggle")
+      load_state()
+      redraw()
+    end
+  end)
+  buf_map("p", function()
+    local id = id_at_cursor()
+    if not id then
+      return
+    end
+    vim.ui.input({ prompt = "Postpone days: ", default = "1" }, function(val)
+      if not val then
+        return
+      end
+      local d = tonumber(val)
+      if not d or d <= 0 then
+        vim.notify("Invalid days", vim.log.levels.WARN)
+        return
+      end
+      local delta = d * 24 * 3600
+      ensure_db()
+      db_exec(string.format("UPDATE tasks SET due = COALESCE(due, %d) + %d WHERE id=%d", now(), delta, id))
+      load_state()
+      redraw()
+    end)
+  end)
+  buf_map("a", function()
+    local id = id_at_cursor()
+    if id then
+      M.archive_task(id)
+      load_state()
+      redraw()
+    end
+  end)
+  buf_map("d", function()
+    local id = id_at_cursor()
+    if id then
+      vim.ui.input({ prompt = string.format("Delete task %d? (yes/no): ", id), default = "yes" }, function(val)
+        if val and val:lower() == "yes" then
+          M.delete(id)
+          load_state()
+          redraw()
+        end
+      end)
+    end
+  end)
 end
 
 function M.open_ui()
@@ -1080,27 +1575,8 @@ function M.pick()
   local function after_pick(line)
     local id = line:match("%[(%d+)%]")
     id = id and tonumber(id)
-    if not id then
-      return
-    end
-    local actions_list = { "start", "complete", "toggle_backlog", "stop", "delete" }
-    vim.ui.select(actions_list, { prompt = "Action" }, function(act)
-      if not act then
-        return
-      end
-      if act == "start" then
-        M.start(id)
-      elseif act == "complete" then
-        M.complete(id)
-      elseif act == "stop" then
-        M.stop(id)
-      elseif act == "toggle_backlog" then
-        M.set_backlog(id, "toggle")
-      elseif act == "delete" then
-        M.delete(id)
-      end
-      M.dashboard()
-    end)
+    -- No direct actions from pick; open interactive dashboard instead
+    M.dashboard()
   end
   if fzf_available() then
     pick_with_fzf(items, after_pick)
@@ -1185,9 +1661,7 @@ function M.setup(opts)
       M.rewards()
     end
   end, { nargs = 1 })
-  vim.api.nvim_create_user_command("TodoUI", function()
-    M.open_ui()
-  end, {})
+  -- UI deprecated; use the interactive dashboard instead
   vim.api.nvim_create_user_command("TodoPick", function()
     M.pick()
   end, {})
@@ -1214,70 +1688,27 @@ function M.setup(opts)
   map("<leader>jta", function()
     M.add_interactive()
   end, "TaskFlow Add")
-  map("<leader>jti", function()
-    M.list("important")
-  end, "TaskFlow List Important")
-  map("<leader>jtb", function()
-    M.list("backlog")
-  end, "TaskFlow List Backlog")
-  map("<leader>jtg", function()
-    vim.ui.select(all_areas(), { prompt = "Choose area" }, function(choice)
-      if choice then
-        M.area(choice)
-      end
-    end)
-  end, "TaskFlow Area List")
-  map("<leader>jtt", function()
-    M.list("today")
-  end, "TaskFlow List Today")
-  map("<leader>jtn", function()
-    M.list("next7")
-  end, "TaskFlow List Next 7 Days")
-  map("<leader>jto", function()
-    M.list("overdue")
-  end, "TaskFlow List Overdue")
-  map("<leader>jtp", function()
-    M.list("in_progress")
-  end, "TaskFlow List In Progress")
-  map("<leader>jtc", function()
-    M.list("completed")
-  end, "TaskFlow List Completed")
-  map("<leader>jts", function()
-    vim.ui.input({ prompt = "Start task id:" }, function(val)
-      if val then
-        M.start(tonumber(val))
-        M.dashboard()
-      end
-    end)
-  end, "TaskFlow Start Task")
-  map("<leader>jtx", function()
-    vim.ui.input({ prompt = "Complete task id:" }, function(val)
-      if val then
-        M.complete(tonumber(val))
-        M.dashboard()
-      end
-    end)
-  end, "TaskFlow Complete Task")
-  map("<leader>jtk", function()
-    vim.ui.input({ prompt = "Backlog toggle id:" }, function(val)
-      if val then
-        M.set_backlog(tonumber(val), "toggle")
-        M.dashboard()
-      end
-    end)
-  end, "TaskFlow Toggle Backlog")
-  map("<leader>jtw", function()
-    M.weekly_review()
-  end, "TaskFlow Weekly Review")
-  map("<leader>jtr", function()
-    M.rewards()
-  end, "TaskFlow Rewards")
-  map("<leader>jtu", function()
-    M.open_ui()
-  end, "TaskFlow UI")
-  map("<leader>jtf", function()
-    M.pick()
-  end, "TaskFlow Pick Task")
+  vim.api.nvim_create_user_command("TodoDashboardHistory", function()
+    M.dashboard_history()
+  end, {})
+  -- Visual mode: add selected text as a task
+  vim.keymap.set("x", "<leader>jtv", function()
+    local sel = get_visual_selection()
+    if not sel or #sel == 0 then
+      vim.notify("No selection", vim.log.levels.WARN)
+      return
+    end
+    local first_line = sel:match("^(.-)\n") or sel
+    local title = (first_line:gsub("^%s+", ""):gsub("%s+$", ""))
+    local body = sel
+    local ok, err = M.add_text(title, body)
+    if not ok then
+      vim.notify("TaskFlow: failed to add from selection: " .. tostring(err or "unknown"), vim.log.levels.ERROR)
+      return
+    end
+    M.dashboard()
+    vim.notify("Task added from selection")
+  end, { desc = "TaskFlow Add From Visual" })
 end
 
 -- Auto-setup so commands exist when the module is required
@@ -1453,4 +1884,193 @@ function M.merge(path)
   return true
 end
 
+-- return of module moved to end
+function M.dashboard_history()
+  load_state()
+  local function collect_completed()
+    local items = {}
+    for _, t in ipairs(state.tasks) do
+      if t.status == "completed" then
+        table.insert(items, t)
+      end
+    end
+    table.sort(items, function(a, b)
+      return (a.completed_at or 0) > (b.completed_at or 0)
+    end)
+    return items
+  end
+  local function collect_archived()
+    ensure_db()
+    local rows = db_select(
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM archive ORDER BY completed_at DESC"
+    )
+    local items = {}
+    for _, r in ipairs(rows) do
+      table.insert(items, {
+        id = tonumber(r.id),
+        uid = r.uid,
+        title = r.title,
+        area = r.area,
+        status = r.status,
+        priority = r.priority,
+        points = tonumber(r.points),
+        reward = r.reward,
+        impact = r.impact,
+        why = r.why,
+        created_at = tonumber(r.created_at),
+        started_at = tonumber(r.started_at),
+        completed_at = tonumber(r.completed_at),
+        due = tonumber(r.due),
+        backlog = tonumber(r.backlog) == 1,
+      })
+    end
+    return items
+  end
+  local function collect_deleted()
+    ensure_db()
+    local rows = db_select(
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM deleted ORDER BY created_at DESC"
+    )
+    local items = {}
+    for _, r in ipairs(rows) do
+      table.insert(items, {
+        id = tonumber(r.id),
+        uid = r.uid,
+        title = r.title,
+        area = r.area,
+        status = r.status,
+        priority = r.priority,
+        points = tonumber(r.points),
+        reward = r.reward,
+        impact = r.impact,
+        why = r.why,
+        created_at = tonumber(r.created_at),
+        started_at = tonumber(r.started_at),
+        completed_at = tonumber(r.completed_at),
+        due = tonumber(r.due),
+        backlog = tonumber(r.backlog) == 1,
+      })
+    end
+    return items
+  end
+
+  local function build_lines()
+    local lines = {}
+    local completed = collect_completed()
+    local archived = collect_archived()
+    local deleted = collect_deleted()
+    table.insert(
+      lines,
+      string.format("History Dashboard | completed: %d | archived: %d | deleted: %d", #completed, #archived, #deleted)
+    )
+    table.insert(lines, string.format("Store: %s", get_data_path()))
+    table.insert(lines, "---")
+    table.insert(lines, "Completed:")
+    for _, t in ipairs(completed) do
+      table.insert(lines, fmt_task_line(t))
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        table.insert(lines, "")
+      end
+    end
+    table.insert(lines, "")
+    table.insert(lines, "Archived:")
+    for _, t in ipairs(archived) do
+      table.insert(lines, fmt_task_line(t))
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        table.insert(lines, "")
+      end
+    end
+    table.insert(lines, "")
+    table.insert(lines, "Deleted:")
+    for _, t in ipairs(deleted) do
+      table.insert(lines, fmt_task_line(t))
+      if expanded and t.id and expanded[t.id] then
+        table.insert(lines, "  Why:")
+        local why = t.why or ""
+        for s in tostring(why):gmatch("([^\n]*)\n?") do
+          if s ~= nil then
+            table.insert(lines, "    " .. s)
+          end
+        end
+        table.insert(lines, "")
+      end
+    end
+    table.insert(lines, "")
+    table.insert(lines, "Controls: r=restore to active, <CR>=toggle details, q=close")
+    return lines
+  end
+
+  local buf = render(build_lines(), "TaskFlow:History")
+  pcall(vim.api.nvim_buf_set_option, buf, "bufhidden", "hide")
+  local function id_at_cursor()
+    local line = vim.api.nvim_get_current_line()
+    local id = line:match("%[(%d+)%]")
+    return id and tonumber(id) or nil
+  end
+  local function section_at_cursor()
+    local row = (vim.api.nvim_win_get_cursor(0) or { 1, 0 })[1]
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    local current = ""
+    for i = 1, math.min(row, #lines) do
+      local l = lines[i]
+      if l == "Completed:" or l == "Archived:" or l == "Deleted:" then
+        current = l
+      end
+    end
+    return current
+  end
+  local function redraw()
+    vim.api.nvim_buf_set_option(buf, "modifiable", true)
+    local new_lines = build_lines()
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, new_lines)
+    vim.api.nvim_buf_set_option(buf, "modifiable", false)
+  end
+  local function buf_map(lhs, fn)
+    if not (buf and vim.api.nvim_buf_is_valid(buf)) then
+      return
+    end
+    vim.keymap.set("n", lhs, fn, { buffer = buf, silent = true })
+  end
+  buf_map("<CR>", function()
+    local id = id_at_cursor()
+    if id then
+      expanded = expanded or {}
+      expanded[id] = not expanded[id]
+      redraw()
+    end
+  end)
+  buf_map("q", function()
+    vim.api.nvim_buf_delete(buf, { force = true })
+  end)
+  buf_map("r", function()
+    local id = id_at_cursor()
+    if not id then
+      return
+    end
+    local section = section_at_cursor()
+    if section == "Completed:" then
+      M.reopen_completed(id)
+    elseif section == "Archived:" then
+      M.restore_archived(id)
+    elseif section == "Deleted:" then
+      M.restore_deleted(id)
+    end
+    load_state()
+    redraw()
+  end)
+end
 return M
