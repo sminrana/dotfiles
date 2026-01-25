@@ -1209,11 +1209,12 @@ function M.dashboard()
       return
     end
     local section = section_at_cursor()
-    if section == "Completed:" then
+    -- Match by section prefix to be robust to emojis
+    if section:match("^Completed") then
       M.reopen_completed(id)
-    elseif section == "Archived:" then
+    elseif section:match("^Archived") then
       M.restore_archived(id)
-    elseif section == "Deleted:" then
+    elseif section:match("^Deleted") then
       M.restore_deleted(id)
     else
       -- In other sections, 'r' does nothing
