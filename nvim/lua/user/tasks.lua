@@ -71,12 +71,28 @@ local function db_select(sql)
   return rows
 end
 
+-- SQL escape helper (placed before meta helpers to avoid forward-ref errors)
 local function sql_escape(s)
   if s == nil then
     return ""
   end
   return tostring(s):gsub("'", "''")
 end
+
+-- Simple key/value storage in the meta table
+local function meta_get(k)
+  local rows = db_select(string.format("SELECT v FROM meta WHERE k='%s'", sql_escape(k)))
+  if #rows > 0 and rows[1].v then
+    return rows[1].v
+  end
+  return nil
+end
+
+local function meta_set(k, v)
+  db_exec(string.format("INSERT INTO meta (k, v) VALUES ('%s','%s') ON CONFLICT(k) DO UPDATE SET v=excluded.v", sql_escape(k), sql_escape(tostring(v or ""))))
+end
+
+-- sql_escape defined above
 
 local function ensure_db()
   local create_sql = [[
@@ -219,6 +235,7 @@ local state = {
   rewards_claimed = {},
   last_backup_stamp = nil,
   last_merge_report = nil,
+  last_due_email_date = nil,
 }
 
 local config = {
@@ -1313,6 +1330,215 @@ function M.dashboard()
   end)
 end
 
+-- Build HTML for today's due tasks
+local function build_today_due_html(today_due, overdue, next3)
+  local lines = {}
+  table.insert(lines, "<html><body>")
+  table.insert(lines, string.format("<h2>Tasks Digest (%s)</h2>", os.date("%Y-%m-%d")))
+  local function section(title, tasks)
+    table.insert(lines, string.format("<h3>%s (%d)</h3>", title, #tasks))
+    if #tasks == 0 then
+      table.insert(lines, "<p>None</p>")
+      return
+    end
+    table.insert(lines, "<ul>")
+    for _, t in ipairs(tasks) do
+      local due = (t.due and tonumber(t.due)) and os.date("%Y-%m-%d", tonumber(t.due)) or "-"
+      local item = string.format("<li>[%s] (%s/%s) %s | pts:%d | due:%s</li>", tostring(t.id or "?"), t.area or "general", t.priority or "medium", (t.title or ""), tonumber(t.points or 0), due)
+      table.insert(lines, item)
+    end
+    table.insert(lines, "</ul>")
+  end
+  section("Due Today", today_due)
+  section("Overdue", overdue)
+  section("Next 3 Days", next3)
+  table.insert(lines, "</body></html>")
+  return table.concat(lines, "\n")
+end
+
+local function collect_today_due_tasks()
+  load_state()
+  local today = os.date("%Y-%m-%d")
+  local items = {}
+  for _, t in ipairs(state.tasks or {}) do
+    if t.due and os.date("%Y-%m-%d", t.due) == today and (t.status ~= "completed") then
+      table.insert(items, t)
+    end
+  end
+  table.sort(items, function(a, b)
+    local sa, sb = score_for(a), score_for(b)
+    if sa == sb then
+      return (a.created_at or 0) < (b.created_at or 0)
+    end
+    return sa > sb
+  end)
+  return items
+end
+
+local function collect_overdue_tasks()
+  load_state()
+  local items = {}
+  for _, t in ipairs(state.tasks or {}) do
+    if t.due and (t.due < now()) and (t.status ~= "completed") then
+      table.insert(items, t)
+    end
+  end
+  table.sort(items, function(a, b)
+    local sa, sb = score_for(a), score_for(b)
+    if sa == sb then
+      return (a.due or 0) < (b.due or 0)
+    end
+    return sa > sb
+  end)
+  return items
+end
+
+local function collect_next3_tasks()
+  load_state()
+  local end_ts = now() + 3 * 24 * 3600
+  local today_str = os.date("%Y-%m-%d")
+  local items = {}
+  for _, t in ipairs(state.tasks or {}) do
+    if t.due and (t.due > now()) and (t.due <= end_ts) and (t.status ~= "completed") and (os.date("%Y-%m-%d", t.due) ~= today_str) then
+      table.insert(items, t)
+    end
+  end
+  table.sort(items, function(a, b)
+    local sa, sb = score_for(a), score_for(b)
+    if sa == sb then
+      return (a.due or 0) < (b.due or 0)
+    end
+    return sa > sb
+  end)
+  return items
+end
+
+-- Minimal SES email sender modeled after user/newsletter.lua
+local function require_email_env(subject_override)
+  local from_email = "hello@sminrana.com"
+  local from_name = "TaskFlow"
+  local subject = subject_override or ("Tasks Digest: Today, Overdue, Next 3 Days - " .. os.date("%Y-%m-%d"))
+  local region = vim.env.AWS_REGION or vim.env.AWS_DEFAULT_REGION or "us-east-1"
+  local to_email = vim.env.TASKS_EMAIL_TO or vim.env.NEWSLETTER_TEST_RECIPIENT or from_email
+  if not region or region == "" then
+    return nil, "Missing AWS region (set AWS_REGION)"
+  end
+  if vim.fn.executable("aws") ~= 1 then
+    return nil, "aws CLI is not installed or not in PATH"
+  end
+  return {
+    from_email = from_email,
+    from_name = from_name,
+    subject = subject,
+    region = region,
+    to_email = to_email,
+  }, nil
+end
+
+local function ses_send_html(env, html, to)
+  local safe_html = tostring(html or ""):gsub("\\", "\\\\"):gsub('"', '\\"'):gsub("\n", "\\n")
+  local json_payload = string.format([[{
+  "FromEmailAddress": "%s <%s>",
+  "Destination": { "ToAddresses": ["%s"] },
+  "Content": { "Simple": { "Subject": { "Data": "%s", "Charset": "UTF-8" }, "Body": { "Html": { "Data": "%s", "Charset": "UTF-8" } } } }
+}]], env.from_name, env.from_email, to, env.subject, safe_html)
+  local out = vim.fn.system({ "aws", "sesv2", "send-email", "--region", env.region, "--cli-input-json", json_payload })
+  local exit = vim.v.shell_error
+  return exit, out
+end
+
+-- Public: send today's due tasks email immediately
+function M.send_today_due_email()
+  local today_due = collect_today_due_tasks()
+  local overdue = collect_overdue_tasks()
+  local next3 = collect_next3_tasks()
+  local env, err = require_email_env()
+  if err then
+    vim.notify("TaskFlow Email: " .. err, vim.log.levels.ERROR)
+    return false
+  end
+  if (#today_due == 0) and (#overdue == 0) and (#next3 == 0) then
+    -- No send when nothing due; mark date to avoid re-sending
+    meta_set("last_due_email_date", os.date("%Y-%m-%d"))
+    vim.notify("TaskFlow: no tasks due today; skipping email", vim.log.levels.INFO)
+    return true
+  end
+  local html = build_today_due_html(today_due, overdue, next3)
+  local exit, out = ses_send_html(env, html, env.to_email)
+  if exit == 0 then
+    vim.notify("TaskFlow: sent today's due tasks email to " .. env.to_email, vim.log.levels.INFO)
+    meta_set("last_due_email_date", os.date("%Y-%m-%d"))
+    return true
+  else
+    vim.notify("TaskFlow: email send failed\n" .. tostring(out), vim.log.levels.ERROR)
+    return false
+  end
+end
+
+-- Schedule daily email at 06:00 local time (when Neovim is running)
+function M.start_daily_due_email()
+  -- Remember last sent date to avoid duplicates
+  state.last_due_email_date = state.last_due_email_date or meta_get("last_due_email_date")
+  local function ms_until_next_6am()
+    local now_ts = os.time()
+    local now_date = os.date("*t", now_ts)
+    local target = {
+      year = now_date.year,
+      month = now_date.month,
+      day = now_date.day,
+      hour = 6,
+      min = 0,
+      sec = 0,
+      isdst = now_date.isdst,
+    }
+    local target_ts = os.time(target)
+    if target_ts <= now_ts then
+      -- If past 6am today, schedule for tomorrow
+      target.day = target.day + 1
+      target_ts = os.time(target)
+    end
+    local delta = (target_ts - now_ts) * 1000
+    if delta < 0 then delta = 1000 end
+    return delta
+  end
+  local timer = vim.loop.new_timer()
+  local function schedule_next()
+    local ms = ms_until_next_6am()
+    timer:start(ms, 0, function()
+      local today = os.date("%Y-%m-%d")
+      local last = meta_get("last_due_email_date")
+      if last ~= today then
+        M.send_today_due_email()
+      end
+      -- chain next run for tomorrow 6am
+      schedule_next()
+    end)
+  end
+  schedule_next()
+  vim.notify("TaskFlow: daily due email scheduling started (06:00)", vim.log.levels.INFO)
+end
+
+-- Send once on first Neovim start of the day
+function M.auto_send_today_on_start()
+  local today = os.date("%Y-%m-%d")
+  local last = meta_get("last_due_email_date")
+  if last ~= today then
+    M.send_today_due_email()
+  end
+end
+
+-- Enable automatic send on VimEnter (first run) and also start the 6am scheduler
+function M.enable_auto_due_email_on_start()
+  local grp = vim.api.nvim_create_augroup("TaskFlowDueEmail", { clear = true })
+  vim.api.nvim_create_autocmd("VimEnter", {
+    group = grp,
+    once = true,
+    callback = function()
+      pcall(M.auto_send_today_on_start)
+    end,
+  })
+end
+
 function M.open_ui()
   load_state()
   local lines = {}
@@ -1974,6 +2200,9 @@ function M.setup(opts)
   map("<leader>jta", function()
     M.add_interactive()
   end, "TaskFlow Add")
+  map("<leader>jte", function()
+    M.send_today_due_email()
+  end, "TaskFlow Send Email (today/overdue/next3)")
   vim.api.nvim_create_user_command("TodoDashboardHistory", function()
     M.dashboard_history()
   end, {})
