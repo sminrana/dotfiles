@@ -628,6 +628,13 @@ function M.restore_deleted(id)
   return true
 end
 
+-- Empty all items from the Deleted bin
+function M.empty_deleted()
+  ensure_db()
+  db_exec("DELETE FROM deleted")
+  return true
+end
+
 function M.reopen_completed(id)
   ensure_db()
   local rid = tonumber(id)
@@ -1122,7 +1129,7 @@ function M.dashboard()
     table.insert(lines, "")
     table.insert(
       lines,
-      "Controls: s=start, x=complete, b=toggle backlog, p=postpone Nd, a=archive, d=delete, r=restore/reopen (in Completed/Archived/Deleted), <CR>=toggle details, q=close"
+      "Controls: s=start, x=complete, b=toggle backlog, p=postpone Nd, a=archive, d=delete, e=empty deleted, r=restore/reopen (in Completed/Archived/Deleted), <CR>=toggle details, q=close"
     )
     return lines
   end
@@ -1282,6 +1289,17 @@ function M.dashboard()
         end
       end)
     end
+  end)
+  -- Empty Deleted bin (confirmation required)
+  buf_map("e", function()
+    vim.ui.input({ prompt = "Empty Deleted bin? Type 'yes' to confirm: ", default = "no" }, function(val)
+      if val and val:lower() == "yes" then
+        M.empty_deleted()
+        load_state()
+        redraw()
+        vim.notify("Deleted bin emptied")
+      end
+    end)
   end)
   buf_map("m", function()
     local id = id_at_cursor()
@@ -1647,7 +1665,12 @@ function M.edit_interactive(id)
     vim.notify("Invalid id", vim.log.levels.WARN)
     return false
   end
-  local rows = db_select(string.format("SELECT id, title, area, status, priority, points, reward, impact, why, due, backlog FROM tasks WHERE id=%d", rid))
+  local rows = db_select(
+    string.format(
+      "SELECT id, title, area, status, priority, points, reward, impact, why, due, backlog FROM tasks WHERE id=%d",
+      rid
+    )
+  )
   if #rows == 0 then
     vim.notify("Task not found", vim.log.levels.WARN)
     return false
@@ -1667,29 +1690,45 @@ function M.edit_interactive(id)
   local tomorrow = os.date("%Y-%m-%d", os.time() + 24 * 3600)
   local due_default = t.due and os.date("%Y-%m-%d", t.due) or tomorrow
   input("Title: ", t.title, function(v1)
-    if v1 == nil then return end
+    if v1 == nil then
+      return
+    end
     t.title = (v1 ~= "" and v1) or t.title
     input("Why (motivation): ", t.why, function(v2)
-      if v2 == nil then return end
+      if v2 == nil then
+        return
+      end
       t.why = v2 or ""
       input("Impact: ", t.impact, function(v3)
-        if v3 == nil then return end
+        if v3 == nil then
+          return
+        end
         t.impact = v3 or ""
         input("Reward: ", t.reward, function(v4)
-          if v4 == nil then return end
+          if v4 == nil then
+            return
+          end
           t.reward = v4 or ""
           input("Points: ", tostring(t.points), function(v5)
-            if v5 == nil then return end
+            if v5 == nil then
+              return
+            end
             t.points = tonumber(v5) or t.points
             input("Priority (low/medium/high): ", t.priority, function(v6)
-              if v6 == nil then return end
+              if v6 == nil then
+                return
+              end
               local p = (v6 == "low" or v6 == "high") and v6 or (v6 == "medium" and v6 or t.priority)
               t.priority = p
               input("Area: ", t.area, function(v7)
-                if v7 == nil then return end
+                if v7 == nil then
+                  return
+                end
                 t.area = (v7 ~= "" and v7) or t.area
                 input("Due (YYYY-MM-DD): ", due_default, function(v8)
-                  if v8 == nil then return end
+                  if v8 == nil then
+                    return
+                  end
                   local due_str = (v8 and #v8 > 0) and v8 or due_default
                   local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
                   local due_ts
@@ -1698,7 +1737,9 @@ function M.edit_interactive(id)
                   end
                   t.due = due_ts or t.due or (os.time() + 24 * 3600)
                   input("Backlog? (y/n): ", t.backlog and "y" or "n", function(v9)
-                    if v9 == nil then return end
+                    if v9 == nil then
+                      return
+                    end
                     local ans = tostring(v9 or (t.backlog and "y" or "n")):lower()
                     t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
                     local sql = string.format(
