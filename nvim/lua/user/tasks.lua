@@ -365,6 +365,26 @@ local function fmt_task_line(t)
   )
 end
 
+-- Enforce a 255-char title; overflow appended to why
+local function limit_title_why(title, why)
+  title = title or "Untitled"
+  why = why or ""
+  local max = 255
+  if #title > max then
+    local t255 = string.sub(title, 1, max)
+    local remainder = string.sub(title, max + 1)
+    if remainder and #remainder > 0 then
+      if why ~= "" then
+        why = remainder .. "\n\n" .. why
+      else
+        why = remainder
+      end
+    end
+    title = t255
+  end
+  return title, why
+end
+
 local function is_overdue(t)
   return t.due and (t.due < now()) and (t.status ~= "completed")
 end
@@ -392,6 +412,10 @@ function M.add(opts)
     load_state()
     opts = opts or {}
     ensure_db()
+    -- Title length enforcement
+    local limited_title, limited_why = limit_title_why(opts.title, opts.why)
+    opts.title = limited_title
+    opts.why = limited_why
     -- Compute next id from DB to avoid stale last_id
     local maxrows = db_select("SELECT COALESCE(MAX(id),0) AS m FROM tasks")
     local maxid = 0
@@ -877,7 +901,7 @@ function M.dashboard()
     )
     table.insert(lines, string.format("Store: %s", get_data_path()))
     table.insert(lines, "---")
-    table.insert(lines, "Active:")
+    table.insert(lines, "⏳ Active:")
     table.insert(lines, sep)
     for _, t in ipairs(active) do
       local tag = is_overdue(t) and " [OVERDUE]" or ""
@@ -954,7 +978,7 @@ function M.dashboard()
       end
     end
     table.insert(lines, "")
-    table.insert(lines, "Completed:")
+    table.insert(lines, "Completed ✅:")
     table.insert(lines, sep)
     for _, t in ipairs(completed) do
       table.insert(lines, fmt_task_line(t))
@@ -986,7 +1010,7 @@ function M.dashboard()
       end
     end
     table.insert(lines, "")
-    table.insert(lines, "Deleted:")
+    table.insert(lines, "Deleted 🗑️:")
     table.insert(lines, sep)
     for _, t in ipairs(deleted) do
       table.insert(lines, fmt_task_line(t))
@@ -1120,10 +1144,10 @@ function M.dashboard()
         end
       end
     end
-    add_hl_for_header("Active:", "TaskflowActiveHeader")
-    add_hl_for_header("Deleted:", "TaskflowDeletedHeader")
+    add_hl_for_header("⏳ Active:", "TaskflowActiveHeader")
+    add_hl_for_header("Deleted 🗑️:", "TaskflowDeletedHeader")
     add_hl_for_header("Archived:", "TaskflowArchivedHeader")
-    add_hl_for_header("Completed:", "TaskflowCompletedHeader")
+    add_hl_for_header("Completed ✅:", "TaskflowCompletedHeader")
   end
   local function id_at_cursor()
     local line = vim.api.nvim_get_current_line()
@@ -1137,12 +1161,12 @@ function M.dashboard()
     for i = 1, math.min(row, #lines) do
       local l = lines[i]
       if
-        l == "Active:"
+        l == "⏳ Active:"
         or l == "Backlog:"
         or l == "All (Pending, Not Backlogged):"
-        or l == "Completed:"
+        or l == "Completed ✅:"
         or l == "Archived:"
-        or l == "Deleted:"
+        or l == "Deleted 🗑️:"
       then
         current = l
       end
@@ -1258,6 +1282,15 @@ function M.dashboard()
         end
       end)
     end
+  end)
+  buf_map("m", function()
+    local id = id_at_cursor()
+    if not id then
+      return
+    end
+    M.edit_interactive(id)
+    load_state()
+    redraw()
   end)
 end
 
@@ -1605,6 +1638,98 @@ function M.add_interactive()
       end)
     end)
   end)
+end
+
+function M.edit_interactive(id)
+  ensure_db()
+  local rid = tonumber(id)
+  if not rid then
+    vim.notify("Invalid id", vim.log.levels.WARN)
+    return false
+  end
+  local rows = db_select(string.format("SELECT id, title, area, status, priority, points, reward, impact, why, due, backlog FROM tasks WHERE id=%d", rid))
+  if #rows == 0 then
+    vim.notify("Task not found", vim.log.levels.WARN)
+    return false
+  end
+  local r = rows[1]
+  local t = {
+    title = r.title or "Untitled",
+    why = r.why or "",
+    impact = r.impact or "",
+    reward = r.reward or "",
+    points = tonumber(r.points) or 3,
+    priority = (r.priority and #r.priority > 0) and r.priority or "medium",
+    area = r.area or "general",
+    due = tonumber(r.due),
+    backlog = (tonumber(r.backlog) or 0) == 1,
+  }
+  local tomorrow = os.date("%Y-%m-%d", os.time() + 24 * 3600)
+  local due_default = t.due and os.date("%Y-%m-%d", t.due) or tomorrow
+  input("Title: ", t.title, function(v1)
+    if v1 == nil then return end
+    t.title = (v1 ~= "" and v1) or t.title
+    input("Why (motivation): ", t.why, function(v2)
+      if v2 == nil then return end
+      t.why = v2 or ""
+      input("Impact: ", t.impact, function(v3)
+        if v3 == nil then return end
+        t.impact = v3 or ""
+        input("Reward: ", t.reward, function(v4)
+          if v4 == nil then return end
+          t.reward = v4 or ""
+          input("Points: ", tostring(t.points), function(v5)
+            if v5 == nil then return end
+            t.points = tonumber(v5) or t.points
+            input("Priority (low/medium/high): ", t.priority, function(v6)
+              if v6 == nil then return end
+              local p = (v6 == "low" or v6 == "high") and v6 or (v6 == "medium" and v6 or t.priority)
+              t.priority = p
+              input("Area: ", t.area, function(v7)
+                if v7 == nil then return end
+                t.area = (v7 ~= "" and v7) or t.area
+                input("Due (YYYY-MM-DD): ", due_default, function(v8)
+                  if v8 == nil then return end
+                  local due_str = (v8 and #v8 > 0) and v8 or due_default
+                  local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
+                  local due_ts
+                  if y and m and d then
+                    due_ts = os.time({ year = tonumber(y), month = tonumber(m), day = tonumber(d), hour = 0 })
+                  end
+                  t.due = due_ts or t.due or (os.time() + 24 * 3600)
+                  input("Backlog? (y/n): ", t.backlog and "y" or "n", function(v9)
+                    if v9 == nil then return end
+                    local ans = tostring(v9 or (t.backlog and "y" or "n")):lower()
+                    t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
+                    local sql = string.format(
+                      "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, backlog=%d WHERE id=%d",
+                      sql_escape(t.title),
+                      sql_escape(t.area),
+                      sql_escape(t.priority),
+                      tonumber(t.points) or 0,
+                      sql_escape(t.reward),
+                      sql_escape(t.impact),
+                      sql_escape(t.why),
+                      tonumber(t.due) or (os.time() + 24 * 3600),
+                      t.backlog and 1 or 0,
+                      rid
+                    )
+                    local out, code = db_exec(sql)
+                    if code ~= 0 then
+                      vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
+                      return
+                    end
+                    M.dashboard()
+                  end)
+                end)
+              end)
+            end)
+          end)
+        end)
+      end)
+    end)
+  end)
+  return true
 end
 
 local function apply_config(opts)
