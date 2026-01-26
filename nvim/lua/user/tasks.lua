@@ -259,6 +259,9 @@ local config = {
     { threshold = 400, suggestion = "Weekend getaway" },
   },
   areas = { "general", "work", "personal" },
+  backup_dir = "~/Desktop/backup", -- override if you want a different folder
+  backup_retain = 7, -- keep latest N backups
+  backup_time = { hour = 12, min = 0 }, -- daily backup time (local)
 }
 
 local function ensure_data_dir()
@@ -266,6 +269,88 @@ local function ensure_data_dir()
   if vim.fn.isdirectory(dir) == 0 then
     vim.fn.mkdir(dir, "p")
   end
+end
+
+-- Backup helpers
+local function get_backup_dir()
+  local base = config.backup_dir and vim.fn.expand(config.backup_dir)
+  if not base or base == "" then
+    base = vim.fn.expand("~/Desktop/backup")
+  end
+  return base
+end
+
+local function ensure_dir(path)
+  if vim.fn.isdirectory(path) == 0 then
+    vim.fn.mkdir(path, "p")
+  end
+end
+
+local function enforce_backup_retention()
+  local keep = tonumber(config.backup_retain or 20)
+  if keep <= 0 then
+    return
+  end
+  local dir = get_backup_dir()
+  local files = vim.fn.globpath(dir, "taskflow-*.db", false, true)
+  table.sort(files) -- filenames contain timestamp so lexicographic is chronological
+  local excess = #files - keep
+  if excess > 0 then
+    for i = 1, excess do
+      pcall(vim.fn.delete, files[i])
+    end
+  end
+end
+
+function M.backup_now()
+  ensure_db()
+  local dir = get_backup_dir()
+  ensure_dir(dir)
+  local ts = os.date("%Y%m%d-%H%M%S")
+  local dest = dir .. "/taskflow-" .. ts .. ".db"
+  -- Prefer SQLite VACUUM INTO for a consistent copy
+  local out, code = db_exec(string.format("VACUUM INTO '%s'", sql_escape(dest)))
+  if code ~= 0 then
+    -- Fallback to sqlite .backup, then to cp
+    local bin = get_sqlite_bin()
+    if bin then
+      local out2 = vim.fn.system({ bin, get_data_path(), string.format(".backup '%s'", dest) })
+      if (vim.v.shell_error or 0) ~= 0 then
+        vim.fn.system({ "cp", get_data_path(), dest })
+        if (vim.v.shell_error or 0) ~= 0 then
+          vim.notify("TaskFlow: backup failed: " .. tostring(out or out2), vim.log.levels.ERROR)
+          return false
+        end
+      end
+    else
+      vim.fn.system({ "cp", get_data_path(), dest })
+      if (vim.v.shell_error or 0) ~= 0 then
+        vim.notify("TaskFlow: backup failed (sqlite3 not found and cp failed)", vim.log.levels.ERROR)
+        return false
+      end
+    end
+  end
+  enforce_backup_retention()
+  -- Integrity check on live DB
+  local ok, msg = (function()
+    local rows = db_select("PRAGMA integrity_check")
+    if #rows > 0 then
+      local first
+      for _, v in pairs(rows[1]) do
+        first = v
+        break
+      end
+      if first == "ok" then
+        return true, "ok"
+      else
+        return false, tostring(first)
+      end
+    end
+    return false, "no result"
+  end)()
+  local suffix = ok and " (integrity: ok)" or (" (integrity: " .. (msg or "failed") .. ")")
+  vim.notify("TaskFlow: backup saved to " .. dest .. suffix, ok and vim.log.levels.INFO or vim.log.levels.WARN)
+  return dest
 end
 
 local function load_state()
@@ -1261,7 +1346,7 @@ function M.dashboard()
     table.insert(lines, "")
     table.insert(
       lines,
-      "Controls: s=start, x=complete, b=toggle backlog, p=postpone Nd, a=archive, d=delete, e=empty deleted, r=restore/reopen (in Completed/Archived/Deleted), <CR>=toggle details, q=close"
+      "Controls: s=start, x=complete, b=toggle backlog, p=postpone Nd, a=archive, d=delete, e=empty deleted, B=backup db, r=restore/reopen (in Completed/Archived/Deleted), <CR>=toggle details, q=close"
     )
     return lines
   end
@@ -1407,6 +1492,14 @@ function M.dashboard()
     local id = id_at_cursor()
     if id then
       M.archive_task(id)
+      load_state()
+      redraw()
+    end
+  end)
+  -- Backup database now
+  buf_map("B", function()
+    local dest = M.backup_now()
+    if dest then
       load_state()
       redraw()
     end
@@ -1678,6 +1771,106 @@ function M.enable_auto_due_email_on_start()
   })
 end
 
+-- User command to trigger an immediate backup from anywhere
+pcall(vim.api.nvim_create_user_command, "TaskflowBackup", function()
+  M.backup_now()
+end, {})
+
+-- Daily backup scheduler
+local backup_timer
+local function ms_until_next_time(hour, min)
+  local now_ts = os.time()
+  local now_date = os.date("*t", now_ts)
+  local target = {
+    year = now_date.year,
+    month = now_date.month,
+    day = now_date.day,
+    hour = tonumber(hour) or 2,
+    min = tonumber(min) or 0,
+    sec = 0,
+    isdst = now_date.isdst,
+  }
+  local target_ts = os.time(target)
+  if target_ts <= now_ts then
+    target.day = target.day + 1
+    target_ts = os.time(target)
+  end
+  local delta = (target_ts - now_ts) * 1000
+  if delta < 0 then
+    delta = 1000
+  end
+  return delta
+end
+
+function M.start_daily_backup()
+  if backup_timer then
+    pcall(function()
+      backup_timer:stop()
+      backup_timer:close()
+    end)
+    backup_timer = nil
+  end
+  backup_timer = vim.loop.new_timer()
+  local function schedule_next()
+    local h = (config.backup_time and config.backup_time.hour) or 2
+    local m = (config.backup_time and config.backup_time.min) or 0
+    local ms = ms_until_next_time(h, m)
+    backup_timer:start(ms, 0, function()
+      pcall(M.backup_now)
+      schedule_next()
+    end)
+  end
+  schedule_next()
+  vim.notify(
+    string.format(
+      "TaskFlow: daily backup scheduling started (%02d:%02d)",
+      (config.backup_time and config.backup_time.hour) or 2,
+      (config.backup_time and config.backup_time.min) or 0
+    ),
+    vim.log.levels.INFO
+  )
+end
+
+function M.stop_daily_backup()
+  if backup_timer then
+    pcall(function()
+      backup_timer:stop()
+      backup_timer:close()
+    end)
+    backup_timer = nil
+    vim.notify("TaskFlow: daily backup scheduling stopped", vim.log.levels.INFO)
+  end
+end
+
+-- Enable daily backup on VimEnter
+function M.enable_auto_backup_on_start()
+  local grp = vim.api.nvim_create_augroup("TaskFlowDailyBackup", { clear = true })
+  vim.api.nvim_create_autocmd("VimEnter", {
+    group = grp,
+    once = true,
+    callback = function()
+      pcall(M.start_daily_backup)
+    end,
+  })
+end
+
+-- Convenience commands
+pcall(vim.api.nvim_create_user_command, "TaskflowBackupStart", function()
+  M.start_daily_backup()
+end, {})
+pcall(vim.api.nvim_create_user_command, "TaskflowBackupStop", function()
+  M.stop_daily_backup()
+end, {})
+
+-- Start daily backup by default
+pcall(function()
+  if vim.v and vim.v.vim_did_enter == 1 then
+    M.start_daily_backup()
+  else
+    M.enable_auto_backup_on_start()
+  end
+end)
+
 function M.open_ui()
   load_state()
   local lines = {}
@@ -1725,7 +1918,10 @@ function M.open_ui()
     table.insert(lines, "  " .. fmt_task_line(completed[i]))
   end
   table.insert(lines, "")
-  table.insert(lines, "UI Controls: s=start, x=complete, k=toggle backlog, o=postpone 1d, w=weekly, r=rewards, q=close")
+  table.insert(
+    lines,
+    "UI Controls: s=start, x=complete, k=toggle backlog, o=postpone 1d, w=weekly, r=rewards, B=backup db, q=close"
+  )
   local buf, _ = render_float(lines, "TaskFlow:UI")
   local function id_at_cursor()
     local line = vim.api.nvim_get_current_line()
@@ -1787,7 +1983,7 @@ function M.open_ui()
     table.insert(new_lines, "")
     table.insert(
       new_lines,
-      "UI Controls: s=start, x=complete, k=toggle backlog, o=postpone 1d, w=weekly, r=rewards, q=close"
+      "UI Controls: s=start, x=complete, k=toggle backlog, o=postpone 1d, w=weekly, r=rewards, B=backup db, q=close"
     )
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, new_lines)
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
@@ -1824,6 +2020,13 @@ function M.open_ui()
   end)
   buf_map("r", function()
     M.rewards()
+  end)
+  buf_map("B", function()
+    local dest = M.backup_now()
+    if dest then
+      load_state()
+      redraw()
+    end
   end)
   buf_map("o", function()
     local id = id_at_cursor()
