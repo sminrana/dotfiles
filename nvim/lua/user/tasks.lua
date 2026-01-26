@@ -89,7 +89,13 @@ local function meta_get(k)
 end
 
 local function meta_set(k, v)
-  db_exec(string.format("INSERT INTO meta (k, v) VALUES ('%s','%s') ON CONFLICT(k) DO UPDATE SET v=excluded.v", sql_escape(k), sql_escape(tostring(v or ""))))
+  db_exec(
+    string.format(
+      "INSERT INTO meta (k, v) VALUES ('%s','%s') ON CONFLICT(k) DO UPDATE SET v=excluded.v",
+      sql_escape(k),
+      sql_escape(tostring(v or ""))
+    )
+  )
 end
 
 -- sql_escape defined above
@@ -112,7 +118,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   started_at INTEGER,
   completed_at INTEGER,
   due INTEGER,
-  backlog INTEGER
+  backlog INTEGER,
+  repeat TEXT
 );
 CREATE TABLE IF NOT EXISTS deleted (
   id INTEGER,
@@ -129,7 +136,8 @@ CREATE TABLE IF NOT EXISTS deleted (
   started_at INTEGER,
   completed_at INTEGER,
   due INTEGER,
-  backlog INTEGER
+  backlog INTEGER,
+  repeat TEXT
 );
 CREATE TABLE IF NOT EXISTS archive (
   id INTEGER,
@@ -146,7 +154,8 @@ CREATE TABLE IF NOT EXISTS archive (
   started_at INTEGER,
   completed_at INTEGER,
   due INTEGER,
-  backlog INTEGER
+  backlog INTEGER,
+  repeat TEXT
 );
 CREATE TABLE IF NOT EXISTS meta (
   k TEXT PRIMARY KEY,
@@ -190,6 +199,7 @@ COMMIT;]]
     { "completed_at", "INTEGER" },
     { "due", "INTEGER" },
     { "backlog", "INTEGER" },
+    { "repeat", "TEXT" },
   })
   ensure_columns("archive", {
     { "id", "INTEGER" },
@@ -207,6 +217,7 @@ COMMIT;]]
     { "completed_at", "INTEGER" },
     { "due", "INTEGER" },
     { "backlog", "INTEGER" },
+    { "repeat", "TEXT" },
   })
   ensure_columns("deleted", {
     { "id", "INTEGER" },
@@ -224,6 +235,7 @@ COMMIT;]]
     { "completed_at", "INTEGER" },
     { "due", "INTEGER" },
     { "backlog", "INTEGER" },
+    { "repeat", "TEXT" },
   })
 end
 
@@ -260,7 +272,7 @@ local function load_state()
   ensure_data_dir()
   ensure_db()
   local rows = db_select(
-    "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM tasks"
+    "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks"
   )
   local tasks = {}
   local max_id = 0
@@ -282,6 +294,7 @@ local function load_state()
       completed_at = tonumber(r.completed_at),
       due = tonumber(r.due),
       backlog = tonumber(r.backlog) == 1,
+      ["repeat"] = r["repeat"],
     }
     table.insert(tasks, t)
     if t.id and t.id > max_id then
@@ -302,6 +315,9 @@ local function save_state()
   -- No JSON persistence; operations write directly to SQLite
   return true
 end
+
+-- Compute the next task id from the DB (must be defined before use)
+-- moved earlier
 
 local function now()
   return os.time()
@@ -367,10 +383,11 @@ local function fmt_task_line(t)
   local due = (t.due and tonumber(t.due)) and os.date("%Y-%m-%d", tonumber(t.due)) or "-"
   local impact = (t.impact and #t.impact > 0) and (" | impact: " .. t.impact) or ""
   local reward = (t.reward and #t.reward > 0) and (" | reward: " .. t.reward) or ""
+  local repeat_tag = (t["repeat"] and t["repeat"] ~= "none" and #t["repeat"] > 0) and (" | R:" .. t["repeat"]) or ""
   local pts = tonumber(t.points) or 0
   local id_str = (t.id and tostring(t.id)) or "?"
   return string.format(
-    "[%s] (%s/%s) %s | pts:%d | due:%s%s%s",
+    "[%s] (%s/%s) %s | pts:%d | due:%s%s%s%s",
     id_str,
     t.area or "general",
     t.priority or "medium",
@@ -378,7 +395,8 @@ local function fmt_task_line(t)
     pts,
     due,
     impact,
-    reward
+    reward,
+    repeat_tag
   )
 end
 
@@ -451,9 +469,10 @@ function M.add(opts)
     local status = "pending"
     local backlog = opts.backlog and 1 or 0
     local due = opts.due or (os.time() + 24 * 3600)
+    local repeat_val = opts["repeat"] or "none"
     local created_at = now()
     local sql = string.format(
-      "INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, due, backlog) VALUES (%d, '%s', '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', %d, %d, %d)",
+      "INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, due, backlog, repeat) VALUES (%d, '%s', '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', %d, %d, %d, '%s')",
       new_id,
       sql_escape(uid),
       sql_escape(title),
@@ -466,7 +485,8 @@ function M.add(opts)
       sql_escape(why),
       created_at,
       due,
-      backlog
+      backlog,
+      sql_escape(repeat_val)
     )
     local out, code = db_exec(sql)
     if code ~= 0 then
@@ -503,8 +523,101 @@ end
 
 function M.complete(id)
   ensure_db()
+  local rid = tonumber(id)
+  if not rid then
+    return false, "invalid id"
+  end
+  -- Load task to inspect repeat and due
+  local rows = db_select(
+    string.format(
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks WHERE id=%d",
+      rid
+    )
+  )
+  if #rows == 0 then
+    return false, "Task not found"
+  end
+  local r = rows[1]
   local ts = now()
-  db_exec(string.format("UPDATE tasks SET status='completed', completed_at=%d WHERE id=%d", ts, tonumber(id)))
+  local rep = r["repeat"] or "none"
+  -- First mark this instance completed for history/points
+  db_exec(string.format("UPDATE tasks SET status='completed', completed_at=%d WHERE id=%d", ts, rid))
+  if rep == "none" or rep == "" then
+    return true
+  end
+  -- Compute next due based on repeat setting
+  local function next_due(due_ts, rep_kind)
+    local base = tonumber(due_ts) or ts
+    local dt = os.date("*t", base)
+    if rep_kind == "daily" then
+      return base + 24 * 3600
+    elseif rep_kind == "weekly" then
+      return base + 7 * 24 * 3600
+    elseif rep_kind == "monthly" then
+      local tgt_month = dt.month + 1
+      local tgt_year = dt.year
+      -- Clamp day to last valid day of target month
+      local following_first =
+        os.time({ year = tgt_year, month = tgt_month + 1, day = 1, hour = 0, min = 0, sec = 0, isdst = dt.isdst })
+      local last_day = tonumber(os.date("*t", following_first - 24 * 3600).day)
+      local day = dt.day
+      if day > last_day then
+        day = last_day
+      end
+      return os.time({
+        year = tgt_year,
+        month = tgt_month,
+        day = day,
+        hour = dt.hour or 0,
+        min = dt.min or 0,
+        sec = 0,
+        isdst = dt.isdst,
+      })
+    elseif rep_kind == "yearly" then
+      dt.year = dt.year + 1
+      return os.time({
+        year = dt.year,
+        month = dt.month,
+        day = dt.day,
+        hour = dt.hour or 0,
+        min = dt.min or 0,
+        sec = 0,
+        isdst = dt.isdst,
+      })
+    else
+      return base + 24 * 3600
+    end
+  end
+  local nd = next_due(tonumber(r.due), rep)
+  -- Safeguard: if next due is in the past, roll forward until it's in the future
+  local guard = 0
+  while nd <= ts and guard < 365 do
+    nd = next_due(nd, rep)
+    guard = guard + 1
+  end
+  -- Create a new pending instance (not backlogged) for the next occurrence
+  local new_id = M.next_task_id()
+  local new_uid = tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999))
+  local sql = string.format(
+    "INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat) VALUES (%d, '%s', '%s', '%s', 'pending', '%s', %d, '%s', '%s', '%s', %d, NULL, NULL, %d, %d, '%s')",
+    new_id,
+    sql_escape(new_uid),
+    sql_escape(r.title or "Untitled"),
+    sql_escape(r.area or "general"),
+    sql_escape(r.priority or "medium"),
+    tonumber(r.points) or 0,
+    sql_escape(r.reward or ""),
+    sql_escape(r.impact or ""),
+    sql_escape(r.why or ""),
+    ts,
+    nd,
+    0,
+    sql_escape(rep)
+  )
+  local out, code = db_exec(sql)
+  if code ~= 0 then
+    vim.notify("TaskFlow: sqlite error on recurring INSERT: " .. tostring(out), vim.log.levels.ERROR)
+  end
   return true
 end
 
@@ -543,8 +656,8 @@ function M.delete(id)
   end
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO deleted (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
-      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM tasks WHERE id=%d;
+    INSERT INTO deleted (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks WHERE id=%d;
     DELETE FROM tasks WHERE id=%d;
   COMMIT;]],
     rid,
@@ -587,7 +700,7 @@ function M.add_text(title, body)
   return added, err
 end
 
-local function next_task_id()
+function M.next_task_id()
   ensure_db()
   local rows = db_select("SELECT COALESCE(MAX(id),0) AS m FROM tasks")
   local maxid = 0
@@ -607,11 +720,11 @@ function M.restore_archived(id)
   if #exists == 0 or tonumber(exists[1].c or 0) == 0 then
     return false, "not found"
   end
-  local new_id = next_task_id()
+  local new_id = M.next_task_id()
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
-      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0 FROM archive WHERE id=%d;
+    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
+      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0, repeat FROM archive WHERE id=%d;
     DELETE FROM archive WHERE id=%d;
   COMMIT;]],
     new_id,
@@ -634,8 +747,8 @@ function M.restore_deleted(id)
   local new_id = next_task_id()
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
-      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0 FROM deleted WHERE id=%d;
+    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
+      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0, repeat FROM deleted WHERE id=%d;
     DELETE FROM deleted WHERE id=%d;
   COMMIT;]],
     new_id,
@@ -683,8 +796,8 @@ function M.archive(days)
   local cutoff = now() - d * 24 * 3600
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
-      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM tasks
+    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks
       WHERE status='completed' AND (completed_at IS NOT NULL) AND completed_at <= %d;
     DELETE FROM tasks WHERE status='completed' AND (completed_at IS NOT NULL) AND completed_at <= %d;
   COMMIT;]],
@@ -706,8 +819,8 @@ function M.archive_task(id)
   end
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog)
-      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM tasks WHERE id=%d;
+    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks WHERE id=%d;
     DELETE FROM tasks WHERE id=%d;
   COMMIT;]],
     rid,
@@ -825,7 +938,7 @@ function M.dashboard()
   local function collect_archived()
     ensure_db()
     local rows = db_select(
-      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM archive ORDER BY completed_at DESC"
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM archive ORDER BY completed_at DESC"
     )
     local items = {}
     for _, r in ipairs(rows) do
@@ -845,6 +958,7 @@ function M.dashboard()
         completed_at = tonumber(r.completed_at),
         due = tonumber(r.due),
         backlog = tonumber(r.backlog) == 1,
+        ["repeat"] = r["repeat"],
       })
     end
     return items
@@ -853,7 +967,7 @@ function M.dashboard()
   local function collect_deleted()
     ensure_db()
     local rows = db_select(
-      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM deleted ORDER BY created_at DESC"
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM deleted ORDER BY created_at DESC"
     )
     local items = {}
     for _, r in ipairs(rows) do
@@ -873,6 +987,7 @@ function M.dashboard()
         completed_at = tonumber(r.completed_at),
         due = tonumber(r.due),
         backlog = tonumber(r.backlog) == 1,
+        ["repeat"] = r["repeat"],
       })
     end
     return items
@@ -1344,7 +1459,15 @@ local function build_today_due_html(today_due, overdue, next3)
     table.insert(lines, "<ul>")
     for _, t in ipairs(tasks) do
       local due = (t.due and tonumber(t.due)) and os.date("%Y-%m-%d", tonumber(t.due)) or "-"
-      local item = string.format("<li>[%s] (%s/%s) %s | pts:%d | due:%s</li>", tostring(t.id or "?"), t.area or "general", t.priority or "medium", (t.title or ""), tonumber(t.points or 0), due)
+      local item = string.format(
+        "<li>[%s] (%s/%s) %s | pts:%d | due:%s</li>",
+        tostring(t.id or "?"),
+        t.area or "general",
+        t.priority or "medium",
+        (t.title or ""),
+        tonumber(t.points or 0),
+        due
+      )
       table.insert(lines, item)
     end
     table.insert(lines, "</ul>")
@@ -1399,7 +1522,13 @@ local function collect_next3_tasks()
   local today_str = os.date("%Y-%m-%d")
   local items = {}
   for _, t in ipairs(state.tasks or {}) do
-    if t.due and (t.due > now()) and (t.due <= end_ts) and (t.status ~= "completed") and (os.date("%Y-%m-%d", t.due) ~= today_str) then
+    if
+      t.due
+      and (t.due > now())
+      and (t.due <= end_ts)
+      and (t.status ~= "completed")
+      and (os.date("%Y-%m-%d", t.due) ~= today_str)
+    then
       table.insert(items, t)
     end
   end
@@ -1432,16 +1561,24 @@ local function require_email_env(subject_override)
     subject = subject,
     region = region,
     to_email = to_email,
-  }, nil
+  },
+    nil
 end
 
 local function ses_send_html(env, html, to)
   local safe_html = tostring(html or ""):gsub("\\", "\\\\"):gsub('"', '\\"'):gsub("\n", "\\n")
-  local json_payload = string.format([[{
+  local json_payload = string.format(
+    [[{
   "FromEmailAddress": "%s <%s>",
   "Destination": { "ToAddresses": ["%s"] },
   "Content": { "Simple": { "Subject": { "Data": "%s", "Charset": "UTF-8" }, "Body": { "Html": { "Data": "%s", "Charset": "UTF-8" } } } }
-}]], env.from_name, env.from_email, to, env.subject, safe_html)
+}]],
+    env.from_name,
+    env.from_email,
+    to,
+    env.subject,
+    safe_html
+  )
   local out = vim.fn.system({ "aws", "sesv2", "send-email", "--region", env.region, "--cli-input-json", json_payload })
   local exit = vim.v.shell_error
   return exit, out
@@ -1498,7 +1635,9 @@ function M.start_daily_due_email()
       target_ts = os.time(target)
     end
     local delta = (target_ts - now_ts) * 1000
-    if delta < 0 then delta = 1000 end
+    if delta < 0 then
+      delta = 1000
+    end
     return delta
   end
   local timer = vim.loop.new_timer()
@@ -1852,28 +1991,58 @@ function M.add_interactive()
                   end
                   local due_str = (v8 and #v8 > 0) and v8 or tomorrow
                   local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
-                  local due_ts
+                  local yy, mm, dd
                   if y and m and d then
-                    local date_tbl = { year = tonumber(y), month = tonumber(m), day = tonumber(d), hour = 0 }
-                    due_ts = os.time(date_tbl)
+                    yy, mm, dd = tonumber(y), tonumber(m), tonumber(d)
                   end
-                  t.due = due_ts or (os.time() + 24 * 3600)
-                  input("Backlog? (y/n): ", "n", function(v9)
-                    if v9 == nil then
+                  local default_time = os.date("%H:%M")
+                  input("Time (HH:MM 24h): ", default_time, function(vtime)
+                    if vtime == nil then
                       vim.notify("Task add cancelled", vim.log.levels.INFO)
                       return
                     end
-                    local ans = tostring(v9 or "n"):lower()
-                    t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
-                    local added, err = M.add(t)
-                    if not added then
-                      vim.notify(
-                        "TaskFlow: failed to add task: " .. tostring(err or "unknown error"),
-                        vim.log.levels.ERROR
-                      )
-                    else
-                      M.dashboard()
+                    local hh, nn = tostring(vtime):match("^(%d%d):(%d%d)$")
+                    local hour = tonumber(hh) or 0
+                    local min = tonumber(nn) or 0
+                    if hour < 0 or hour > 23 then
+                      hour = 0
                     end
+                    if min < 0 or min > 59 then
+                      min = 0
+                    end
+                    local due_ts
+                    if yy and mm and dd then
+                      due_ts = os.time({ year = yy, month = mm, day = dd, hour = hour, min = min })
+                    end
+                    t.due = due_ts or (os.time() + 24 * 3600)
+                    input("Repeat task (none/daily/weekly/monthly/yearly): ", "none", function(vrep)
+                      if vrep == nil then
+                        vim.notify("Task add cancelled", vim.log.levels.INFO)
+                        return
+                      end
+                      local rep = tostring(vrep or "none"):lower()
+                      if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
+                        rep = "none"
+                      end
+                      t["repeat"] = rep
+                      input("Backlog? (y/n): ", "n", function(v9)
+                        if v9 == nil then
+                          vim.notify("Task add cancelled", vim.log.levels.INFO)
+                          return
+                        end
+                        local ans = tostring(v9 or "n"):lower()
+                        t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
+                        local added, err = M.add(t)
+                        if not added then
+                          vim.notify(
+                            "TaskFlow: failed to add task: " .. tostring(err or "unknown error"),
+                            vim.log.levels.ERROR
+                          )
+                        else
+                          M.dashboard()
+                        end
+                      end)
+                    end)
                   end)
                 end)
               end)
@@ -1894,7 +2063,7 @@ function M.edit_interactive(id)
   end
   local rows = db_select(
     string.format(
-      "SELECT id, title, area, status, priority, points, reward, impact, why, due, backlog FROM tasks WHERE id=%d",
+      "SELECT id, title, area, status, priority, points, reward, impact, why, due, backlog, repeat FROM tasks WHERE id=%d",
       rid
     )
   )
@@ -1913,9 +2082,11 @@ function M.edit_interactive(id)
     area = r.area or "general",
     due = tonumber(r.due),
     backlog = (tonumber(r.backlog) or 0) == 1,
+    ["repeat"] = r["repeat"],
   }
   local tomorrow = os.date("%Y-%m-%d", os.time() + 24 * 3600)
-  local due_default = t.due and os.date("%Y-%m-%d", t.due) or tomorrow
+  local due_default_date = t.due and os.date("%Y-%m-%d", t.due) or tomorrow
+  local time_default = t.due and os.date("%H:%M", t.due) or os.date("%H:%M")
   input("Title: ", t.title, function(v1)
     if v1 == nil then
       return
@@ -1952,42 +2123,68 @@ function M.edit_interactive(id)
                   return
                 end
                 t.area = (v7 ~= "" and v7) or t.area
-                input("Due (YYYY-MM-DD): ", due_default, function(v8)
+                input("Due (YYYY-MM-DD): ", due_default_date, function(v8)
                   if v8 == nil then
                     return
                   end
-                  local due_str = (v8 and #v8 > 0) and v8 or due_default
+                  local due_str = (v8 and #v8 > 0) and v8 or due_default_date
                   local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
-                  local due_ts
+                  local yy, mm, dd
                   if y and m and d then
-                    due_ts = os.time({ year = tonumber(y), month = tonumber(m), day = tonumber(d), hour = 0 })
+                    yy, mm, dd = tonumber(y), tonumber(m), tonumber(d)
                   end
-                  t.due = due_ts or t.due or (os.time() + 24 * 3600)
-                  input("Backlog? (y/n): ", t.backlog and "y" or "n", function(v9)
-                    if v9 == nil then
-                      return
+                  input("Time (HH:MM 24h): ", time_default, function(vtime)
+                    local hh, nn = tostring(vtime or time_default):match("^(%d%d):(%d%d)$")
+                    local hour = tonumber(hh) or 0
+                    local min = tonumber(nn) or 0
+                    if hour < 0 or hour > 23 then
+                      hour = 0
                     end
-                    local ans = tostring(v9 or (t.backlog and "y" or "n")):lower()
-                    t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
-                    local sql = string.format(
-                      "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, backlog=%d WHERE id=%d",
-                      sql_escape(t.title),
-                      sql_escape(t.area),
-                      sql_escape(t.priority),
-                      tonumber(t.points) or 0,
-                      sql_escape(t.reward),
-                      sql_escape(t.impact),
-                      sql_escape(t.why),
-                      tonumber(t.due) or (os.time() + 24 * 3600),
-                      t.backlog and 1 or 0,
-                      rid
-                    )
-                    local out, code = db_exec(sql)
-                    if code ~= 0 then
-                      vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
-                      return
+                    if min < 0 or min > 59 then
+                      min = 0
                     end
-                    M.dashboard()
+                    local due_ts
+                    if yy and mm and dd then
+                      due_ts = os.time({ year = yy, month = mm, day = dd, hour = hour, min = min })
+                    end
+                    t.due = due_ts or t.due or (os.time() + 24 * 3600)
+                    input("Repeat task (none/daily/weekly/monthly/yearly): ", t["repeat"] or "none", function(vrep)
+                      if vrep == nil then
+                        return
+                      end
+                      local rep = tostring(vrep or (t["repeat"] or "none")):lower()
+                      if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
+                        rep = "none"
+                      end
+                      t["repeat"] = rep
+                      input("Backlog? (y/n): ", t.backlog and "y" or "n", function(v9)
+                        if v9 == nil then
+                          return
+                        end
+                        local ans = tostring(v9 or (t.backlog and "y" or "n")):lower()
+                        t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
+                        local sql = string.format(
+                          "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, backlog=%d, repeat='%s' WHERE id=%d",
+                          sql_escape(t.title),
+                          sql_escape(t.area),
+                          sql_escape(t.priority),
+                          tonumber(t.points) or 0,
+                          sql_escape(t.reward),
+                          sql_escape(t.impact),
+                          sql_escape(t.why),
+                          tonumber(t.due) or (os.time() + 24 * 3600),
+                          t.backlog and 1 or 0,
+                          sql_escape(t["repeat"] or "none"),
+                          rid
+                        )
+                        local out, code = db_exec(sql)
+                        if code ~= 0 then
+                          vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
+                          return
+                        end
+                        M.dashboard()
+                      end)
+                    end)
                   end)
                 end)
               end)
