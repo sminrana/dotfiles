@@ -829,7 +829,7 @@ function M.restore_deleted(id)
   if #exists == 0 or tonumber(exists[1].c or 0) == 0 then
     return false, "not found"
   end
-  local new_id = next_task_id()
+  local new_id = M.next_task_id()
   db_exec(string.format(
     [[BEGIN;
     INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
