@@ -1101,7 +1101,129 @@ function M.dashboard()
     return items
   end
 
+  -- Calendar helpers (used by dashboard rendering and highlights)
+  local function month_info()
+      local dt = os.date("*t")
+      local year = dt.year
+      local month = dt.month
+      -- first day of month
+      local first = os.time({ year = year, month = month, day = 1, hour = 0, min = 0, sec = 0, isdst = dt.isdst })
+      -- weekday: Sunday=0 .. Saturday=6
+      local w0 = tonumber(os.date("%w", first))
+      -- last day: go to first of next month then -1 day
+      local next_first = os.time({ year = year, month = month + 1, day = 1, hour = 0, min = 0, sec = 0, isdst = dt.isdst })
+      local last = os.date("*t", next_first - 24 * 3600).day
+      return year, month, w0, last
+    end
+  local function tasks_by_date()
+      local map = {}
+      for _, t in ipairs(state.tasks or {}) do
+        if t.due and (t.status ~= "completed") then
+          local ds = os.date("%Y-%m-%d", t.due)
+          local m = map[ds] or { pending = false, active = false, backlog = false }
+          if t.status == "in_progress" then
+            m.active = true
+          elseif t.backlog then
+            m.backlog = true
+          else
+            m.pending = true
+          end
+          map[ds] = m
+        end
+      end
+      return map
+    end
+  local function build_calendar_grid_lines()
+      local year, month, w0, last = month_info()
+      local lines = {}
+      table.insert(lines, string.format("Calendar: %s %d", os.date("%B", os.time({ year = year, month = month, day = 1 })), year))
+      table.insert(lines, "Su Mo Tu We Th Fr Sa")
+      local day = 1
+      local week = {}
+      for i = 0, 6 do
+        if i < w0 then
+          table.insert(week, "  ")
+        else
+          table.insert(week, string.format("%2d", day))
+          day = day + 1
+        end
+      end
+      table.insert(lines, table.concat(week, " "))
+      while day <= last do
+        week = {}
+        for i = 0, 6 do
+          if day <= last then
+            table.insert(week, string.format("%2d", day))
+            day = day + 1
+          else
+            table.insert(week, "  ")
+          end
+        end
+        table.insert(lines, table.concat(week, " "))
+      end
+      return lines, { year = year, month = month }
+    end
+  local function apply_calendar_highlights(buf)
+      -- Define highlight groups
+      pcall(vim.api.nvim_set_hl, 0, "TaskflowCalAny", { fg = "#808080" })
+      pcall(vim.api.nvim_set_hl, 0, "TaskflowCalBacklog", { fg = "#ff00ff" })
+      pcall(vim.api.nvim_set_hl, 0, "TaskflowCalActive", { fg = "#268bd2" })
+      pcall(vim.api.nvim_set_hl, 0, "TaskflowCalToday", { fg = "#ffffff", bg = "#000000" })
+      local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+      local cal_start = nil
+      for i = 1, #lines do
+        if lines[i]:match("^Calendar:") then
+          cal_start = i
+          break
+        end
+      end
+      if not cal_start then
+        return
+      end
+      local today_str = os.date("%Y-%m-%d")
+      -- Grid starts two lines after header
+      local grid_first = cal_start + 2
+      local tmap = tasks_by_date()
+      -- Determine year and month from header line by recomputing
+      local info_year, info_month, _, last = month_info()
+      -- Iterate grid rows until blank line or non-grid
+      for row = grid_first, #lines do
+        local l = lines[row]
+        if l == nil or l == "" then
+          break
+        end
+        -- Expect "dd dd dd dd dd dd dd" pattern length 20 with spaces
+        -- Highlight each 2-char cell
+        for w = 1, 7 do
+          local start_col = (w - 1) * 3
+          local cell = l:sub(start_col + 1, start_col + 2)
+          local daynum = tonumber(cell)
+          if daynum and daynum >= 1 and daynum <= last then
+            local ds = string.format("%04d-%02d-%02d", info_year, info_month, daynum)
+            local group
+            if ds == today_str then
+              group = "TaskflowCalToday"
+            else
+              local m = tmap[ds]
+              if m then
+                if m.active then
+                  group = "TaskflowCalActive"
+                elseif m.backlog then
+                  group = "TaskflowCalBacklog"
+                elseif m.pending then
+                  group = "TaskflowCalAny"
+                end
+              end
+            end
+            if group then
+              pcall(vim.api.nvim_buf_add_highlight, buf, -1, group, row - 1, start_col, start_col + 2)
+            end
+          end
+        end
+      end
+    end
   local function build_lines()
+    
     local active = collect_active()
     local back = collect_backlog()
     local allp = collect_all_pending_non_backlog()
@@ -1125,6 +1247,12 @@ function M.dashboard()
     )
     table.insert(lines, string.format("Store: %s", get_data_path()))
     table.insert(lines, "---")
+    -- Calendar (placed above Active)
+    local cal_lines, _ = build_calendar_grid_lines()
+    for _, cl in ipairs(cal_lines) do
+      table.insert(lines, cl)
+    end
+    table.insert(lines, "")
     table.insert(lines, "⏳ Active:")
     table.insert(lines, sep)
     for _, t in ipairs(active) do
@@ -1372,6 +1500,8 @@ function M.dashboard()
     add_hl_for_header("Deleted 🗑️:", "TaskflowDeletedHeader")
     add_hl_for_header("Archived:", "TaskflowArchivedHeader")
     add_hl_for_header("Completed ✅:", "TaskflowCompletedHeader")
+    -- Apply calendar date highlights
+    apply_calendar_highlights(buf)
   end
   local function id_at_cursor()
     local line = vim.api.nvim_get_current_line()
