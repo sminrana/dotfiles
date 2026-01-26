@@ -90,3 +90,22 @@ end
 
 vim.api.nvim_create_user_command("HeliumBackup", push_bookmarks, {})
 vim.api.nvim_create_user_command("HeliumRestore", pull_bookmarks, {})
+
+-- Auto backup on Neovim exit (library -> backup)
+local helium_group = vim.api.nvim_create_augroup("HeliumAutoBackup", { clear = true })
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  group = helium_group,
+  callback = function()
+    pcall(push_bookmarks)
+  end,
+  desc = "Backup Helium bookmarks on exit",
+})
+
+-- To also back up on start, uncomment below:
+-- vim.api.nvim_create_autocmd("VimEnter", {
+--   group = helium_group,
+--   callback = function()
+--     pcall(push_bookmarks)
+--   end,
+--   desc = "Backup Helium bookmarks on start",
+-- })
