@@ -105,26 +105,12 @@ local function purge_downloads_async(days)
   })
 end
 
--- Run on Neovim startup
 vim.api.nvim_create_autocmd("VimEnter", {
   desc = "Backup Helium data on start (async)",
   callback = function()
-    -- local ok, err = pcall(backup_helium_async)
-    -- if not ok then
-    --   vim.notify("Helium backup error: " .. tostring(err), vim.log.levels.ERROR)
-    -- end
-    -- Purge Downloads on start
+    if vim.fn.argc() == 0 then
+      vim.cmd("Neotree float")
+    end
     purge_downloads_async(15)
-  end,
-})
-
-vim.api.nvim_create_autocmd("VimEnter", {
-  desc = "Show Neotree float on launch",
-  callback = function()
-    vim.schedule(function()
-      vim.api.nvim_exec2("Neotree reveal float", {})
-      vim.cmd("wincmd p")
-      vim.cmd("wincmd p")
-    end)
   end,
 })

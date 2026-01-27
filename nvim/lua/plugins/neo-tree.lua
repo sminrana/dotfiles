@@ -1,6 +1,16 @@
 return {
   "nvim-neo-tree/neo-tree.nvim",
   opts = {
+    window = {
+      position = "float",
+      popup = {
+        size = {
+          width = "70%",
+          height = "80%",
+        },
+        border = "rounded",
+      },
+    },
     filesystem = {
       filtered_items = {
         visible = true,
