@@ -34,8 +34,7 @@ local function purge_downloads_async(days)
     return
   end
 
-  -- Move files and directories older than N days to Trash
-  local trash = home .. "/.Trash"
+  -- Move files and directories older than N days to Trash local trash = home .. "/.Trash"
   if vim.fn.isdirectory(trash) == 0 then
     vim.fn.mkdir(trash, "p")
   end
@@ -116,5 +115,16 @@ vim.api.nvim_create_autocmd("VimEnter", {
     -- end
     -- Purge Downloads on start
     purge_downloads_async(15)
+  end,
+})
+
+vim.api.nvim_create_autocmd("VimEnter", {
+  desc = "Show Neotree float on launch",
+  callback = function()
+    vim.schedule(function()
+      vim.api.nvim_exec2("Neotree reveal float", {})
+      vim.cmd("wincmd p")
+      vim.cmd("wincmd p")
+    end)
   end,
 })

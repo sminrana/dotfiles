@@ -1016,7 +1016,14 @@ function M.dashboard()
         table.insert(items, t)
       end
     end
-    sort_tasks(items)
+    table.sort(items, function(a, b)
+      local da = a.due or math.huge
+      local db = b.due or math.huge
+      if da == db then
+        return (a.created_at or 0) < (b.created_at or 0)
+      end
+      return da < db
+    end)
     return items
   end
 
@@ -2795,7 +2802,7 @@ function M.setup(opts)
 
   -- Keymaps: prefix <leader>jt*
   local map = function(lhs, rhs, desc)
-    vim.keymap.set("n", lhs, rhs, { desc = desc, silent = true })
+    vim.keymap.set("n", lhs, rhs, { desc = desc, silent = true, nowait = true })
   end
   map("<leader>jtd", function()
     M.dashboard()

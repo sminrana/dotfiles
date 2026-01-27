@@ -6,7 +6,7 @@ opt.backspace = { "indent", "eol", "start" } -- allow backspace on indent, end o
 opt.colorcolumn = "80"
 opt.scrolloff = 10
 opt.sidescrolloff = 8
-opt.timeoutlen = 100
+opt.timeoutlen = 150
 opt.ttimeoutlen = 0
 --opt.clipboard:append("unnamedplus") -- use system clipboard as default register
 opt.spelllang = "en_us"
