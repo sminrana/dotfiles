@@ -2389,7 +2389,7 @@ function M.add_interactive()
                 return
               end
               t.priority = (v6 == "low" or v6 == "high") and v6 or "medium"
-              input("Area (e.g. work/personal): ", "general", function(v7)
+              input("Area (e.g. work/personal): ", "work", function(v7)
                 if v7 == nil then
                   vim.notify("Task add cancelled", vim.log.levels.INFO)
                   return
