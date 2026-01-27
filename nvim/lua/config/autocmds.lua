@@ -24,6 +24,11 @@ vim.api.nvim_create_autocmd("DirChanged", {
   end,
 })
 
+-- Show Neotree on a popup, disabling left sidebar
+vim.api.nvim_exec2("Neotree reveal float", {})
+vim.cmd("wincmd p") -- Switch focus to the previous window (the newly opened Neotree)
+vim.cmd("wincmd p") -- Sometimes needs to be called twice depending on window layout
+
 -- Highlight trailing whitespace
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "php", "typescriptreact", "lua", "python", "javascript", "typescript" },
