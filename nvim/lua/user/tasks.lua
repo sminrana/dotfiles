@@ -509,6 +509,19 @@ local function is_overdue(t)
   return t.due and (t.due < now()) and (t.status ~= "completed")
 end
 
+local function is_due_soon(t, days)
+  local d = tonumber(days) or 3
+  if not t.due or t.status == "completed" then
+    return false
+  end
+  local due = tonumber(t.due)
+  if not due then
+    return false
+  end
+  local ts = now()
+  return due >= ts and due <= (ts + d * 24 * 3600)
+end
+
 local function all_areas()
   local set = {}
   for _, a in ipairs(config.areas or {}) do
@@ -1194,6 +1207,9 @@ function M.dashboard()
     pcall(vim.api.nvim_set_hl, 0, "TaskflowCalBacklog", { fg = "#ff00ff" })
     pcall(vim.api.nvim_set_hl, 0, "TaskflowCalActive", { fg = "#268bd2" })
     pcall(vim.api.nvim_set_hl, 0, "TaskflowCalToday", { fg = "#ffffff", bg = "#000000" })
+    pcall(vim.api.nvim_set_hl, 0, "TaskflowBacklogHeader", { fg = "#b58900", bold = true })
+    pcall(vim.api.nvim_set_hl, 0, "TaskflowAllPendingHeader", { fg = "#2aa198", bold = true })
+    pcall(vim.api.nvim_set_hl, 0, "TaskflowDueSoon", { fg = "#dc322f", bold = true })
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     local cal_start = nil
     for i = 1, #lines do
@@ -1277,6 +1293,7 @@ function M.dashboard()
       end
     end
   end
+  local due_soon_rows = {}
   local function build_lines()
     local active = collect_active()
     local back = collect_backlog()
@@ -1286,6 +1303,7 @@ function M.dashboard()
     local deleted = collect_deleted()
     local sep = string.rep("-", 60)
     local lines = {}
+    due_soon_rows = {}
     table.insert(
       lines,
       string.format(
@@ -1340,7 +1358,11 @@ function M.dashboard()
       if t.status == "in_progress" then
         tag = tag .. " [IN PROGRESS]"
       end
-      table.insert(lines, fmt_task_line(t) .. tag)
+      local line = fmt_task_line(t) .. tag
+      table.insert(lines, line)
+      if t.status ~= "in_progress" and is_due_soon(t, 3) then
+        due_soon_rows[#lines] = true
+      end
       if expanded and t.id and expanded[t.id] then
         table.insert(lines, "  Why:")
         local why = t.why or ""
@@ -1364,7 +1386,11 @@ function M.dashboard()
     for _, t in ipairs(allp) do
       if t.status ~= "in_progress" then
         local tag = is_overdue(t) and " [OVERDUE]" or ""
-        table.insert(lines, fmt_task_line(t) .. tag)
+        local line = fmt_task_line(t) .. tag
+        table.insert(lines, line)
+        if is_due_soon(t, 3) then
+          due_soon_rows[#lines] = true
+        end
         if expanded and t.id and expanded[t.id] then
           table.insert(lines, "  Why:")
           local why = t.why or ""
@@ -1436,6 +1462,10 @@ function M.dashboard()
     local since = now() - 30 * 24 * 3600
     local since_str = os.date("%Y-%m-%d", since)
     local completed_since, started_since, inprog = {}, {}, {}
+    local best_reward = nil
+    local best_reward_pts = -1
+    local best_impact = nil
+    local best_impact_pts = -1
     local pts_since = 0
     local area_counts = {}
     local prio_counts = { low = 0, medium = 0, high = 0 }
@@ -1446,6 +1476,15 @@ function M.dashboard()
         area_counts[t.area or "general"] = (area_counts[t.area or "general"] or 0) + 1
         local p = t.priority or "medium"
         prio_counts[p] = (prio_counts[p] or 0) + 1
+        local pts = tonumber(t.points) or 0
+        if t.reward and #t.reward > 0 and pts >= best_reward_pts then
+          best_reward = t.reward
+          best_reward_pts = pts
+        end
+        if t.impact and #t.impact > 0 and pts >= best_impact_pts then
+          best_impact = t.impact
+          best_impact_pts = pts
+        end
       end
       if (t.started_at or 0) >= since and (t.status ~= "completed") then
         table.insert(started_since, t)
@@ -1481,42 +1520,10 @@ function M.dashboard()
       local status = is_claimed and "(claimed)" or ((pts_total >= r.threshold) and "(available)" or "(locked)")
       table.insert(lines, string.format("    - %d: %s %s", r.threshold, r.suggestion, status))
     end
-    table.insert(lines, "")
-    table.insert(lines, "  Completed Details:")
-    for _, t in ipairs(completed_since) do
-      table.insert(lines, "    " .. fmt_task_line(t))
-      if t.why and #t.why > 0 then
-        table.insert(lines, "      Why:")
-        for s in tostring(t.why):gmatch("([^\n]*)\n?") do
-          if s ~= nil then
-            table.insert(lines, "        " .. s)
-          end
-        end
-      end
-      if t.impact and #t.impact > 0 then
-        table.insert(lines, "      Impact: " .. t.impact)
-      end
-      if t.reward and #t.reward > 0 then
-        table.insert(lines, "      Reward: " .. t.reward .. string.format(" (pts:%d)", tonumber(t.points) or 0))
-      else
-        table.insert(lines, string.format("      Points: %d", tonumber(t.points) or 0))
-      end
-      table.insert(lines, "")
-    end
-    table.insert(lines, "  Started Details:")
-    for _, t in ipairs(started_since) do
-      local tag = is_overdue(t) and " [OVERDUE]" or ""
-      table.insert(lines, "    " .. fmt_task_line(t) .. tag)
-      if t.why and #t.why > 0 then
-        table.insert(lines, "      Why:")
-        for s in tostring(t.why):gmatch("([^\n]*)\n?") do
-          if s ~= nil then
-            table.insert(lines, "        " .. s)
-          end
-        end
-      end
-      table.insert(lines, "")
-    end
+    table.insert(
+      lines,
+      string.format("  Biggest Reward: %s | Biggest Impact: %s", best_reward or "-", best_impact or "-")
+    )
     table.insert(lines, "  Area Breakdown (completed):")
     for a, c in pairs(area_counts) do
       table.insert(lines, string.format("    %s: %d", a, c))
@@ -1551,11 +1558,21 @@ function M.dashboard()
       end
     end
     add_hl_for_header("⏳ Active:", "TaskflowActiveHeader")
+    add_hl_for_header("Backlog:", "TaskflowBacklogHeader")
+    add_hl_for_header("All (Pending, Not Backlogged):", "TaskflowAllPendingHeader")
     add_hl_for_header("Deleted 🗑️:", "TaskflowDeletedHeader")
     add_hl_for_header("Archived:", "TaskflowArchivedHeader")
     add_hl_for_header("Completed ✅:", "TaskflowCompletedHeader")
     -- Apply calendar date highlights
     apply_calendar_highlights(buf)
+  end
+  local function apply_due_soon_highlights()
+    if not (buf and vim.api.nvim_buf_is_valid(buf)) then
+      return
+    end
+    for row, _ in pairs(due_soon_rows or {}) do
+      pcall(vim.api.nvim_buf_add_highlight, buf, -1, "TaskflowDueSoon", row - 1, 0, -1)
+    end
   end
   local function id_at_cursor()
     local line = vim.api.nvim_get_current_line()
@@ -1587,6 +1604,7 @@ function M.dashboard()
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, new_lines)
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
     apply_header_highlights()
+    apply_due_soon_highlights()
   end
   local function buf_map(lhs, fn)
     if not (buf and vim.api.nvim_buf_is_valid(buf)) then
@@ -1604,6 +1622,7 @@ function M.dashboard()
   end)
   -- initial highlight application
   apply_header_highlights()
+  apply_due_soon_highlights()
   buf_map("r", function()
     local id = id_at_cursor()
     if not id then
