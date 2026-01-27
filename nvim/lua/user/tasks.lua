@@ -1102,19 +1102,27 @@ function M.dashboard()
   end
 
   -- Calendar helpers (used by dashboard rendering and highlights)
-  local function month_info()
+  local function month_info(offset)
     local dt = os.date("*t")
     local year = dt.year
-    local month = dt.month
+    local month = dt.month + (offset or 0)
     -- first day of month
     local first = os.time({ year = year, month = month, day = 1, hour = 0, min = 0, sec = 0, isdst = dt.isdst })
+    local first_dt = os.date("*t", first)
     -- weekday: Sunday=0 .. Saturday=6
     local w0 = tonumber(os.date("%w", first))
     -- last day: go to first of next month then -1 day
-    local next_first =
-      os.time({ year = year, month = month + 1, day = 1, hour = 0, min = 0, sec = 0, isdst = dt.isdst })
+    local next_first = os.time({
+      year = first_dt.year,
+      month = first_dt.month + 1,
+      day = 1,
+      hour = 0,
+      min = 0,
+      sec = 0,
+      isdst = first_dt.isdst,
+    })
     local last = os.date("*t", next_first - 24 * 3600).day
-    return year, month, w0, last
+    return first_dt.year, first_dt.month, w0, last
   end
   local function tasks_by_date()
     local map = {}
@@ -1134,8 +1142,8 @@ function M.dashboard()
     end
     return map
   end
-  local function build_calendar_grid_lines()
-    local year, month, w0, last = month_info()
+  local function build_month_lines(offset)
+    local year, month, w0, last = month_info(offset)
     local lines = {}
     table.insert(
       lines,
@@ -1165,7 +1173,20 @@ function M.dashboard()
       end
       table.insert(lines, table.concat(week, " "))
     end
-    return lines, { year = year, month = month }
+    return lines
+  end
+  local function build_calendar_grid_lines()
+    local lines = {}
+    local current = build_month_lines(0)
+    for _, l in ipairs(current) do
+      table.insert(lines, l)
+    end
+    table.insert(lines, "")
+    local next = build_month_lines(1)
+    for _, l in ipairs(next) do
+      table.insert(lines, l)
+    end
+    return lines
   end
   local function apply_calendar_highlights(buf)
     -- Define highlight groups
@@ -1185,42 +1206,72 @@ function M.dashboard()
       return
     end
     local today_str = os.date("%Y-%m-%d")
-    -- Grid starts two lines after header
-    local grid_first = cal_start + 2
     local tmap = tasks_by_date()
-    -- Determine year and month from header line by recomputing
-    local info_year, info_month, _, last = month_info()
-    -- Iterate grid rows until blank line or non-grid
-    for row = grid_first, #lines do
-      local l = lines[row]
-      if l == nil or l == "" then
-        break
-      end
-      -- Expect "dd dd dd dd dd dd dd" pattern length 20 with spaces
-      -- Highlight each 2-char cell
-      for w = 1, 7 do
-        local start_col = (w - 1) * 3
-        local cell = l:sub(start_col + 1, start_col + 2)
-        local daynum = tonumber(cell)
-        if daynum and daynum >= 1 and daynum <= last then
-          local ds = string.format("%04d-%02d-%02d", info_year, info_month, daynum)
-          local group
-          if ds == today_str then
-            group = "TaskflowCalToday"
-          else
-            local m = tmap[ds]
-            if m then
-              if m.active then
-                group = "TaskflowCalActive"
-              elseif m.backlog then
-                group = "TaskflowCalBacklog"
-              elseif m.pending then
-                group = "TaskflowCalAny"
+    local month_map = {
+      January = 1,
+      February = 2,
+      March = 3,
+      April = 4,
+      May = 5,
+      June = 6,
+      July = 7,
+      August = 8,
+      September = 9,
+      October = 10,
+      November = 11,
+      December = 12,
+    }
+    local function last_day_of_month(year, month)
+      local next_first = os.time({ year = year, month = month + 1, day = 1, hour = 0, min = 0, sec = 0 })
+      return os.date("*t", next_first - 24 * 3600).day
+    end
+    local row = cal_start
+    while row <= #lines do
+      local header = lines[row]
+      if not header or not header:match("^Calendar:") then
+        row = row + 1
+      else
+        local month_name, year_str = header:match("^Calendar:%s+([A-Za-z]+)%s+(%d+)")
+        local info_month = month_map[month_name or ""]
+        local info_year = tonumber(year_str)
+        if not info_month or not info_year then
+          row = row + 1
+        else
+          local last = last_day_of_month(info_year, info_month)
+          local grid_first = row + 2
+          for r = grid_first, #lines do
+            local l = lines[r]
+            if l == nil or l == "" then
+              row = r + 1
+              break
+            end
+            for w = 1, 7 do
+              local start_col = (w - 1) * 3
+              local cell = l:sub(start_col + 1, start_col + 2)
+              local daynum = tonumber(cell)
+              if daynum and daynum >= 1 and daynum <= last then
+                local ds = string.format("%04d-%02d-%02d", info_year, info_month, daynum)
+                local group
+                if ds == today_str then
+                  group = "TaskflowCalToday"
+                else
+                  local m = tmap[ds]
+                  if m then
+                    if m.active then
+                      group = "TaskflowCalActive"
+                    elseif m.backlog then
+                      group = "TaskflowCalBacklog"
+                    elseif m.pending then
+                      group = "TaskflowCalAny"
+                    end
+                  end
+                end
+                if group then
+                  pcall(vim.api.nvim_buf_add_highlight, buf, -1, group, r - 1, start_col, start_col + 2)
+                end
               end
             end
-          end
-          if group then
-            pcall(vim.api.nvim_buf_add_highlight, buf, -1, group, row - 1, start_col, start_col + 2)
+            row = r + 1
           end
         end
       end
@@ -1251,7 +1302,7 @@ function M.dashboard()
     table.insert(lines, string.format("Store: %s", get_data_path()))
     table.insert(lines, "---")
     -- Calendar (placed above Active)
-    local cal_lines, _ = build_calendar_grid_lines()
+    local cal_lines = build_calendar_grid_lines()
     for _, cl in ipairs(cal_lines) do
       table.insert(lines, cl)
     end
