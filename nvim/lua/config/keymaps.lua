@@ -313,6 +313,19 @@ local personal_keymaps = {
     end,
     "Copy file name",
   },
+  {
+    "bo",
+    function()
+      local path = vim.fn.expand("%:p")
+      if path == "" or vim.fn.filereadable(path) == 0 then
+        vim.notify("Current buffer is not a file.", vim.log.levels.WARN)
+        return
+      end
+      vim.fn.system({ "open", path })
+      vim.notify("Opened in default app: " .. path, vim.log.levels.INFO)
+    end,
+    "Open buffer in default app (macOS)",
+  },
   { "lh", "<Cmd>checkhealth<CR>", "Check health" },
   { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
   { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },

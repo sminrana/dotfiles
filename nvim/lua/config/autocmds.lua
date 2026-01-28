@@ -105,3 +105,70 @@ vim.api.nvim_create_autocmd({ "FocusLost", "WinLeave" }, {
     end
   end,
 })
+
+local function build_winbar(bufnr)
+  local name = vim.api.nvim_buf_get_name(bufnr)
+  if name == "" then
+    return ""
+  end
+
+  local stat = vim.loop.fs_stat(name)
+  local info = {}
+
+  if stat then
+    table.insert(info, string.format("%03o", stat.mode % 512))
+  end
+
+  if vim.bo[bufnr].modified then
+    table.insert(info, "+")
+  end
+
+  if vim.bo[bufnr].readonly then
+    table.insert(info, "ro")
+  end
+
+  if #info > 0 then
+    return name .. "  |  " .. table.concat(info, "  |  ")
+  end
+
+  return name
+end
+
+local function escape_statusline(text)
+  return text:gsub("%%", "%%%%"):gsub("#", "##")
+end
+
+local function set_abs_path_winbar(bufnr, winid)
+  if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
+
+  if vim.bo[bufnr].buftype ~= "" then
+    return
+  end
+
+  local text = build_winbar(bufnr)
+  if text == "" then
+    return
+  end
+
+  if not winid or not vim.api.nvim_win_is_valid(winid) then
+    return
+  end
+
+  vim.api.nvim_win_set_option(winid, "winbar", "%=" .. escape_statusline(text))
+end
+
+vim.api.nvim_create_autocmd({
+  "BufWinEnter",
+  "BufFilePost",
+  "BufWritePost",
+  "WinEnter",
+  "BufModifiedSet",
+}, {
+  desc = "Show absolute path in winbar",
+  callback = function(args)
+    local winid = vim.api.nvim_get_current_win()
+    set_abs_path_winbar(args.buf, winid)
+  end,
+})
