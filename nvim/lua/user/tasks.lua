@@ -180,6 +180,44 @@ COMMIT;]]
       end
     end
   end
+  local function has_column(tbl, name)
+    local have = column_set(tbl)
+    return have[name] == true
+  end
+  local function migrate_drop_backlog(tbl)
+    local sql = string.format(
+      [[BEGIN;
+      CREATE TABLE IF NOT EXISTS %s_new (
+        id INTEGER,
+        uid TEXT,
+        title TEXT,
+        area TEXT,
+        status TEXT,
+        priority TEXT,
+        points INTEGER,
+        reward TEXT,
+        impact TEXT,
+        why TEXT,
+        created_at INTEGER,
+        started_at INTEGER,
+        completed_at INTEGER,
+        due INTEGER,
+        repeat TEXT
+      );
+      INSERT INTO %s_new (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat)
+        SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM %s;
+      DROP TABLE %s;
+      ALTER TABLE %s_new RENAME TO %s;
+      COMMIT;]],
+      tbl,
+      tbl,
+      tbl,
+      tbl,
+      tbl,
+      tbl
+    )
+    return db_exec(sql)
+  end
   ensure_columns("tasks", {
     { "id", "INTEGER" },
     { "uid", "TEXT" },
@@ -231,6 +269,14 @@ COMMIT;]]
     { "due", "INTEGER" },
     { "repeat", "TEXT" },
   })
+  if has_column("tasks", "backlog") or has_column("archive", "backlog") or has_column("deleted", "backlog") then
+    if meta_get("schema_backlog_removed") ~= "1" then
+      migrate_drop_backlog("tasks")
+      migrate_drop_backlog("archive")
+      migrate_drop_backlog("deleted")
+      meta_set("schema_backlog_removed", "1")
+    end
+  end
 end
 
 local state = {
