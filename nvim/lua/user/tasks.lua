@@ -2454,14 +2454,28 @@ function M.edit_interactive(id)
       if y and m and d then
         yy, mm, dd = tonumber(y), tonumber(m), tonumber(d)
       end
-      local hour = t.due and tonumber(os.date("%H", t.due)) or 9
-      local min = t.due and tonumber(os.date("%M", t.due)) or 0
-      local due_ts
-      if yy and mm and dd then
-        due_ts = os.time({ year = yy, month = mm, day = dd, hour = hour, min = min })
-      end
-      t.due = due_ts or t.due or (os.time() + 24 * 3600)
-      input("Repeat (none/daily/weekly/monthly/yearly): ", t["repeat"] or "none", function(v3)
+      local hour = 9
+      local min = 0
+      local time_default = "09:00"
+      input("Time (HH:MM 24h): ", time_default, function(vtime)
+        if vtime == nil then
+          return
+        end
+        local hh, nn = tostring(vtime):match("^(%d%d):(%d%d)$")
+        local th = tonumber(hh) or hour
+        local tm = tonumber(nn) or min
+        if th < 0 or th > 23 then
+          th = hour
+        end
+        if tm < 0 or tm > 59 then
+          tm = min
+        end
+        local due_ts
+        if yy and mm and dd then
+          due_ts = os.time({ year = yy, month = mm, day = dd, hour = th, min = tm })
+        end
+        t.due = due_ts or t.due or (os.time() + 24 * 3600)
+        input("Repeat (none/daily/weekly/monthly/yearly): ", t["repeat"] or "none", function(v3)
         if v3 == nil then
           return
         end
@@ -2489,6 +2503,7 @@ function M.edit_interactive(id)
           return
         end
         M.dashboard()
+      end)
       end)
     end)
   end)
