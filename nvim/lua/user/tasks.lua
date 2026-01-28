@@ -118,7 +118,6 @@ CREATE TABLE IF NOT EXISTS tasks (
   started_at INTEGER,
   completed_at INTEGER,
   due INTEGER,
-  backlog INTEGER,
   repeat TEXT
 );
 CREATE TABLE IF NOT EXISTS deleted (
@@ -136,7 +135,6 @@ CREATE TABLE IF NOT EXISTS deleted (
   started_at INTEGER,
   completed_at INTEGER,
   due INTEGER,
-  backlog INTEGER,
   repeat TEXT
 );
 CREATE TABLE IF NOT EXISTS archive (
@@ -154,7 +152,6 @@ CREATE TABLE IF NOT EXISTS archive (
   started_at INTEGER,
   completed_at INTEGER,
   due INTEGER,
-  backlog INTEGER,
   repeat TEXT
 );
 CREATE TABLE IF NOT EXISTS meta (
@@ -198,7 +195,6 @@ COMMIT;]]
     { "started_at", "INTEGER" },
     { "completed_at", "INTEGER" },
     { "due", "INTEGER" },
-    { "backlog", "INTEGER" },
     { "repeat", "TEXT" },
   })
   ensure_columns("archive", {
@@ -216,7 +212,6 @@ COMMIT;]]
     { "started_at", "INTEGER" },
     { "completed_at", "INTEGER" },
     { "due", "INTEGER" },
-    { "backlog", "INTEGER" },
     { "repeat", "TEXT" },
   })
   ensure_columns("deleted", {
@@ -234,7 +229,6 @@ COMMIT;]]
     { "started_at", "INTEGER" },
     { "completed_at", "INTEGER" },
     { "due", "INTEGER" },
-    { "backlog", "INTEGER" },
     { "repeat", "TEXT" },
   })
 end
@@ -357,7 +351,7 @@ local function load_state()
   ensure_data_dir()
   ensure_db()
   local rows = db_select(
-    "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks"
+    "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM tasks"
   )
   local tasks = {}
   local max_id = 0
@@ -378,7 +372,6 @@ local function load_state()
       started_at = tonumber(r.started_at),
       completed_at = tonumber(r.completed_at),
       due = tonumber(r.due),
-      backlog = tonumber(r.backlog) == 1,
       ["repeat"] = r["repeat"],
     }
     table.insert(tasks, t)
@@ -565,12 +558,11 @@ function M.add(opts)
     local priority = opts.priority or "medium"
     local area = opts.area or "general"
     local status = "pending"
-    local backlog = opts.backlog and 1 or 0
     local due = opts.due or (os.time() + 24 * 3600)
     local repeat_val = opts["repeat"] or "none"
     local created_at = now()
     local sql = string.format(
-      "INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, due, backlog, repeat) VALUES (%d, '%s', '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', %d, %d, %d, '%s')",
+      "INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, due, repeat) VALUES (%d, '%s', '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', %d, %d, '%s')",
       new_id,
       sql_escape(uid),
       sql_escape(title),
@@ -583,7 +575,6 @@ function M.add(opts)
       sql_escape(why),
       created_at,
       due,
-      backlog,
       sql_escape(repeat_val)
     )
     local out, code = db_exec(sql)
@@ -612,10 +603,8 @@ end
 function M.start(id)
   ensure_db()
   local ts = now()
-  -- Starting a task should make it active (remove from backlog)
-  db_exec(
-    string.format("UPDATE tasks SET status='in_progress', started_at=%d, backlog=0 WHERE id=%d", ts, tonumber(id))
-  )
+  -- Starting a task should make it active
+  db_exec(string.format("UPDATE tasks SET status='in_progress', started_at=%d WHERE id=%d", ts, tonumber(id)))
   return true
 end
 
@@ -628,7 +617,7 @@ function M.complete(id)
   -- Load task to inspect repeat and due
   local rows = db_select(
     string.format(
-      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks WHERE id=%d",
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM tasks WHERE id=%d",
       rid
     )
   )
@@ -693,11 +682,11 @@ function M.complete(id)
     nd = next_due(nd, rep)
     guard = guard + 1
   end
-  -- Create a new pending instance (not backlogged) for the next occurrence
+  -- Create a new pending instance for the next occurrence
   local new_id = M.next_task_id()
   local new_uid = tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999))
   local sql = string.format(
-    "INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat) VALUES (%d, '%s', '%s', '%s', 'pending', '%s', %d, '%s', '%s', '%s', %d, NULL, NULL, %d, %d, '%s')",
+    "INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat) VALUES (%d, '%s', '%s', '%s', 'pending', '%s', %d, '%s', '%s', '%s', %d, NULL, NULL, %d, '%s')",
     new_id,
     sql_escape(new_uid),
     sql_escape(r.title or "Untitled"),
@@ -709,7 +698,6 @@ function M.complete(id)
     sql_escape(r.why or ""),
     ts,
     nd,
-    0,
     sql_escape(rep)
   )
   local out, code = db_exec(sql)
@@ -725,23 +713,6 @@ function M.stop(id)
   return true
 end
 
-function M.set_backlog(id, mode)
-  ensure_db()
-  local current = db_select(string.format("SELECT backlog FROM tasks WHERE id=%d", tonumber(id)))
-  if #current == 0 then
-    return false, "Task not found"
-  end
-  local cur = tonumber(current[1].backlog) or 0
-  local val
-  if mode == "toggle" then
-    val = (cur == 1) and 0 or 1
-  else
-    val = (mode == "on") and 1 or 0
-  end
-  db_exec(string.format("UPDATE tasks SET backlog=%d WHERE id=%d", val, tonumber(id)))
-  return true
-end
-
 function M.delete(id)
   ensure_db()
   local rid = tonumber(id)
@@ -754,8 +725,8 @@ function M.delete(id)
   end
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO deleted (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
-      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks WHERE id=%d;
+    INSERT INTO deleted (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM tasks WHERE id=%d;
     DELETE FROM tasks WHERE id=%d;
   COMMIT;]],
     rid,
@@ -791,7 +762,6 @@ function M.add_text(title, body)
     points = 3,
     priority = "medium",
     area = "general",
-    backlog = false,
     due = os.time() + 24 * 3600,
   }
   local added, err = M.add(t)
@@ -821,8 +791,8 @@ function M.restore_archived(id)
   local new_id = M.next_task_id()
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
-      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0, repeat FROM archive WHERE id=%d;
+    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat)
+      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, repeat FROM archive WHERE id=%d;
     DELETE FROM archive WHERE id=%d;
   COMMIT;]],
     new_id,
@@ -845,8 +815,8 @@ function M.restore_deleted(id)
   local new_id = M.next_task_id()
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
-      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, 0, repeat FROM deleted WHERE id=%d;
+    INSERT INTO tasks (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat)
+      SELECT %d, uid, title, area, 'pending', priority, points, reward, impact, why, created_at, NULL, NULL, due, repeat FROM deleted WHERE id=%d;
     DELETE FROM deleted WHERE id=%d;
   COMMIT;]],
     new_id,
@@ -873,9 +843,7 @@ function M.reopen_completed(id)
   if #exists == 0 or tonumber(exists[1].c or 0) == 0 then
     return false, "not found"
   end
-  db_exec(
-    string.format("UPDATE tasks SET status='pending', started_at=NULL, completed_at=NULL, backlog=0 WHERE id=%d", rid)
-  )
+  db_exec(string.format("UPDATE tasks SET status='pending', started_at=NULL, completed_at=NULL WHERE id=%d", rid))
   return true
 end
 
@@ -894,8 +862,8 @@ function M.archive(days)
   local cutoff = now() - d * 24 * 3600
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
-      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks
+    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM tasks
       WHERE status='completed' AND (completed_at IS NOT NULL) AND completed_at <= %d;
     DELETE FROM tasks WHERE status='completed' AND (completed_at IS NOT NULL) AND completed_at <= %d;
   COMMIT;]],
@@ -917,8 +885,8 @@ function M.archive_task(id)
   end
   db_exec(string.format(
     [[BEGIN;
-    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat)
-      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM tasks WHERE id=%d;
+    INSERT INTO archive (id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat)
+      SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM tasks WHERE id=%d;
     DELETE FROM tasks WHERE id=%d;
   COMMIT;]],
     rid,
@@ -934,7 +902,7 @@ function M.list(filter)
     if filter == "important" then
       ok = (t.priority == "high") and (t.status ~= "completed")
     elseif filter == "backlog" then
-      ok = t.backlog and (t.status ~= "completed")
+      ok = (t.status ~= "completed") and (t.status ~= "in_progress")
     elseif filter == "in_progress" then
       ok = t.status == "in_progress"
     elseif filter == "completed" then
@@ -994,6 +962,11 @@ end
 
 function M.dashboard()
   load_state()
+  -- Auto-archive completed tasks older than configured window
+  pcall(function()
+    M.archive(config.archive_after_days)
+  end)
+  load_state()
   local function sort_tasks(items)
     table.sort(items, function(a, b)
       local sa, sb = score_for(a), score_for(b)
@@ -1007,24 +980,6 @@ function M.dashboard()
       end
       return sa > sb
     end)
-  end
-
-  local function collect_all_pending_non_backlog()
-    local items = {}
-    for _, t in ipairs(state.tasks) do
-      if t.status ~= "completed" and (t.status == "pending" or t.status == nil) and not t.backlog then
-        table.insert(items, t)
-      end
-    end
-    table.sort(items, function(a, b)
-      local da = a.due or math.huge
-      local db = b.due or math.huge
-      if da == db then
-        return (a.created_at or 0) < (b.created_at or 0)
-      end
-      return da < db
-    end)
-    return items
   end
 
   local function collect_completed()
@@ -1043,7 +998,7 @@ function M.dashboard()
   local function collect_archived()
     ensure_db()
     local rows = db_select(
-      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM archive ORDER BY completed_at DESC"
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM archive ORDER BY completed_at DESC"
     )
     local items = {}
     for _, r in ipairs(rows) do
@@ -1062,7 +1017,6 @@ function M.dashboard()
         started_at = tonumber(r.started_at),
         completed_at = tonumber(r.completed_at),
         due = tonumber(r.due),
-        backlog = tonumber(r.backlog) == 1,
         ["repeat"] = r["repeat"],
       })
     end
@@ -1072,7 +1026,7 @@ function M.dashboard()
   local function collect_deleted()
     ensure_db()
     local rows = db_select(
-      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog, repeat FROM deleted ORDER BY created_at DESC"
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, repeat FROM deleted ORDER BY created_at DESC"
     )
     local items = {}
     for _, r in ipairs(rows) do
@@ -1091,7 +1045,6 @@ function M.dashboard()
         started_at = tonumber(r.started_at),
         completed_at = tonumber(r.completed_at),
         due = tonumber(r.due),
-        backlog = tonumber(r.backlog) == 1,
         ["repeat"] = r["repeat"],
       })
     end
@@ -1113,7 +1066,7 @@ function M.dashboard()
   local function collect_backlog()
     local items = {}
     for _, t in ipairs(state.tasks) do
-      if t.status ~= "completed" and t.backlog then
+      if t.status ~= "completed" and t.status ~= "in_progress" then
         table.insert(items, t)
       end
     end
@@ -1149,11 +1102,9 @@ function M.dashboard()
     for _, t in ipairs(state.tasks or {}) do
       if t.due and (t.status ~= "completed") then
         local ds = os.date("%Y-%m-%d", t.due)
-        local m = map[ds] or { pending = false, active = false, backlog = false }
+        local m = map[ds] or { pending = false, active = false }
         if t.status == "in_progress" then
           m.active = true
-        elseif t.backlog then
-          m.backlog = true
         else
           m.pending = true
         end
@@ -1211,11 +1162,9 @@ function M.dashboard()
   local function apply_calendar_highlights(buf)
     -- Define highlight groups
     pcall(vim.api.nvim_set_hl, 0, "TaskflowCalAny", { fg = "#808080" })
-    pcall(vim.api.nvim_set_hl, 0, "TaskflowCalBacklog", { fg = "#ff00ff" })
     pcall(vim.api.nvim_set_hl, 0, "TaskflowCalActive", { fg = "#268bd2" })
     pcall(vim.api.nvim_set_hl, 0, "TaskflowCalToday", { fg = "#ffffff", bg = "#000000" })
     pcall(vim.api.nvim_set_hl, 0, "TaskflowBacklogHeader", { fg = "#b58900", bold = true })
-    pcall(vim.api.nvim_set_hl, 0, "TaskflowAllPendingHeader", { fg = "#2aa198", bold = true })
     pcall(vim.api.nvim_set_hl, 0, "TaskflowDueSoon", { fg = "#dc322f", bold = true })
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     local cal_start = nil
@@ -1282,8 +1231,6 @@ function M.dashboard()
                   if m then
                     if m.active then
                       group = "TaskflowCalActive"
-                    elseif m.backlog then
-                      group = "TaskflowCalBacklog"
                     elseif m.pending then
                       group = "TaskflowCalAny"
                     end
@@ -1304,7 +1251,6 @@ function M.dashboard()
   local function build_lines()
     local active = collect_active()
     local back = collect_backlog()
-    local allp = collect_all_pending_non_backlog()
     local completed = collect_completed()
     local archived = collect_archived()
     local deleted = collect_deleted()
@@ -1314,10 +1260,9 @@ function M.dashboard()
     table.insert(
       lines,
       string.format(
-        "TaskFlow Dashboard | active: %d | backlog: %d | all(pending): %d | completed: %d | archived: %d | deleted: %d | points: %d",
+        "TaskFlow Dashboard | active: %d | backlog: %d | completed: %d | archived: %d | deleted: %d | points: %d",
         #active,
         #back,
-        #allp,
         #completed,
         #archived,
         #deleted,
@@ -1385,35 +1330,6 @@ function M.dashboard()
           table.insert(lines, "  Reward: " .. t.reward)
         end
         table.insert(lines, "")
-      end
-    end
-    table.insert(lines, "")
-    table.insert(lines, "All (Pending, Not Backlogged):")
-    table.insert(lines, sep)
-    for _, t in ipairs(allp) do
-      if t.status ~= "in_progress" then
-        local tag = is_overdue(t) and " [OVERDUE]" or ""
-        local line = fmt_task_line(t) .. tag
-        table.insert(lines, line)
-        if is_due_soon(t, 3) then
-          due_soon_rows[#lines] = true
-        end
-        if expanded and t.id and expanded[t.id] then
-          table.insert(lines, "  Why:")
-          local why = t.why or ""
-          for s in tostring(why):gmatch("([^\n]*)\n?") do
-            if s ~= nil then
-              table.insert(lines, "    " .. s)
-            end
-          end
-          if t.impact and #t.impact > 0 then
-            table.insert(lines, "  Impact: " .. t.impact)
-          end
-          if t.reward and #t.reward > 0 then
-            table.insert(lines, "  Reward: " .. t.reward)
-          end
-          table.insert(lines, "")
-        end
       end
     end
     table.insert(lines, "")
@@ -1542,7 +1458,7 @@ function M.dashboard()
     table.insert(lines, "")
     table.insert(
       lines,
-      "Controls: s=start, x=complete, b=toggle backlog, p=postpone Nd, a=archive, d=delete, e=empty deleted, B=backup db, r=restore/reopen (in Completed/Archived/Deleted), <CR>=toggle details, q=close"
+      "Controls: s=start, x=complete, p=postpone Nd, a=archive, d=delete, e=empty deleted, B=backup db, r=restore/reopen (in Completed/Archived/Deleted), <CR>=toggle details, q=close"
     )
     return lines
   end
@@ -1566,7 +1482,6 @@ function M.dashboard()
     end
     add_hl_for_header("⏳ Active:", "TaskflowActiveHeader")
     add_hl_for_header("Backlog:", "TaskflowBacklogHeader")
-    add_hl_for_header("All (Pending, Not Backlogged):", "TaskflowAllPendingHeader")
     add_hl_for_header("Deleted 🗑️:", "TaskflowDeletedHeader")
     add_hl_for_header("Archived:", "TaskflowArchivedHeader")
     add_hl_for_header("Completed ✅:", "TaskflowCompletedHeader")
@@ -1595,7 +1510,6 @@ function M.dashboard()
       if
         l == "⏳ Active:"
         or l == "Backlog:"
-        or l == "All (Pending, Not Backlogged):"
         or l == "Completed ✅:"
         or l == "Archived:"
         or l == "Deleted 🗑️:"
@@ -1665,14 +1579,6 @@ function M.dashboard()
     local id = id_at_cursor()
     if id then
       M.complete(id)
-      load_state()
-      redraw()
-    end
-  end)
-  buf_map("b", function()
-    local id = id_at_cursor()
-    if id then
-      M.set_backlog(id, "toggle")
       load_state()
       redraw()
     end
@@ -2102,7 +2008,7 @@ function M.open_ui()
   table.insert(lines, "")
   table.insert(lines, "Backlog:")
   for _, t in ipairs(state.tasks) do
-    if t.backlog and t.status ~= "completed" then
+    if t.status ~= "completed" and t.status ~= "in_progress" then
       table.insert(lines, "  " .. fmt_task_line(t))
     end
   end
@@ -2128,10 +2034,7 @@ function M.open_ui()
     table.insert(lines, "  " .. fmt_task_line(completed[i]))
   end
   table.insert(lines, "")
-  table.insert(
-    lines,
-    "UI Controls: s=start, x=complete, k=toggle backlog, o=postpone 1d, w=weekly, r=rewards, B=backup db, q=close"
-  )
+  table.insert(lines, "UI Controls: s=start, x=complete, o=postpone 1d, w=weekly, r=rewards, B=backup db, q=close")
   local buf, _ = render_float(lines, "TaskFlow:UI")
   local function id_at_cursor()
     local line = vim.api.nvim_get_current_line()
@@ -2163,7 +2066,7 @@ function M.open_ui()
     table.insert(new_lines, "")
     table.insert(new_lines, "Backlog:")
     for _, t in ipairs(state.tasks) do
-      if t.backlog and t.status ~= "completed" then
+      if t.status ~= "completed" and t.status ~= "in_progress" then
         local tag = is_overdue(t) and " [OVERDUE]" or ""
         table.insert(new_lines, "  " .. fmt_task_line(t) .. tag)
       end
@@ -2193,7 +2096,7 @@ function M.open_ui()
     table.insert(new_lines, "")
     table.insert(
       new_lines,
-      "UI Controls: s=start, x=complete, k=toggle backlog, o=postpone 1d, w=weekly, r=rewards, B=backup db, q=close"
+      "UI Controls: s=start, x=complete, o=postpone 1d, w=weekly, r=rewards, B=backup db, q=close"
     )
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, new_lines)
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
@@ -2215,13 +2118,6 @@ function M.open_ui()
     local id = id_at_cursor()
     if id then
       M.complete(id)
-      redraw()
-    end
-  end)
-  buf_map("k", function()
-    local id = id_at_cursor()
-    if id then
-      M.set_backlog(id, "toggle")
       redraw()
     end
   end)
@@ -2438,23 +2334,15 @@ function M.add_interactive()
                         rep = "none"
                       end
                       t["repeat"] = rep
-                      input("Backlog? (y/n): ", "n", function(v9)
-                        if v9 == nil then
-                          vim.notify("Task add cancelled", vim.log.levels.INFO)
-                          return
-                        end
-                        local ans = tostring(v9 or "n"):lower()
-                        t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
-                        local added, err = M.add(t)
-                        if not added then
-                          vim.notify(
-                            "TaskFlow: failed to add task: " .. tostring(err or "unknown error"),
-                            vim.log.levels.ERROR
-                          )
-                        else
-                          M.dashboard()
-                        end
-                      end)
+                      local added, err = M.add(t)
+                      if not added then
+                        vim.notify(
+                          "TaskFlow: failed to add task: " .. tostring(err or "unknown error"),
+                          vim.log.levels.ERROR
+                        )
+                      else
+                        M.dashboard()
+                      end
                     end)
                   end)
                 end)
@@ -2476,7 +2364,7 @@ function M.edit_interactive(id)
   end
   local rows = db_select(
     string.format(
-      "SELECT id, title, area, status, priority, points, reward, impact, why, due, backlog, repeat FROM tasks WHERE id=%d",
+      "SELECT id, title, area, status, priority, points, reward, impact, why, due, repeat FROM tasks WHERE id=%d",
       rid
     )
   )
@@ -2494,7 +2382,6 @@ function M.edit_interactive(id)
     priority = (r.priority and #r.priority > 0) and r.priority or "medium",
     area = r.area or "general",
     due = tonumber(r.due),
-    backlog = (tonumber(r.backlog) or 0) == 1,
     ["repeat"] = r["repeat"],
   }
   local tomorrow = os.date("%Y-%m-%d", os.time() + 24 * 3600)
@@ -2570,33 +2457,25 @@ function M.edit_interactive(id)
                         rep = "none"
                       end
                       t["repeat"] = rep
-                      input("Backlog? (y/n): ", t.backlog and "y" or "n", function(v9)
-                        if v9 == nil then
-                          return
-                        end
-                        local ans = tostring(v9 or (t.backlog and "y" or "n")):lower()
-                        t.backlog = (ans == "y" or ans == "yes" or ans == "1" or ans == "true")
-                        local sql = string.format(
-                          "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, backlog=%d, repeat='%s' WHERE id=%d",
-                          sql_escape(t.title),
-                          sql_escape(t.area),
-                          sql_escape(t.priority),
-                          tonumber(t.points) or 0,
-                          sql_escape(t.reward),
-                          sql_escape(t.impact),
-                          sql_escape(t.why),
-                          tonumber(t.due) or (os.time() + 24 * 3600),
-                          t.backlog and 1 or 0,
-                          sql_escape(t["repeat"] or "none"),
-                          rid
-                        )
-                        local out, code = db_exec(sql)
-                        if code ~= 0 then
-                          vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
-                          return
-                        end
-                        M.dashboard()
-                      end)
+                      local sql = string.format(
+                        "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, repeat='%s' WHERE id=%d",
+                        sql_escape(t.title),
+                        sql_escape(t.area),
+                        sql_escape(t.priority),
+                        tonumber(t.points) or 0,
+                        sql_escape(t.reward),
+                        sql_escape(t.impact),
+                        sql_escape(t.why),
+                        tonumber(t.due) or (os.time() + 24 * 3600),
+                        sql_escape(t["repeat"] or "none"),
+                        rid
+                      )
+                      local out, code = db_exec(sql)
+                      if code ~= 0 then
+                        vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
+                        return
+                      end
+                      M.dashboard()
                     end)
                   end)
                 end)
@@ -2729,7 +2608,7 @@ function M.setup(opts)
   end, {
     nargs = "?",
     complete = function()
-      return { "important", "backlog", "today", "next7", "overdue", "in_progress", "completed", "all" }
+      return { "important", "today", "next7", "overdue", "in_progress", "completed", "all" }
     end,
   })
   vim.api.nvim_create_user_command("TodoStart", function(opts)
@@ -2750,15 +2629,6 @@ function M.setup(opts)
       M.dashboard()
     end
   end, { nargs = 1 })
-  vim.api.nvim_create_user_command("TodoBacklog", function(opts)
-    local args = vim.split(opts.args, " ")
-    local id = tonumber(args[1])
-    local mode = args[2] or "toggle"
-    local ok = M.set_backlog(id, mode)
-    if ok then
-      M.dashboard()
-    end
-  end, { nargs = "+" })
   vim.api.nvim_create_user_command("TodoDashboard", function()
     M.dashboard()
   end, {})
@@ -3030,7 +2900,7 @@ function M.dashboard_history()
   local function collect_archived()
     ensure_db()
     local rows = db_select(
-      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM archive ORDER BY completed_at DESC"
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due FROM archive ORDER BY completed_at DESC"
     )
     local items = {}
     for _, r in ipairs(rows) do
@@ -3049,7 +2919,6 @@ function M.dashboard_history()
         started_at = tonumber(r.started_at),
         completed_at = tonumber(r.completed_at),
         due = tonumber(r.due),
-        backlog = tonumber(r.backlog) == 1,
       })
     end
     return items
@@ -3057,7 +2926,7 @@ function M.dashboard_history()
   local function collect_deleted()
     ensure_db()
     local rows = db_select(
-      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due, backlog FROM deleted ORDER BY created_at DESC"
+      "SELECT id, uid, title, area, status, priority, points, reward, impact, why, created_at, started_at, completed_at, due FROM deleted ORDER BY created_at DESC"
     )
     local items = {}
     for _, r in ipairs(rows) do
@@ -3076,7 +2945,6 @@ function M.dashboard_history()
         started_at = tonumber(r.started_at),
         completed_at = tonumber(r.completed_at),
         due = tonumber(r.due),
-        backlog = tonumber(r.backlog) == 1,
       })
     end
     return items
