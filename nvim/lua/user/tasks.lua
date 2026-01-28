@@ -462,6 +462,21 @@ local function score_for(task)
   return base * priority_weight(task.priority or "medium")
 end
 
+local function default_reward_for_points(points)
+  local pts = tonumber(points) or 0
+  if pts <= 2 then
+    return "2-min reset"
+  elseif pts <= 4 then
+    return "5-min walk"
+  elseif pts <= 6 then
+    return "coffee/tea"
+  elseif pts <= 8 then
+    return "15-min break"
+  else
+    return "small treat"
+  end
+end
+
 local function render(lines, title)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
@@ -675,6 +690,36 @@ function M.complete(id)
   local rep = r["repeat"] or "none"
   -- First mark this instance completed for history/points
   db_exec(string.format("UPDATE tasks SET status='completed', completed_at=%d WHERE id=%d", ts, rid))
+  if vim.ui and vim.ui.input then
+    local existing_impact = r.impact or ""
+    local existing_reward = r.reward or ""
+    if existing_impact == "" and existing_reward == "" then
+      vim.ui.input({ prompt = "Impact (optional): ", default = "" }, function(impact)
+        if impact == nil then
+          return
+        end
+        local suggestion = default_reward_for_points(r.points or 0)
+        vim.ui.input({ prompt = "Reward (optional): ", default = suggestion }, function(reward)
+          if reward == nil then
+            return
+          end
+          local impact_val = tostring(impact or "")
+          local reward_val = tostring(reward or "")
+          if impact_val == "" and reward_val == "" then
+            return
+          end
+          db_exec(
+            string.format(
+              "UPDATE tasks SET impact='%s', reward='%s' WHERE id=%d",
+              sql_escape(impact_val ~= "" and impact_val or existing_impact),
+              sql_escape(reward_val ~= "" and reward_val or existing_reward),
+              rid
+            )
+          )
+        end)
+      end)
+    end
+  end
   if rep == "none" or rep == "" then
     return true
   end
@@ -1300,6 +1345,13 @@ function M.dashboard()
     local completed = collect_completed()
     local archived = collect_archived()
     local deleted = collect_deleted()
+    local today_str = os.date("%Y-%m-%d")
+    local daily_wins = {}
+    for _, t in ipairs(completed) do
+      if t.completed_at and os.date("%Y-%m-%d", t.completed_at) == today_str then
+        table.insert(daily_wins, t)
+      end
+    end
     local sep = string.rep("-", 60)
     local lines = {}
     due_soon_rows = {}
@@ -1394,7 +1446,6 @@ function M.dashboard()
         table.insert(lines, "")
       end
     end
-    table.insert(lines, "")
     table.insert(lines, "Archived:")
     table.insert(lines, sep)
     for _, t in ipairs(archived) do
@@ -1424,6 +1475,18 @@ function M.dashboard()
           end
         end
         table.insert(lines, "")
+      end
+    end
+    table.insert(lines, "")
+    table.insert(lines, "Daily Wins:")
+    table.insert(lines, sep)
+    if #daily_wins == 0 then
+      table.insert(lines, "(No wins yet today)")
+    else
+      for _, t in ipairs(daily_wins) do
+        local impact = (t.impact and #t.impact > 0) and (" | impact: " .. t.impact) or ""
+        local reward = (t.reward and #t.reward > 0) and (" | reward: " .. t.reward) or ""
+        table.insert(lines, fmt_task_line(t) .. impact .. reward)
       end
     end
     table.insert(lines, "")
@@ -2301,101 +2364,45 @@ function M.add_interactive()
       return
     end
     t.title = v1 ~= "" and v1 or "Untitled"
-    input("Why (motivation): ", "", function(v2)
+    local tomorrow = os.date("%Y-%m-%d", os.time() + 24 * 3600)
+    input("Due (YYYY-MM-DD): ", tomorrow, function(v2)
       if v2 == nil then
         vim.notify("Task add cancelled", vim.log.levels.INFO)
         return
       end
-      t.why = v2 or ""
-      input("Impact (what happens if completed): ", "", function(v3)
+      local due_str = (v2 and #v2 > 0) and v2 or tomorrow
+      local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
+      local yy, mm, dd
+      if y and m and d then
+        yy, mm, dd = tonumber(y), tonumber(m), tonumber(d)
+      end
+      local due_ts
+      if yy and mm and dd then
+        due_ts = os.time({ year = yy, month = mm, day = dd, hour = 9, min = 0 })
+      end
+      t.due = due_ts or (os.time() + 24 * 3600)
+      input("Repeat (none/daily/weekly/monthly/yearly): ", "none", function(v3)
         if v3 == nil then
           vim.notify("Task add cancelled", vim.log.levels.INFO)
           return
         end
-        t.impact = v3 or ""
-        input("Reward (what do you get/do): ", "", function(v4)
-          if v4 == nil then
-            vim.notify("Task add cancelled", vim.log.levels.INFO)
-            return
-          end
-          t.reward = v4 or ""
-          input("Points (effort/value): ", "3", function(v5)
-            if v5 == nil then
-              vim.notify("Task add cancelled", vim.log.levels.INFO)
-              return
-            end
-            t.points = tonumber(v5) or 3
-            input("Priority (low/medium/high): ", "medium", function(v6)
-              if v6 == nil then
-                vim.notify("Task add cancelled", vim.log.levels.INFO)
-                return
-              end
-              t.priority = (v6 == "low" or v6 == "high") and v6 or "medium"
-              input("Area (e.g. work/personal): ", "work", function(v7)
-                if v7 == nil then
-                  vim.notify("Task add cancelled", vim.log.levels.INFO)
-                  return
-                end
-                t.area = v7 or "general"
-                local tomorrow = os.date("%Y-%m-%d", os.time() + 24 * 3600)
-                input("Due (YYYY-MM-DD): ", tomorrow, function(v8)
-                  -- require due date; fallback to tomorrow if empty
-                  if v8 == nil then
-                    vim.notify("Task add cancelled", vim.log.levels.INFO)
-                    return
-                  end
-                  local due_str = (v8 and #v8 > 0) and v8 or tomorrow
-                  local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
-                  local yy, mm, dd
-                  if y and m and d then
-                    yy, mm, dd = tonumber(y), tonumber(m), tonumber(d)
-                  end
-                  local default_time = os.date("%H:%M")
-                  input("Time (HH:MM 24h): ", default_time, function(vtime)
-                    if vtime == nil then
-                      vim.notify("Task add cancelled", vim.log.levels.INFO)
-                      return
-                    end
-                    local hh, nn = tostring(vtime):match("^(%d%d):(%d%d)$")
-                    local hour = tonumber(hh) or 0
-                    local min = tonumber(nn) or 0
-                    if hour < 0 or hour > 23 then
-                      hour = 0
-                    end
-                    if min < 0 or min > 59 then
-                      min = 0
-                    end
-                    local due_ts
-                    if yy and mm and dd then
-                      due_ts = os.time({ year = yy, month = mm, day = dd, hour = hour, min = min })
-                    end
-                    t.due = due_ts or (os.time() + 24 * 3600)
-                    input("Repeat task (none/daily/weekly/monthly/yearly): ", "none", function(vrep)
-                      if vrep == nil then
-                        vim.notify("Task add cancelled", vim.log.levels.INFO)
-                        return
-                      end
-                      local rep = tostring(vrep or "none"):lower()
-                      if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
-                        rep = "none"
-                      end
-                      t["repeat"] = rep
-                      local added, err = M.add(t)
-                      if not added then
-                        vim.notify(
-                          "TaskFlow: failed to add task: " .. tostring(err or "unknown error"),
-                          vim.log.levels.ERROR
-                        )
-                      else
-                        M.dashboard()
-                      end
-                    end)
-                  end)
-                end)
-              end)
-            end)
-          end)
-        end)
+        local rep = tostring(v3 or "none"):lower()
+        if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
+          rep = "none"
+        end
+        t.why = ""
+        t.impact = ""
+        t.reward = ""
+        t.points = 3
+        t.priority = "medium"
+        t.area = "general"
+        t["repeat"] = rep
+        local added, err = M.add(t)
+        if not added then
+          vim.notify("TaskFlow: failed to add task: " .. tostring(err or "unknown error"), vim.log.levels.ERROR)
+        else
+          M.dashboard()
+        end
       end)
     end)
   end)
@@ -2432,103 +2439,56 @@ function M.edit_interactive(id)
   }
   local tomorrow = os.date("%Y-%m-%d", os.time() + 24 * 3600)
   local due_default_date = t.due and os.date("%Y-%m-%d", t.due) or tomorrow
-  local time_default = t.due and os.date("%H:%M", t.due) or os.date("%H:%M")
   input("Title: ", t.title, function(v1)
     if v1 == nil then
       return
     end
     t.title = (v1 ~= "" and v1) or t.title
-    input("Why (motivation): ", t.why, function(v2)
+    input("Due (YYYY-MM-DD): ", due_default_date, function(v2)
       if v2 == nil then
         return
       end
-      t.why = v2 or ""
-      input("Impact: ", t.impact, function(v3)
+      local due_str = (v2 and #v2 > 0) and v2 or due_default_date
+      local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
+      local yy, mm, dd
+      if y and m and d then
+        yy, mm, dd = tonumber(y), tonumber(m), tonumber(d)
+      end
+      local hour = t.due and tonumber(os.date("%H", t.due)) or 9
+      local min = t.due and tonumber(os.date("%M", t.due)) or 0
+      local due_ts
+      if yy and mm and dd then
+        due_ts = os.time({ year = yy, month = mm, day = dd, hour = hour, min = min })
+      end
+      t.due = due_ts or t.due or (os.time() + 24 * 3600)
+      input("Repeat (none/daily/weekly/monthly/yearly): ", t["repeat"] or "none", function(v3)
         if v3 == nil then
           return
         end
-        t.impact = v3 or ""
-        input("Reward: ", t.reward, function(v4)
-          if v4 == nil then
-            return
-          end
-          t.reward = v4 or ""
-          input("Points: ", tostring(t.points), function(v5)
-            if v5 == nil then
-              return
-            end
-            t.points = tonumber(v5) or t.points
-            input("Priority (low/medium/high): ", t.priority, function(v6)
-              if v6 == nil then
-                return
-              end
-              local p = (v6 == "low" or v6 == "high") and v6 or (v6 == "medium" and v6 or t.priority)
-              t.priority = p
-              input("Area: ", t.area, function(v7)
-                if v7 == nil then
-                  return
-                end
-                t.area = (v7 ~= "" and v7) or t.area
-                input("Due (YYYY-MM-DD): ", due_default_date, function(v8)
-                  if v8 == nil then
-                    return
-                  end
-                  local due_str = (v8 and #v8 > 0) and v8 or due_default_date
-                  local y, m, d = due_str:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
-                  local yy, mm, dd
-                  if y and m and d then
-                    yy, mm, dd = tonumber(y), tonumber(m), tonumber(d)
-                  end
-                  input("Time (HH:MM 24h): ", time_default, function(vtime)
-                    local hh, nn = tostring(vtime or time_default):match("^(%d%d):(%d%d)$")
-                    local hour = tonumber(hh) or 0
-                    local min = tonumber(nn) or 0
-                    if hour < 0 or hour > 23 then
-                      hour = 0
-                    end
-                    if min < 0 or min > 59 then
-                      min = 0
-                    end
-                    local due_ts
-                    if yy and mm and dd then
-                      due_ts = os.time({ year = yy, month = mm, day = dd, hour = hour, min = min })
-                    end
-                    t.due = due_ts or t.due or (os.time() + 24 * 3600)
-                    input("Repeat task (none/daily/weekly/monthly/yearly): ", t["repeat"] or "none", function(vrep)
-                      if vrep == nil then
-                        return
-                      end
-                      local rep = tostring(vrep or (t["repeat"] or "none")):lower()
-                      if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
-                        rep = "none"
-                      end
-                      t["repeat"] = rep
-                      local sql = string.format(
-                        "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, repeat='%s' WHERE id=%d",
-                        sql_escape(t.title),
-                        sql_escape(t.area),
-                        sql_escape(t.priority),
-                        tonumber(t.points) or 0,
-                        sql_escape(t.reward),
-                        sql_escape(t.impact),
-                        sql_escape(t.why),
-                        tonumber(t.due) or (os.time() + 24 * 3600),
-                        sql_escape(t["repeat"] or "none"),
-                        rid
-                      )
-                      local out, code = db_exec(sql)
-                      if code ~= 0 then
-                        vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
-                        return
-                      end
-                      M.dashboard()
-                    end)
-                  end)
-                end)
-              end)
-            end)
-          end)
-        end)
+        local rep = tostring(v3 or (t["repeat"] or "none")):lower()
+        if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
+          rep = "none"
+        end
+        t["repeat"] = rep
+        local sql = string.format(
+          "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, repeat='%s' WHERE id=%d",
+          sql_escape(t.title),
+          sql_escape(t.area),
+          sql_escape(t.priority),
+          tonumber(t.points) or 0,
+          sql_escape(t.reward),
+          sql_escape(t.impact),
+          sql_escape(t.why),
+          tonumber(t.due) or (os.time() + 24 * 3600),
+          sql_escape(t["repeat"] or "none"),
+          rid
+        )
+        local out, code = db_exec(sql)
+        if code ~= 0 then
+          vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
+          return
+        end
+        M.dashboard()
       end)
     end)
   end)
