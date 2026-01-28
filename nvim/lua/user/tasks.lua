@@ -493,8 +493,8 @@ local function render_float(lines, title)
   vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   vim.api.nvim_buf_set_option(buf, "filetype", "taskflow")
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  local width = math.floor(vim.o.columns * 0.8)
-  local height = math.floor(vim.o.lines * 0.7)
+  local width = math.max(1, vim.o.columns - 8)
+  local height = math.max(1, vim.o.lines - 6)
   local opts = {
     relative = "editor",
     width = width,
@@ -1572,7 +1572,7 @@ function M.dashboard()
     return lines
   end
 
-  local buf = render(build_lines(), "TaskFlow:Dashboard")
+  local buf, win = render_float(build_lines(), "TaskFlow:Dashboard")
   -- Keep dashboard buffer around when hidden to avoid invalid buffer id during keymap setup
   pcall(vim.api.nvim_buf_set_option, buf, "bufhidden", "hide")
   local function apply_header_highlights()
@@ -1674,7 +1674,12 @@ function M.dashboard()
     redraw()
   end)
   buf_map("q", function()
-    vim.api.nvim_buf_delete(buf, { force = true })
+    if win and vim.api.nvim_win_is_valid(win) then
+      pcall(vim.api.nvim_win_close, win, true)
+    end
+    if buf and vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end
   end)
   buf_map("s", function()
     local id = id_at_cursor()
