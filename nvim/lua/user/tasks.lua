@@ -2481,34 +2481,34 @@ function M.edit_interactive(id)
         end
         t.due = due_ts or t.due or (os.time() + 24 * 3600)
         input("Repeat (none/daily/weekly/monthly/yearly): ", t["repeat"] or "none", function(v3)
-        if v3 == nil then
-          return
-        end
-        local rep = tostring(v3 or (t["repeat"] or "none")):lower()
-        if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
-          rep = "none"
-        end
-        t["repeat"] = rep
-        local sql = string.format(
-          "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, repeat='%s' WHERE id=%d",
-          sql_escape(t.title),
-          sql_escape(t.area),
-          sql_escape(t.priority),
-          tonumber(t.points) or 0,
-          sql_escape(t.reward),
-          sql_escape(t.impact),
-          sql_escape(t.why),
-          tonumber(t.due) or (os.time() + 24 * 3600),
-          sql_escape(t["repeat"] or "none"),
-          rid
-        )
-        local out, code = db_exec(sql)
-        if code ~= 0 then
-          vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
-          return
-        end
-        M.dashboard()
-      end)
+          if v3 == nil then
+            return
+          end
+          local rep = tostring(v3 or (t["repeat"] or "none")):lower()
+          if rep ~= "daily" and rep ~= "weekly" and rep ~= "monthly" and rep ~= "yearly" then
+            rep = "none"
+          end
+          t["repeat"] = rep
+          local sql = string.format(
+            "UPDATE tasks SET title='%s', area='%s', priority='%s', points=%d, reward='%s', impact='%s', why='%s', due=%d, repeat='%s' WHERE id=%d",
+            sql_escape(t.title),
+            sql_escape(t.area),
+            sql_escape(t.priority),
+            tonumber(t.points) or 0,
+            sql_escape(t.reward),
+            sql_escape(t.impact),
+            sql_escape(t.why),
+            tonumber(t.due) or (os.time() + 24 * 3600),
+            sql_escape(t["repeat"] or "none"),
+            rid
+          )
+          local out, code = db_exec(sql)
+          if code ~= 0 then
+            vim.notify("TaskFlow: sqlite error on UPDATE: " .. tostring(out), vim.log.levels.ERROR)
+            return
+          end
+          M.dashboard()
+        end)
       end)
     end)
   end)
@@ -2703,7 +2703,7 @@ function M.setup(opts)
   map("<leader>jtd", function()
     M.dashboard()
   end, "TaskFlow Dashboard")
-  map("<leader>jta", function()
+  map("<leader>jT", function()
     M.add_interactive()
   end, "TaskFlow Add")
   map("<leader>jte", function()
