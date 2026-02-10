@@ -171,7 +171,7 @@ return {
         yamlls = {},
         dockerls = {},
         gopls = {},
-        volar = {
+        vue_ls = {
           init_options = {
             vue = {
               hybridMode = false,
