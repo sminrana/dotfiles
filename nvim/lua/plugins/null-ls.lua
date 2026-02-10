@@ -55,6 +55,7 @@ return {
           "json",
           "yaml",
           "svelte",
+          "vue",
         },
         extra_args = {
           "--single-quote",

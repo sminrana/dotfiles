@@ -11,6 +11,10 @@ return {
     config = function()
       local lspconfig = require("lspconfig")
       local util = require("lspconfig.util")
+      require("mason").setup()
+      require("mason-lspconfig").setup({
+        ensure_installed = { "vue_ls" },
+      })
 
       -- === Shared capabilities ===
       local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -155,7 +159,19 @@ return {
         yamlls = {},
         dockerls = {},
         gopls = {},
-        vuels = {},
+        vue_ls = {
+          filetypes = { "vue" },
+          root_dir = function(fname)
+            return util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(fname)
+              or vim.fn.getcwd()
+          end,
+          init_options = {
+            typescript = {
+              tsdk = vim.fn.stdpath("data")
+                .. "/mason/packages/typescript-language-server/node_modules/typescript/lib",
+            },
+          },
+        },
         svelte = {},
         jdtls = {},
         kotlin_language_server = {},

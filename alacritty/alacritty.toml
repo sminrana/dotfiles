@@ -10,7 +10,7 @@ transparent_background_colors = false
 draw_bold_text_with_bright_colors = false
 
 [window]
-opacity = 1
+opacity = 0.97
 padding.x = 2
 padding.y = 0
 decorations = "Buttonless"
