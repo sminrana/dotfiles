@@ -11,12 +11,7 @@ local function build_winbar(bufnr)
     return ""
   end
 
-  local stat = vim.loop.fs_stat(name)
   local info = {}
-
-  if stat then
-    table.insert(info, string.format("%03o", stat.mode % 512))
-  end
 
   if vim.bo[bufnr].modified then
     table.insert(info, "+")
