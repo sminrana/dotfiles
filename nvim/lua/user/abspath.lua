@@ -1,4 +1,5 @@
 local M = {}
+local winbar_cache = {}
 
 local function escape_statusline(text)
   return text:gsub("%%", "%%%%"):gsub("#", "##")
@@ -67,7 +68,13 @@ local function set_abs_path_winbar(bufnr, winid)
     return
   end
 
-  vim.api.nvim_win_set_option(winid, "winbar", "%=" .. escape_statusline(text))
+  local rendered = "%=" .. escape_statusline(text)
+  if winbar_cache[winid] == rendered then
+    return
+  end
+
+  winbar_cache[winid] = rendered
+  vim.api.nvim_win_set_option(winid, "winbar", rendered)
 end
 
 function M.setup()
@@ -91,6 +98,16 @@ function M.setup()
     callback = function(args)
       local winid = vim.api.nvim_get_current_win()
       set_abs_path_winbar(args.buf, winid)
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("WinClosed", {
+    desc = "Clear winbar cache on close",
+    callback = function(args)
+      local winid = tonumber(args.match)
+      if winid then
+        winbar_cache[winid] = nil
+      end
     end,
   })
 end
