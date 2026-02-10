@@ -11,10 +11,6 @@ return {
     config = function()
       local lspconfig = require("lspconfig")
       local util = require("lspconfig.util")
-      require("mason").setup()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "vue_ls" },
-      })
 
       -- === Shared capabilities ===
       local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -53,16 +49,26 @@ return {
 
       -- === Server configurations ===
       local servers = {
-        -- 🧩 React Native / JS / TS
         ts_ls = {
-          cmd = { "typescript-language-server", "--stdio" },
           filetypes = {
             "javascript",
             "javascriptreact",
             "typescript",
             "typescriptreact",
             "json",
+            "vue",
           },
+          init_options = {
+            plugins = {
+              {
+                name = "@vue/typescript-plugin",
+                location = vim.fn.stdpath("data")
+                  .. "/mason/packages/vue-language-server/node_modules/@vue/language-server",
+                languages = { "vue" },
+              },
+            },
+          },
+          cmd = { "typescript-language-server", "--stdio" },
           root_dir = function(fname)
             return util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(fname)
               or util.root_pattern("app.json", "index.js", "index.tsx")(fname)
@@ -73,7 +79,13 @@ return {
               preferences = { importModuleSpecifier = "non-relative" },
               inlayHints = {
                 includeInlayParameterNameHints = "all",
+                includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+                includeInlayFunctionParameterTypeHints = true,
                 includeInlayVariableTypeHints = true,
+                includeInlayVariableTypeHintsWhenTypeMatchesName = true,
+                includeInlayPropertyDeclarationTypeHints = true,
+                includeInlayFunctionLikeReturnTypeHints = true,
+                includeInlayEnumMemberValueHints = true,
               },
             },
           },
@@ -159,16 +171,10 @@ return {
         yamlls = {},
         dockerls = {},
         gopls = {},
-        vue_ls = {
-          filetypes = { "vue" },
-          root_dir = function(fname)
-            return util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(fname)
-              or vim.fn.getcwd()
-          end,
+        volar = {
           init_options = {
-            typescript = {
-              tsdk = vim.fn.stdpath("data")
-                .. "/mason/packages/typescript-language-server/node_modules/typescript/lib",
+            vue = {
+              hybridMode = false,
             },
           },
         },
