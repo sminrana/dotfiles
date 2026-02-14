@@ -65,7 +65,7 @@ return {
       -- =====================================================
       -- Vue (Volar)
       -- =====================================================
-      lspconfig.volar.setup({
+      lspconfig.vue_ls.setup({
         capabilities = capabilities,
         on_attach = on_attach,
       })
@@ -99,7 +99,6 @@ return {
           map("K", vim.lsp.buf.hover)
         end,
       })
-
     end,
   },
 }
