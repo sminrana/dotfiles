@@ -71,15 +71,34 @@ return {
       })
 
       -- ---------------- Other servers ----------------
-      lspconfig.pyright.setup({ capabilities = capabilities })
-      lspconfig.intelephense.setup({ capabilities = capabilities })
-      lspconfig.rust_analyzer.setup({ capabilities = capabilities })
+      -- 🐍 Python
+      lspconfig.pyright.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        root_dir = util.root_pattern("pyproject.toml", ".git"),
+      })
+
+      -- 🐘 PHP
+      lspconfig.intelephense.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        root_dir = util.root_pattern("composer.json", ".git"),
+      })
+
+      -- 🦀 Rust
+      lspconfig.rust_analyzer.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+
+      -- 🌙 Lua
       lspconfig.lua_ls.setup({
         capabilities = capabilities,
+        on_attach = on_attach,
         settings = {
           Lua = {
             diagnostics = { globals = { "vim" } },
-            telemetry = { enable = false },
+            workspace = { checkThirdParty = false },
           },
         },
       })
