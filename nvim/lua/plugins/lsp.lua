@@ -70,6 +70,22 @@ return {
         on_attach = on_attach,
       })
 
+      -- 🟪 SvelteKit
+      lspconfig.svelte.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        root_dir = util.root_pattern("package.json", "svelte.config.js", ".git"),
+        filetypes = { "svelte" },
+      })
+
+      -- 🍏 Swift
+      lspconfig.sourcekit.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        root_dir = util.root_pattern("Package.swift", ".git"),
+        filetypes = { "swift" },
+      })
+
       -- ---------------- Other servers ----------------
       -- 🐍 Python
       lspconfig.pyright.setup({
