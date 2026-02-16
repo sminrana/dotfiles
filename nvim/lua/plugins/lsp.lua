@@ -3,8 +3,8 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPost", "BufNewFile" },
     dependencies = {
-      { "williamboman/mason.nvim", build = ":MasonUpdate" },
-      "williamboman/mason-lspconfig.nvim",
+      { "mason-org/mason.nvim", build = ":MasonUpdate" },
+      "mason-org/mason-lspconfig.nvim",
     },
     config = function()
       local lspconfig = require("lspconfig")
