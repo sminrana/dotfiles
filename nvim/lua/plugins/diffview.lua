@@ -3,7 +3,14 @@ return {
   event = "VeryLazy",
   config = function()
     -- Basic setup (keeps defaults; customize if needed)
-    require("diffview").setup({})
+    require("diffview").setup({
+       enhanced_diff_hl = true, -- Better syntax highlighting in diffs
+        view = {
+          merge_tool = {
+            layout = "diff3_mixed",
+          },
+        },
+    })
 
     -- Key mappings for common actions
     vim.keymap.set("n", "<leader>gdo", ":DiffviewOpen<CR>", { desc = "Diffview: open" })
