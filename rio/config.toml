@@ -1,0 +1,106 @@
+# Rio config adjusted to behave similarly to user's Alacritty config
+
+# Hide the cursor while typing
+hide-cursor-when-typing = true
+
+# Treat left Option as Alt (macOS)
+option-as-alt = 'left'
+
+# Start in home directory by default
+working-dir = "/Users/smin"
+draw-bold-text-with-light-colors = false
+confirm-before-quit = false
+
+
+[navigation]
+mode = "Bookmark"
+
+[editor]
+program = "vi"
+
+[window]
+colorspace = "display-p3"
+opacity = 0.97
+padding-x = 2
+padding-y = [0, 0]
+decorations = "Buttonless"
+blur = false
+mode = "Fullscreen"
+
+[renderer]
+performance = "high"
+backend = "automatic"
+disable-unfocused-render = false
+level = 1
+
+[keyboard]
+use-kitty-keyboard-protocol = false
+disable-ctlseqs-alt = false
+ime-cursor-positioning = true
+
+[fonts]
+# Base font size and family to match Alacritty
+size = 16.0
+features = []
+use-drawable-chars = true
+symbol-map = []
+disable-warnings-not-found = false
+additional-dirs = []
+
+[fonts.regular]
+family = "JetBrainsMono Nerd Font"
+style = "Normal"
+width = "Normal"
+weight = 400
+
+[fonts.bold]
+family = "JetBrainsMono Nerd Font"
+style = "Normal"
+width = "Normal"
+weight = 700
+
+[fonts.italic]
+family = "JetBrainsMono Nerd Font"
+style = "Italic"
+width = "Normal"
+weight = 400
+
+[fonts.bold-italic]
+family = "JetBrainsMono Nerd Font"
+style = "Italic"
+width = "Normal"
+weight = 700
+
+[bindings]
+keys = [
+	{ key = "s", with = "super", esc = "\u0013" },
+	{ key = "a", with = "super", esc = "\u0001" },
+	{ key = "c", with = "super", action = "Copy" },
+	{ key = "v", with = "super", action = "Paste" },
+	{ key = "t", with = "super", esc = "\u0001c" },
+	{ key = "[", with = "super", esc = "\u0001p" },
+	{ key = "]", with = "super", esc = "\u0001n" },
+	{ key = ".", with = "super", esc = "\u0001o" },
+	{ key = "x", with = "super|shift", esc = "\u0001X" },
+	{ key = "f", with = "super|shift", action = "ToggleFullscreen" },
+	{ key = "1", with = "super", esc = "\u00011" },
+	{ key = "2", with = "super", esc = "\u00012" },
+	{ key = "3", with = "super", esc = "\u00013" },
+	{ key = "4", with = "super", esc = "\u00014" },
+	{ key = "5", with = "super", esc = "\u00015" },
+	{ key = "6", with = "super", esc = "\u00016" },
+	{ key = "7", with = "super", esc = "\u00017" },
+	{ key = "8", with = "super", esc = "\u00018" },
+	{ key = "9", with = "super", esc = "\u00019" }
+]
+
+# Notes:
+# - Some Alacritty-specific options (live_config_reload, dynamic_title, semantic_escape_chars)
+#   do not have direct Rio equivalents, so closest matches are applied.
+# - If any key bindings behave differently, we can tweak their `esc` sequences or use
+#   Rio actions instead of raw escape sequences.
+# blinking-interval = 800
+
+[shell]
+program = "/bin/zsh"
+args = ["-i", "-c", "t; exec zsh"]
