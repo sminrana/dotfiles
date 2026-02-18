@@ -709,3 +709,10 @@ local function spotlight_app()
 end
 
 map("n", "<Leader>A", spotlight_app, { desc = "Open macOS Application (Spotlight-like)" })
+
+-- Open root directory in VS Code
+map("n", prefix .. "V", function()
+  local cwd = vim.fn.getcwd()
+  vim.fn.system({ "code", cwd })
+  vim.notify("Opened in VS Code: " .. cwd, vim.log.levels.INFO)
+end, { desc = "Open root directory in VS Code" })
