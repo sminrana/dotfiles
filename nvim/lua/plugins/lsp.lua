@@ -16,7 +16,7 @@ return {
       require("mason-lspconfig").setup({
         ensure_installed = {
           "ts_ls",
-          "volar",
+          "vue_ls",
           "pyright",
           "intelephense",
           "rust_analyzer",
@@ -63,7 +63,7 @@ return {
       })
 
       -- =====================================================
-      -- Vue (Volar)
+      -- Vue
       -- =====================================================
       lspconfig.vue_ls.setup({
         capabilities = capabilities,
