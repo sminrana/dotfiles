@@ -27,6 +27,7 @@ config.font_size = 16.0
 config.freetype_load_target = "Light"
 config.freetype_render_target = "HorizontalLcd"
 config.front_end = "WebGpu"
+config.webgpu_power_preference = "LowPower"
 config.cell_width = 1.0
 config.freetype_load_flags = "NO_HINTING"
 config.default_cursor_style = "BlinkingBar"
@@ -36,10 +37,10 @@ config.macos_window_background_blur = 0
 
 config.hide_tab_bar_if_only_one_tab = true
 
-config.window_decorations = "RESIZE"
+config.window_decorations = "RESIZE | MACOS_FORCE_DISABLE_SHADOW"
 config.use_fancy_tab_bar = false
 config.window_close_confirmation = 'NeverPrompt'
-config.native_macos_fullscreen_mode = true
+config.native_macos_fullscreen_mode = false
 config.cursor_blink_rate = 0
 
 
