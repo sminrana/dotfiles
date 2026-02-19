@@ -1,13 +1,17 @@
 local wezterm = require("wezterm")
-local mux = wezterm.mux
+local config = wezterm.config_builder()
 
+local mux = wezterm.mux
 wezterm.on('gui-startup', function(window)
   local tab, pane, window = mux.spawn_window(cmd or {})
   local gui_window = window:gui_window();
   gui_window:perform_action(wezterm.action.ToggleFullScreen, pane)
 end)
 
-local config = wezterm.config_builder()
+
+-- Start with Dawn theme so the rotator uses it as the default
+-- config.color_scheme = "Tokyo Night"
+config.color_scheme = 'tokyonight_day'
 
 config.max_fps = 120
 config.scrollback_lines = 3500
@@ -15,13 +19,14 @@ config.enable_tab_bar = false
 config.enable_scroll_bar = false
 config.animation_fps = 60
 
-config.color_scheme = "Tokyo Night"
+
+
 config.bold_brightens_ansi_colors = "No"
-config.font = wezterm.font({ family = "JetBrains Mono", weight = "Regular" })
+config.font = wezterm.font({ family = "JetBrains Mono", weight = "Light" })
 config.font_size = 16.0
 config.freetype_load_target = "Light"
 config.freetype_render_target = "HorizontalLcd"
-config.front_end = "OpenGL"
+config.front_end = "WebGpu"
 config.cell_width = 1.0
 config.freetype_load_flags = "NO_HINTING"
 config.default_cursor_style = "BlinkingBar"
@@ -87,7 +92,6 @@ config.keys = {
 	{ key = "UpArrow", mods = "CMD", action = wezterm.action.ActivatePaneDirection("Up") },
 	{ key = "DownArrow", mods = "CMD", action = wezterm.action.ActivatePaneDirection("Down") },
 	{ key = "w", mods = "CMD", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
-	{ key = "w", mods = "CMD", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
 	{ key = "t", mods = "CMD|SHIFT", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
 	{ key = "f", mods = "CMD|SHIFT", action = wezterm.action.ToggleFullScreen },
 	{ key = "p", mods = "CMD|SHIFT", action = wezterm.action({ PaneSelect = { alphabet = "0123456789" } }) },

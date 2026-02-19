@@ -332,6 +332,31 @@ local personal_keymaps = {
   { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
   { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
   { "ls", "<cmd>Lazy sync<CR>", "Lazy sync" },
+{
+  "bp",
+  function()
+    local paths = {}
+
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_is_loaded(buf) and vim.fn.buflisted(buf) == 1 then
+        local name = vim.api.nvim_buf_get_name(buf)
+        if name ~= "" then
+          table.insert(paths, vim.fn.fnamemodify(name, ":p"))
+        end
+      end
+    end
+
+    if #paths == 0 then
+      vim.notify("No listed file buffers found.", vim.log.levels.WARN)
+      return
+    end
+
+    local result = table.concat(paths, "\n")
+    vim.fn.setreg("+", result)
+    vim.notify("Copied " .. #paths .. " buffer absolute paths.", vim.log.levels.INFO)
+  end,
+  "Copy all open buffer absolute paths",
+},
 }
 
 table.insert(personal_keymaps, {

@@ -3,7 +3,7 @@ return {
   lazy = false,
   priority = 1000,
   opts = {
-    colorscheme = "tokyonight",
+    colorscheme = "tokyonight-day",
     style = "night",
     transparent = true,
     styles = {

@@ -21,8 +21,8 @@ program = "vi"
 [window]
 colorspace = "display-p3"
 opacity = 0.97
-padding-x = 2
-padding-y = [0, 0]
+padding-x = 0
+padding-y = 0
 decorations = "Buttonless"
 blur = false
 mode = "Fullscreen"
