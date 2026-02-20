@@ -16,7 +16,7 @@ config.color_scheme = 'tokyonight'
 config.max_fps = 120
 config.scrollback_lines = 3500
 config.enable_tab_bar = false
-config.enable_scroll_bar = false
+config.enable_scroll_bar = true
 config.animation_fps = 60
 
 
