@@ -4,7 +4,7 @@ return {
   priority = 1000,
   opts = {
     colorscheme = "tokyonight",
-    style = "day",
+    style = "night",
     transparent = false,
     styles = {
       sidebars = "transparent",
