@@ -24,9 +24,9 @@ config.bold_brightens_ansi_colors = "No"
 config.font = wezterm.font({ family = "JetBrains Mono", weight = "Light" })
 config.font_size = 16.0
 config.freetype_load_target = "Light"
-config.freetype_render_target = "HorizontalLcd"
+config.freetype_render_target = "Light"
 config.front_end = "WebGpu"
-config.webgpu_power_preference = "LowPower"
+config.webgpu_power_preference = "HighPerformance"
 config.cell_width = 1.0
 config.freetype_load_flags = "NO_HINTING"
 config.default_cursor_style = "BlinkingBar"
