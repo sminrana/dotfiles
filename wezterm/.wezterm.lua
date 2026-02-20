@@ -101,6 +101,25 @@ config.keys = {
 	{ key = "RightArrow", mods = "CMD|SHIFT", action = act.AdjustPaneSize({ "Right", 5 }) },
 }
 
+-- Make copy/paste easier
+-- copy_on_select and selection_word_boundary are not valid on some wezterm versions;
+-- use explicit mouse/key bindings below instead.
+
+-- Add common copy/paste shortcuts (Cmd and Ctrl+Shift)
+table.insert(config.keys, { key = "C", mods = "CMD", action = wezterm.action.CopyTo("Clipboard") })
+table.insert(config.keys, { key = "V", mods = "CMD", action = wezterm.action.PasteFrom("Clipboard") })
+table.insert(config.keys, { key = "C", mods = "CTRL|SHIFT", action = wezterm.action.CopyTo("Clipboard") })
+table.insert(config.keys, { key = "V", mods = "CTRL|SHIFT", action = wezterm.action.PasteFrom("Clipboard") })
+
+-- Copy selection to clipboard on mouse release
+config.mouse_bindings = {
+	{
+		event = { Up = { streak = 1, button = "Left" } },
+		mods = nil,
+		action = wezterm.action.CopyTo("Clipboard"),
+	},
+}
+
 -- start zsh and run the helper `t` from .zshrc, then exec an interactive zsh
 config.default_prog = { "/bin/zsh", "-i", "-c", "t; exec zsh" }
 
