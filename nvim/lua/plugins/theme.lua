@@ -6,9 +6,5 @@ return {
     colorscheme = "tokyonight",
     style = "night",
     transparent = false,
-    styles = {
-      sidebars = "transparent",
-      terminal = "transparent",
-    },
   },
 }
