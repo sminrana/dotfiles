@@ -11,14 +11,13 @@ end)
 
 -- Start with Dawn theme so the rotator uses it as the default
 -- config.color_scheme = "Tokyo Night"
-config.color_scheme = 'tokyonight_day'
+config.color_scheme = 'tokyonight'
 
 config.max_fps = 120
 config.scrollback_lines = 3500
 config.enable_tab_bar = false
 config.enable_scroll_bar = false
 config.animation_fps = 60
-
 
 
 config.bold_brightens_ansi_colors = "No"
@@ -40,7 +39,7 @@ config.hide_tab_bar_if_only_one_tab = true
 config.window_decorations = "RESIZE | MACOS_FORCE_DISABLE_SHADOW"
 config.use_fancy_tab_bar = false
 config.window_close_confirmation = 'NeverPrompt'
-config.native_macos_fullscreen_mode = false
+config.native_macos_fullscreen_mode = true
 config.cursor_blink_rate = 0
 
 

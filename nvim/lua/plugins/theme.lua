@@ -3,9 +3,9 @@ return {
   lazy = false,
   priority = 1000,
   opts = {
-    colorscheme = "tokyonight-day",
-    style = "night",
-    transparent = true,
+    colorscheme = "tokyonight",
+    style = "day",
+    transparent = false,
     styles = {
       sidebars = "transparent",
       terminal = "transparent",
