@@ -296,6 +296,17 @@ local personal_keymaps = {
     "Copy file absolute path",
   },
   {
+    "f4",
+    function()
+      local path = vim.fn.expand("%:p")
+      local line = vim.fn.line(".")
+      local result = path .. ":" .. line
+      vim.fn.setreg("+", result)
+      vim.notify("Copied absolute path with line: " .. result, vim.log.levels.INFO)
+    end,
+    "Copy file absolute path and line number",
+  },
+  {
     "f2",
     function()
       local path = vim.fn.expand("%:.")
