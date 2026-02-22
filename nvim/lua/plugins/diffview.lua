@@ -28,14 +28,6 @@ return {
       keymaps = {
         view = {
           ["q"] = actions.close,
-          ["]c"] = function()
-            actions.next_conflict()
-            -- if no more hunks in file, jump to next file
-            local success = pcall(actions.select_next_entry)
-            if not success then
-              return
-            end
-          end,
         },
       },
     })
