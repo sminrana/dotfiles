@@ -1,18 +1,19 @@
 return {
   "petertriho/nvim-scrollbar",
   event = "VeryLazy",
+  dependencies = {
+    "lewis6991/gitsigns.nvim",
+  },
   opts = {
-    show = true,
-    handle = {
-      color = "#6b7280", -- subtle gray
-    },
+    handle = { color = "#6b7280" },
     marks = {
       Cursor = { color = "#22d3ee" },
       Search = { color = "#fbbf24" },
       Error = { color = "#ef4444" },
       Warn = { color = "#f97316" },
-      Info = { color = "#38bdf8" },
-      Hint = { color = "#a78bfa" },
+      GitAdd = { color = "#7EE787" },
+      GitChange = { color = "#79C0FF" },
+      GitDelete = { color = "#F85149" },
     },
   },
 }

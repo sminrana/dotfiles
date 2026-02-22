@@ -4,7 +4,7 @@
 local opt = vim.opt -- for conciseness
 opt.backspace = { "indent", "eol", "start" } -- allow backspace on indent, end of line or insert mode start position
 opt.colorcolumn = "80"
-opt.scrolloff = 10
+opt.scrolloff = 8
 opt.sidescrolloff = 8
 opt.timeoutlen = 150
 opt.ttimeoutlen = 0
@@ -15,6 +15,8 @@ opt.incsearch = true
 opt.ignorecase = true
 opt.smartcase = true
 opt.shortmess:append("I")
+opt.mouse = "a" -- enable mouse everywhere
+opt.mousemoveevent = true
 
 vim.g.lazyvim_picker = "fzf"
 vim.g.snacks_animate = false
