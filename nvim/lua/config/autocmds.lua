@@ -24,30 +24,10 @@ vim.api.nvim_create_autocmd("DirChanged", {
   end,
 })
 
--- Optionally show Neotree as a floating popup on startup
--- This runs only when starting without files or with a directory (e.g. `nvim .`)
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    local argc = vim.fn.argc()
-
-    -- No arguments: just open Neotree float
-    if argc == 0 then
-      vim.cmd("Neotree reveal float")
-      vim.cmd("wincmd p")
-      return
-    end
-
-    -- Single directory argument: `nvim .` or `nvim some/dir`
-    if argc == 1 then
-      local arg0 = vim.fn.argv(0)
-      if vim.fn.isdirectory(arg0) == 1 then
-        vim.cmd("cd " .. vim.fn.fnameescape(arg0))
-        vim.cmd("Neotree reveal float")
-        vim.cmd("wincmd p")
-      end
-    end
-  end,
-})
+-- Show Neotree on a popup, disabling left sidebar
+vim.api.nvim_exec2("Neotree reveal float", {})
+vim.cmd("wincmd p") -- Switch focus to the previous window (the newly opened Neotree)
+vim.cmd("wincmd p") -- Sometimes needs to be called twice depending on window layout
 
 -- Highlight trailing whitespace
 vim.api.nvim_create_autocmd("FileType", {
