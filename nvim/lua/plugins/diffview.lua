@@ -21,12 +21,17 @@ return {
       file_panel = {
         listing_style = "tree", -- fast mental map
         win_config = {
-          width = 35,
+          width = 10,
         },
       },
 
       keymaps = {
         view = {
+          ["p"] = actions.prev_conflict,
+          ["l"] = actions.select_next_entry,
+          ["h"] = actions.select_prev_entry,
+          ["o"] = actions.open_file,
+          ["q"] = actions.close,
           ["]c"] = function()
             actions.next_conflict()
             -- if no more hunks in file, jump to next file
@@ -35,7 +40,6 @@ return {
               return
             end
           end,
-          ["]f"] = actions.select_next_entry,
         },
       },
     })
