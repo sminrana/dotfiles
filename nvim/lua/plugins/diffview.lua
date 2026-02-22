@@ -27,10 +27,6 @@ return {
 
       keymaps = {
         view = {
-          ["p"] = actions.prev_conflict,
-          ["l"] = actions.select_next_entry,
-          ["h"] = actions.select_prev_entry,
-          ["o"] = actions.open_file,
           ["q"] = actions.close,
           ["]c"] = function()
             actions.next_conflict()
