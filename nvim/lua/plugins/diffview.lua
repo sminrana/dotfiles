@@ -2,34 +2,49 @@ return {
   "sindrets/diffview.nvim",
   event = "VeryLazy",
   config = function()
-    -- Basic setup (keeps defaults; customize if needed)
-    require("diffview").setup({
-       enhanced_diff_hl = true, -- Better syntax highlighting in diffs
-        view = {
-          merge_tool = {
-            layout = "diff3_mixed",
-          },
+    local diffview = require("diffview")
+
+    local actions = require("diffview.actions")
+    diffview.setup({
+      enhanced_diff_hl = true,
+
+      view = {
+        default = {
+          layout = "diff2_horizontal", -- side-by-side like GitHub
+          winbar_info = true,
         },
+        merge_tool = {
+          layout = "diff3_mixed",
+        },
+      },
+
+      file_panel = {
+        listing_style = "tree", -- fast mental map
+        win_config = {
+          width = 35,
+        },
+      },
+
+      keymaps = {
+        view = {
+          ["]c"] = function()
+            actions.next_conflict()
+            -- if no more hunks in file, jump to next file
+            local success = pcall(actions.select_next_entry)
+            if not success then
+              return
+            end
+          end,
+          ["]f"] = actions.select_next_entry,
+        },
+      },
     })
 
-    -- Key mappings for common actions
-    vim.keymap.set("n", "<leader>gdo", ":DiffviewOpen<CR>", { desc = "Diffview: open" })
-    vim.keymap.set("n", "<leader>gdc", ":DiffviewClose<CR>", { desc = "Diffview: close" })
-    vim.keymap.set("n", "<leader>gdh", ":DiffviewFileHistory<CR>", { desc = "Diffview: file history" })
-
-    -- Open current file history in Diffview
-    vim.keymap.set("n", "<leader>gdH", function()
-      local file = vim.fn.expand("%")
-      if file == "" then
-        vim.notify("No file buffer to show history", vim.log.levels.WARN)
-        return
-      end
-      vim.cmd("DiffviewFileHistory " .. vim.fn.fnameescape(file))
-    end, { desc = "Diffview: current file history" })
-
-    -- Open diff against main branch (customizable)
-    vim.keymap.set("n", "<leader>gdm", function()
-      vim.cmd("DiffviewOpen origin/main")
-    end, { desc = "Diffview: diff vs origin/main" })
+    -- 🔑 REVIEW HOTKEYS (muscle-memory friendly)
+    vim.keymap.set("n", "<leader>gd", "<Cmd>DiffviewOpen<CR>", { desc = "Review: open Diffview" })
+    vim.keymap.set("n", "<leader>gD", "<Cmd>DiffviewClose<CR>", { desc = "Review: close Diffview" })
+    vim.keymap.set("n", "<leader>gF", "<Cmd>DiffviewFileHistory<CR>", { desc = "Review: files history" })
+    vim.keymap.set("n", "<leader>gH", "<Cmd>DiffviewFileHistory %<CR>", { desc = "Review: current file history" })
+    vim.keymap.set("n", "<leader>gm", "<Cmd>DiffviewOpen origin/main<CR>", { desc = "Review: vs origin/main" })
   end,
 }

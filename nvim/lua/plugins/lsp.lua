@@ -101,6 +101,21 @@ return {
         root_dir = util.root_pattern("composer.json", ".git"),
       })
 
+      -- Keep Phpactor for refactors/code actions
+      -- lspconfig.phpactor.setup({
+      --   capabilities = capabilities,
+      --   on_attach = on_attach,
+      --   cmd = { "phpactor", "language-server" },
+      --   filetypes = { "php" },
+      --   root_dir = function(fname)
+      --     return util.root_pattern("composer.json", "artisan", ".git", ".phpactor.json")(fname) or vim.fn.getcwd()
+      --   end,
+      --   init_options = {
+      --     ["language_server_phpstan.enabled"] = false,
+      --     ["language_server_psalm.enabled"] = false,
+      --   },
+      -- })
+
       -- 🦀 Rust
       lspconfig.rust_analyzer.setup({
         capabilities = capabilities,
