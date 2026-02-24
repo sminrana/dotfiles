@@ -22,7 +22,7 @@ option_as_alt = "OnlyLeft"
 
 
 [font]
-size = 16.0
+size = 15.0
 builtin_box_drawing = true
 
 [font.normal]
