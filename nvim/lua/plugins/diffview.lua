@@ -7,53 +7,67 @@ return {
 
     diffview.setup({
       enhanced_diff_hl = true,
+
       view = {
         default = {
-          layout = "diff2_horizontal", -- side-by-side like GitHub
+          layout = "diff2_horizontal",
           winbar_info = true,
         },
         merge_tool = {
           layout = "diff3_mixed",
         },
       },
+
       file_panel = {
         listing_style = "tree",
         win_config = {
-          width = 30, -- bit wider for better readability
+          width = 30,
         },
       },
+
       keymaps = {
+        -- 🔍 DIFF VIEW (actual diff buffers)
         view = {
-          -- 🏗️ Navigation (while in the diff view)
-          ["[q"] = actions.select_prev_entry,   -- Jump to previous file
-          ["]q"] = actions.select_next_entry,   -- Jump to next file
-          ["gf"] = actions.goto_file_edit,      -- Open file in normal buffer
-          ["<C-w>gf"] = actions.goto_file_tab,  -- Open file in new tab
-          ["<leader>e"] = actions.toggle_files, -- Toggle file panel
+          -- FILE navigation
+          ["[q"] = actions.select_prev_entry,
+          ["]q"] = actions.select_next_entry,
+
+          -- 🔥 HUNK navigation (EXPLICIT)
+          ["[h"] = actions.prev_hunk,
+          ["]h"] = actions.next_hunk,
+
+          -- Fallback (native diff motions)
+          ["[c"] = "]c",
+          ["]c"] = "[c",
+
+          -- Actions
+          ["gf"] = actions.goto_file_edit,
+          ["<C-w>gf"] = actions.goto_file_tab,
+          ["<leader>e"] = actions.toggle_files,
+          ["p"] = actions.prev_conflict,
           ["q"] = actions.close,
         },
+
+        -- 📁 FILE PANEL
         file_panel = {
           ["j"] = actions.next_entry,
           ["k"] = actions.prev_entry,
           ["<cr>"] = actions.select_entry,
           ["o"] = actions.select_entry,
-          ["s"] = actions.toggle_stage_entry,   -- Stage/unstage (approval)
-          ["R"] = actions.refresh_files,        -- Refresh view
+          ["s"] = actions.toggle_stage_entry,
+          ["R"] = actions.refresh_files,
           ["[q"] = actions.select_prev_entry,
           ["]q"] = actions.select_next_entry,
           ["<leader>e"] = actions.toggle_files,
         },
-        file_history_panel = {
-          ["[q"] = actions.select_prev_entry,
-          ["]q"] = actions.select_next_entry,
-          ["<cr>"] = actions.select_entry,
-          ["o"] = actions.select_entry,
-        },
       },
+
       hooks = {
+        -- 🚨 FORCE DIFF MODE (THIS FIXES [c / ]c)
         diff_buf_read = function(bufnr)
           vim.api.nvim_buf_call(bufnr, function()
-            vim.cmd("normal! zR") -- Auto-unfold all hunks
+            vim.opt_local.diff = true
+            vim.cmd("normal! zR") -- open all folds
           end)
         end,
       },
@@ -66,5 +80,9 @@ return {
     vim.keymap.set("n", "<leader>gH", "<Cmd>DiffviewFileHistory %<CR>", { desc = "Review: current file history" })
     vim.keymap.set("n", "<leader>gm", "<Cmd>DiffviewOpen origin/main<CR>", { desc = "Review: vs origin/main" })
     vim.keymap.set("n", "<leader>gp", "<Cmd>DiffviewOpen main...HEAD<CR>", { desc = "Review: current PR (vs main)" })
+
+    -- 🌍 GLOBAL HUNK NAVIGATION (WORKS EVERYWHERE)
+    vim.keymap.set("n", "]h", "]c", { desc = "Next hunk (global)" })
+    vim.keymap.set("n", "[h", "[c", { desc = "Prev hunk (global)" })
   end,
 }
