@@ -31,15 +31,6 @@ return {
           -- FILE navigation
           ["[q"] = actions.select_prev_entry,
           ["]q"] = actions.select_next_entry,
-
-          -- 🔥 HUNK navigation (EXPLICIT)
-          ["[h"] = actions.prev_hunk,
-          ["]h"] = actions.next_hunk,
-
-          -- Fallback (native diff motions)
-          ["[c"] = "]c",
-          ["]c"] = "[c",
-
           -- Actions
           ["gf"] = actions.goto_file_edit,
           ["<C-w>gf"] = actions.goto_file_tab,
@@ -53,7 +44,6 @@ return {
           ["j"] = actions.next_entry,
           ["k"] = actions.prev_entry,
           ["<cr>"] = actions.select_entry,
-          ["o"] = actions.select_entry,
           ["s"] = actions.toggle_stage_entry,
           ["R"] = actions.refresh_files,
           ["[q"] = actions.select_prev_entry,
@@ -74,7 +64,7 @@ return {
     })
 
     -- 🔑 GLOBAL REVIEW HOTKEYS
-    vim.keymap.set("n", "<leader>gd", "<Cmd>DiffviewOpen<CR>", { desc = "Review: open Diffview" })
+    vim..keymap.set("n", "<leader>gd", "<Cmd>DiffviewOpen<CR>", { desc = "Review: open Diffview" })
     vim.keymap.set("n", "<leader>gD", "<Cmd>DiffviewClose<CR>", { desc = "Review: close Diffview" })
     vim.keymap.set("n", "<leader>gF", "<Cmd>DiffviewFileHistory<CR>", { desc = "Review: files history" })
     vim.keymap.set("n", "<leader>gH", "<Cmd>DiffviewFileHistory %<CR>", { desc = "Review: current file history" })
