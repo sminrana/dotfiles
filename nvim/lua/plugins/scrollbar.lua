@@ -14,7 +14,7 @@ return {
     },
 
     marks = {
-      Cursor = { color = "#22d3ee" },
+      Cursor = { color = "#3b82f6" },
       Search = { color = "#fbbf24" },
       Error = { color = "#ef4444" },
       Warn = { color = "#f97316" },
