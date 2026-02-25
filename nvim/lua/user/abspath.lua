@@ -14,28 +14,11 @@ local function build_winbar(bufnr)
   local info = {}
 
   if vim.bo[bufnr].modified then
-    table.insert(info, "+")
+    table.insert(info, "*")
   end
 
   if vim.bo[bufnr].readonly then
-    table.insert(info, "ro")
-  end
-
-  local dict = vim.b[bufnr].gitsigns_status_dict
-  if dict then
-    local parts = {}
-    if dict.added and dict.added > 0 then
-      table.insert(parts, "+" .. dict.added)
-    end
-    if dict.changed and dict.changed > 0 then
-      table.insert(parts, "~" .. dict.changed)
-    end
-    if dict.removed and dict.removed > 0 then
-      table.insert(parts, "-" .. dict.removed)
-    end
-    if #parts > 0 then
-      table.insert(info, table.concat(parts, " "))
-    end
+    table.insert(info, "!")
   end
 
   if #info > 0 then
