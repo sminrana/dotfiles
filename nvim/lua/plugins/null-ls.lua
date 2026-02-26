@@ -3,48 +3,45 @@ return {
   opts = function(_, opts)
     local null_ls = require("null-ls")
 
-    opts.sources = vim.list_extend(opts.sources or {}, {
+    opts.sources = {
 
+      -- PHP
       null_ls.builtins.formatting.phpcsfixer.with({
-        command = "php-cs-fixer",
-        extra_args = { "fix", "--using-cache=no" },
-        filetypes = { "php" },
+        command = "/Users/smin/.local/bin/php-cs-fixer",
+        extra_args = function()
+          return {
+            "--config=" .. vim.fn.getcwd() .. "/.php-cs-fixer.php",
+            "--using-cache=no",
+          }
+        end,
       }),
 
-      -- Prettier for blade and html with 4 spaces
+      null_ls.builtins.formatting.pint.with({
+        prefer_local = "/Users/smin/.composer/vendor/bin/pint",
+        extra_args = { "--quiet" },
+      }),
+
+      -- Blade (4 spaces)
       null_ls.builtins.formatting.blade_formatter.with({
-        filetypes = {
-          "blade",
-        },
-        extra_args = {
-          "--single-quote",
-          "true",
-          "--trailing-comma",
-          "all",
-          "--print-width",
-          "100",
-          "--tab-width",
-          "4",
-        },
+        extra_args = { "--indent-size", "4" },
       }),
+
+      -- HTML (4 spaces)
       null_ls.builtins.formatting.prettier.with({
-        filetypes = {
-          "blade",
-          "html",
-        },
+        filetypes = { "html" },
         extra_args = {
+          "--tab-width",
+          "4",
+          "--print-width",
+          "100",
           "--single-quote",
           "true",
           "--trailing-comma",
           "all",
-          "--print-width",
-          "100",
-          "--tab-width",
-          "4",
         },
       }),
 
-      -- Prettier for other files with 2 spaces
+      -- JS/TS/CSS/etc (2 spaces)
       null_ls.builtins.formatting.prettier.with({
         filetypes = {
           "css",
@@ -58,63 +55,47 @@ return {
           "vue",
         },
         extra_args = {
+          "--tab-width",
+          "2",
+          "--print-width",
+          "100",
           "--single-quote",
           "true",
           "--trailing-comma",
           "all",
-          "--print-width",
-          "100",
-          "--tab-width",
-          "2",
         },
       }),
 
-      null_ls.builtins.formatting.ktlint.with({
-        filetypes = { "kotlin", "java" },
-      }),
+      -- Kotlin
+      null_ls.builtins.formatting.ktlint,
 
+      -- Swift
       null_ls.builtins.formatting.swiftformat.with({
-        command = "swiftformat", -- Ensure swiftformat is installed on your system
-        filetypes = { "swift" },
-        extra_args = { "--indent", "4" }, -- 4 spaces per indent, Swift default
+        extra_args = { "--indent", "4" },
       }),
 
+      -- Python
       null_ls.builtins.formatting.black.with({
-        filetypes = { "python" },
         extra_args = {
           "--line-length",
-          "88", -- default is 88, can change to 79, 100, 120, etc.
-          "--skip-string-normalization", -- keeps your quote style
+          "88",
+          "--skip-string-normalization",
           "--target-version",
-          "py39", -- specify Python version
+          "py39",
         },
       }),
 
       null_ls.builtins.formatting.isort.with({
-        filetypes = { "python" },
         extra_args = {
           "--profile",
-          "black", -- compatible with black
+          "black",
           "--line-length",
           "88",
-          "--multi-line",
-          "3",
         },
       }),
-    })
+    }
 
-
-
-    -- Python diagnostics/linting
-    -- null_ls.builtins.diagnostics.flake8.with({
-    --   filetypes = { "python" },
-    --   extra_args = {
-    --     "--max-line-length", "88",
-    --     "--extend-ignore", "E203,W503",  -- ignore conflicts with black
-    --   },
-    -- })
-
-    -- Autoformat on save
+    -- Format on save
     opts.on_attach = function(client, bufnr)
       if client.supports_method("textDocument/formatting") then
         vim.api.nvim_create_autocmd("BufWritePre", {
@@ -122,8 +103,8 @@ return {
           callback = function()
             vim.lsp.buf.format({
               async = false,
-              filter = function(fmt_client)
-                return fmt_client.name == "null-ls"
+              filter = function(c)
+                return c.name == "null-ls"
               end,
             })
           end,
