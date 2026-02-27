@@ -36,10 +36,13 @@ return {
         float = { border = "rounded" },
       })
 
+      -- =====================================================
+      -- Global on_attach (Disable formatting for ALL LSPs)
+      -- =====================================================
       local on_attach = function(client, bufnr)
-        if client.name == "ts_ls" then
-          client.server_capabilities.documentFormattingProvider = false
-        end
+        -- Disable formatting (use none-ls)
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
       end
 
       -- =====================================================
@@ -59,7 +62,13 @@ return {
             },
           },
         },
-        filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
+        filetypes = {
+          "typescript",
+          "javascript",
+          "javascriptreact",
+          "typescriptreact",
+          "vue",
+        },
       })
 
       -- =====================================================
@@ -70,7 +79,7 @@ return {
         on_attach = on_attach,
       })
 
-      -- 🟪 SvelteKit
+      -- 🟪 Svelte
       lspconfig.svelte.setup({
         capabilities = capabilities,
         on_attach = on_attach,
@@ -86,12 +95,31 @@ return {
         filetypes = { "swift" },
       })
 
-      -- ---------------- Other servers ----------------
-      -- 🐍 Python
+      -- =====================================================
+      -- 🐍 Python (Enterprise Strict)
+      -- =====================================================
       lspconfig.pyright.setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        root_dir = util.root_pattern("pyproject.toml", ".git"),
+        root_dir = util.root_pattern(
+          "pyproject.toml",
+          "setup.py",
+          "setup.cfg",
+          "requirements.txt",
+          "Pipfile",
+          ".git"
+        ),
+        settings = {
+          python = {
+            analysis = {
+              typeCheckingMode = "strict",
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+              diagnosticMode = "workspace",
+              autoImportCompletions = true,
+            },
+          },
+        },
       })
 
       -- 🐘 PHP
@@ -100,21 +128,6 @@ return {
         on_attach = on_attach,
         root_dir = util.root_pattern("composer.json", ".git"),
       })
-
-      -- Keep Phpactor for refactors/code actions
-      -- lspconfig.phpactor.setup({
-      --   capabilities = capabilities,
-      --   on_attach = on_attach,
-      --   cmd = { "phpactor", "language-server" },
-      --   filetypes = { "php" },
-      --   root_dir = function(fname)
-      --     return util.root_pattern("composer.json", "artisan", ".git", ".phpactor.json")(fname) or vim.fn.getcwd()
-      --   end,
-      --   init_options = {
-      --     ["language_server_phpstan.enabled"] = false,
-      --     ["language_server_psalm.enabled"] = false,
-      --   },
-      -- })
 
       -- 🦀 Rust
       lspconfig.rust_analyzer.setup({
@@ -130,6 +143,9 @@ return {
           Lua = {
             diagnostics = { globals = { "vim" } },
             workspace = { checkThirdParty = false },
+          },
+          format = {
+            enable = false,
           },
         },
       })

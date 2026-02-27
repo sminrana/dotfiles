@@ -75,16 +75,6 @@ return {
       }),
 
       -- Python
-      -- Ruff diagnostics
-      null_ls.builtins.diagnostics.ruff.with({
-        prefer_local = "env/bin",
-      }),
-
-      -- Ruff code actions (auto-fix)
-      null_ls.builtins.code_actions.ruff.with({
-        prefer_local = "env/bin",
-      }),
-
       null_ls.builtins.formatting.black.with({
         extra_args = {
           "--line-length",
@@ -94,7 +84,6 @@ return {
           "py39",
         },
       }),
-
     }
 
     -- Format on save
