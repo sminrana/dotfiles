@@ -66,9 +66,6 @@ return {
         },
       }),
 
-      -- Kotlin
-      null_ls.builtins.formatting.ktlint,
-
       -- Swift
       null_ls.builtins.formatting.swiftformat.with({
         extra_args = { "--indent", "4" },
@@ -77,11 +74,6 @@ return {
       -- Python
       null_ls.builtins.formatting.black.with({
         extra_args = {
-          "--line-length",
-          "80",
-          "--skip-string-normalization",
-          "--target-version",
-          "py39",
         },
       }),
     }

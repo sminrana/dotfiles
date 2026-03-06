@@ -17,9 +17,11 @@ return {
         ensure_installed = {
           "ts_ls",
           "vue_ls",
+          "pyright",
           "intelephense",
           "rust_analyzer",
           "lua_ls",
+          "ruff",
         },
         automatic_installation = true,
       })
@@ -97,28 +99,36 @@ return {
       -- =====================================================
       -- 🐍 Python (Enterprise Strict)
       -- =====================================================
+      -- Pyright (types + intelligence)
+      lspconfig.pyright.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        root_dir = util.root_pattern("pyproject.toml", "setup.py", ".git"),
+        settings = {
+          python = {
+            analysis = {
+              typeCheckingMode = "basic",
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+              diagnosticMode = "openFilesOnly",
+              autoImportCompletions = true,
+            },
+          },
+        },
+      })
+
+
+      -- Ruff (lint + fixes)
       lspconfig.ruff.setup({
         capabilities = capabilities,
-            on_attach = function(client, bufnr)
-              -- Disable hover in ruff in favor of pyright
-              client.server_capabilities.hoverProvider = false
-                on_attach(client, bufnr)
-              end,
-              init_options = {
-              settings = {
-                  -- Ruff language server settings go here
-                  args = {
-                    "--config",
-                    "pyproject.toml", -- Encourage standard enterprise config locations
-                    "setup.py",
-                    "setup.cfg",
-                    "requirements.txt",
-                    "Pipfile",
-                    ".git"
-                  },
-                },
-              },
-        })
+        root_dir = util.root_pattern("pyproject.toml", "ruff.toml", ".git"),
+
+        on_attach = function(client, bufnr)
+          -- disable hover so Pyright handles it
+          client.server_capabilities.hoverProvider = false
+          on_attach(client, bufnr)
+        end,
+      })
 
       -- 🐘 PHP
       lspconfig.intelephense.setup({
