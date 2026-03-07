@@ -26,24 +26,9 @@ return {
         extra_args = { "--indent-size", "4" },
       }),
 
-      -- HTML (4 spaces)
-      null_ls.builtins.formatting.prettier.with({
-        filetypes = { "html" },
-        extra_args = {
-          "--tab-width",
-          "4",
-          "--print-width",
-          "100",
-          "--single-quote",
-          "true",
-          "--trailing-comma",
-          "all",
-        },
-      }),
-
-      -- JS/TS/CSS/etc (2 spaces)
       null_ls.builtins.formatting.prettier.with({
         filetypes = {
+          "html",
           "css",
           "javascript",
           "javascriptreact",
@@ -54,16 +39,23 @@ return {
           "svelte",
           "vue",
         },
-        extra_args = {
-          "--tab-width",
-          "2",
-          "--print-width",
-          "100",
-          "--single-quote",
-          "true",
-          "--trailing-comma",
-          "all",
-        },
+        extra_args = function(params)
+          if params.ft == "html" then
+            return {
+              "--tab-width", "4",
+              "--print-width", "100",
+              "--single-quote", "true",
+              "--trailing-comma", "all",
+            }
+          end
+
+          return {
+            "--tab-width", "2",
+            "--print-width", "100",
+            "--single-quote", "true",
+            "--trailing-comma", "all",
+          }
+        end,
       }),
 
       -- Swift
@@ -74,6 +66,8 @@ return {
       -- Python
       null_ls.builtins.formatting.black.with({
         extra_args = {
+          "--stdin-filename",
+          "$FILENAME",
         },
       }),
     }
