@@ -117,16 +117,20 @@ return {
         },
       })
 
-
       -- Ruff (lint + fixes)
       lspconfig.ruff.setup({
         capabilities = capabilities,
         root_dir = util.root_pattern("pyproject.toml", "ruff.toml", ".git"),
 
         on_attach = function(client, bufnr)
-          -- disable hover so Pyright handles it
+          -- disable hover
           client.server_capabilities.hoverProvider = false
-          on_attach(client, bufnr)
+
+          -- disable navigation providers
+          client.server_capabilities.definitionProvider = false
+          client.server_capabilities.declarationProvider = false
+          client.server_capabilities.referencesProvider = false
+          client.server_capabilities.implementationProvider = false
         end,
       })
 
