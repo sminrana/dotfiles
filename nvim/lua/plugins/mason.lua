@@ -10,6 +10,8 @@ return {
       "ruff",
       "rust-analyzer",
       "lua-language-server",
+      "svelte-language-server",
+      "tailwindcss-language-server",
 
       -- formatters
       "pint",

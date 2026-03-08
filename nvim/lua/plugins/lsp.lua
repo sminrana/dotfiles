@@ -14,6 +14,8 @@ return {
 
       svelte = {},
 
+      tailwindcss = {},
+
       -- Python
       pyright = {},
 
