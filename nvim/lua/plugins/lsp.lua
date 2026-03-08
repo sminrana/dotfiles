@@ -1,182 +1,45 @@
 return {
-  {
-    "neovim/nvim-lspconfig",
-    event = { "BufReadPost", "BufNewFile" },
-    dependencies = {
-      { "mason-org/mason.nvim", build = ":MasonUpdate" },
-      "mason-org/mason-lspconfig.nvim",
-    },
-    config = function()
-      local lspconfig = require("lspconfig")
-      local util = require("lspconfig.util")
+  "neovim/nvim-lspconfig",
+  opts = {
+    servers = {
 
-      -- ---------------- Mason ----------------
-      require("mason").setup()
+      -- PHP
+      intelephense = {},
 
-      require("mason-lspconfig").setup({
-        ensure_installed = {
-          "ts_ls",
-          "vue_ls",
-          "pyright",
-          "intelephense",
-          "rust_analyzer",
-          "lua_ls",
-          "ruff",
-        },
-        automatic_installation = true,
-      })
+      -- JS / TS
+      ts_ls = {},
 
-      -- ---------------- Capabilities ----------------
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities.textDocument.completion.completionItem.snippetSupport = true
-
-      -- ---------------- Diagnostics ----------------
-      vim.diagnostic.config({
-        virtual_text = true,
-        severity_sort = true,
-        float = { border = "rounded" },
-      })
-
-      -- =====================================================
-      -- Global on_attach (Disable formatting for ALL LSPs)
-      -- =====================================================
-      local on_attach = function(client, bufnr)
-        -- Disable formatting (use none-ls)
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
-      end
-
-      -- =====================================================
-      -- TypeScript & Vue (Hybrid Mode)
-      -- =====================================================
-      lspconfig.ts_ls.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-        root_dir = util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git"),
-        init_options = {
-          plugins = {
-            {
-              name = "@vue/typescript-plugin",
-              location = vim.fn.stdpath("data")
-                .. "/mason/packages/vue-language-server/node_modules/@vue/language-server",
-              languages = { "vue" },
-            },
-          },
-        },
-        filetypes = {
-          "typescript",
-          "javascript",
-          "javascriptreact",
-          "typescriptreact",
-          "vue",
-        },
-      })
-
-      -- =====================================================
       -- Vue
-      -- =====================================================
-      lspconfig.vue_ls.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-      })
+      vue_ls = {},
 
-      -- 🟪 Svelte
-      lspconfig.svelte.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-        root_dir = util.root_pattern("package.json", "svelte.config.js", ".git"),
-        filetypes = { "svelte" },
-      })
+      svelte = {},
 
-      -- 🍏 Swift
-      lspconfig.sourcekit.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-        root_dir = util.root_pattern("Package.swift", ".git"),
-        filetypes = { "swift" },
-      })
+      -- Python
+      pyright = {},
 
-      -- =====================================================
-      -- 🐍 Python (Enterprise Strict)
-      -- =====================================================
-      -- Pyright (types + intelligence)
-      lspconfig.pyright.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-        root_dir = util.root_pattern("pyproject.toml", "setup.py", ".git"),
-        settings = {
-          python = {
-            analysis = {
-              typeCheckingMode = "basic",
-              autoSearchPaths = true,
-              useLibraryCodeForTypes = true,
-              diagnosticMode = "openFilesOnly",
-              autoImportCompletions = true,
-            },
-          },
-        },
-      })
+      -- Ruff linting
+      ruff = {},
 
-      -- Ruff (lint + fixes)
-      lspconfig.ruff.setup({
-        capabilities = capabilities,
-        root_dir = util.root_pattern("pyproject.toml", "ruff.toml", ".git"),
+      -- Rust
+      rust_analyzer = {},
 
-        on_attach = function(client, bufnr)
-          -- disable hover
-          client.server_capabilities.hoverProvider = false
-
-          -- disable navigation providers
-          client.server_capabilities.definitionProvider = false
-          client.server_capabilities.declarationProvider = false
-          client.server_capabilities.referencesProvider = false
-          client.server_capabilities.implementationProvider = false
-        end,
-      })
-
-      -- 🐘 PHP
-      lspconfig.intelephense.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-        root_dir = util.root_pattern("composer.json", ".git"),
-      })
-
-      -- 🦀 Rust
-      lspconfig.rust_analyzer.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-      })
-
-      -- 🌙 Lua
-      lspconfig.lua_ls.setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
+      -- Lua
+      lua_ls = {
         settings = {
           Lua = {
             diagnostics = { globals = { "vim" } },
-            workspace = { checkThirdParty = false },
-          },
-          format = {
-            enable = false,
           },
         },
-      })
+      },
+    },
 
-      -- ================= Keymaps =================
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local buf = args.buf
-          local map = function(lhs, rhs)
-            vim.keymap.set("n", lhs, rhs, { buffer = buf })
-          end
-
-          map("gd", vim.lsp.buf.definition)
-          map("gD", vim.lsp.buf.declaration)
-          map("gr", vim.lsp.buf.references)
-          map("gi", vim.lsp.buf.implementation)
-          map("K", vim.lsp.buf.hover)
-        end,
-      })
-    end,
+    setup = {
+      ["*"] = function(_, opts)
+        opts.on_attach = function(client)
+          -- disable formatting from LSP
+          client.server_capabilities.documentFormattingProvider = false
+        end
+      end,
+    },
   },
 }

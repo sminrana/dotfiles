@@ -105,3 +105,15 @@ vim.api.nvim_create_autocmd({ "FocusLost", "WinLeave" }, {
     end
   end,
 })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("Format", { clear = true }),
+  callback = function()
+    vim.lsp.buf.format({
+      async = false,
+      filter = function(client)
+        return client.name == "null-ls"
+      end,
+    })
+  end,
+})
