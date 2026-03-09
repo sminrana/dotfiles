@@ -30,7 +30,6 @@ return {
           "typescript",
           "typescriptreact",
           "json",
-          "yaml",
           "svelte",
           "vue",
         },
