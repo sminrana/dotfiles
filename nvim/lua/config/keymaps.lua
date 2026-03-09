@@ -1,16 +1,16 @@
 -- Define a prefix for personal keymaps
 local prefix = "<leader>j"
 
--- Utility function to simplify keymap definitions
 local function map(mode, lhs, rhs, opts)
   opts = opts or {}
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
+-- ================================ UTILITIES ================================
+
 local function random_filename_with_ext(path)
   local ext = path:match("^.+(%..+)$") or ""
   local ts = os.date("%Y%m%d%H%M%S")
-  -- List of syllables for more meaningful pseudo-words
   local syllables = { "ka", "lo", "mi", "ra", "zu", "ve", "xo", "ni", "sa", "tu", "po", "qi", "wa", "jo", "fi" }
   local mystic = ""
   for _ = 1, 2 do
@@ -22,11 +22,10 @@ end
 local function do_upload(finalFile)
   local filename = vim.fn.fnamemodify(finalFile, ":t")
   filename = random_filename_with_ext(filename)
-  local bucket = "smindev" -- change this to your S3 bucket
+  local bucket = "smindev"
   local s3_path = "s3://" .. bucket .. "/static/" .. filename
   local cmd = { "aws", "s3", "cp", finalFile, s3_path, "--acl", "public-read" }
 
-  -- Show progress in statusline
   vim.api.nvim_set_option("statusline", "%#WarningMsg#Uploading to S3: " .. filename .. "...%*")
   vim.notify("Uploading to S3 in background: " .. filename, vim.log.levels.INFO)
 
@@ -34,7 +33,6 @@ local function do_upload(finalFile)
     args = { unpack(cmd, 2) },
     stdio = { nil, nil, nil },
   }, function(code, signal)
-    -- Restore statusline (optional: you may want to save/restore original)
     vim.schedule(function()
       vim.api.nvim_set_option("statusline", "")
       if code == 0 then
@@ -69,7 +67,6 @@ local function upload_to_s3(file)
       vim.schedule(function()
         if code == 0 then
           vim.notify("ffmpeg conversion succeeded: " .. mp4_file, vim.log.levels.INFO)
-          -- Continue upload with mp4_file
           do_upload(mp4_file)
         else
           vim.notify("ffmpeg conversion failed (exit " .. code .. "): " .. mp4_file, vim.log.levels.ERROR)
@@ -78,7 +75,6 @@ local function upload_to_s3(file)
     end)
     return
   end
-
   do_upload(file)
 end
 
@@ -101,7 +97,6 @@ local function send_file_to_s3()
     vim.notify("File does not exist: " .. file, vim.log.levels.ERROR)
     return
   end
-
   upload_to_s3(file)
 end
 
@@ -147,7 +142,8 @@ local function get_globs_for_filetype(ft)
   end
 end
 
--- General keymaps
+-- ================================ GENERAL ================================
+
 map("n", "q", "<nop>", { noremap = true })
 map("n", "Q", "q", { noremap = true, desc = "Record macro" })
 map("n", "<M-q>", "Q", { noremap = true, desc = "Replay last register" })
@@ -158,239 +154,42 @@ map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
 map("n", "<leader>be", "<Cmd>Neotree buffers float<CR>")
 map("n", "<leader>F", "<Cmd>FzfLua<CR>")
 
--- ===============================Personal keymaps===================================
+-- ================================ QUICK ACCESS ================================
+-- j + key for frequently used actions
 
 vim.keymap.set("n", prefix .. "md", function()
   local date = os.date("%b %d, %Y %H:%M:%S %Z")
   vim.api.nvim_put({ date }, "c", true, true)
-end, { desc = "Add date here" })
+end, { desc = "Insert current date" })
 
 vim.keymap.set("n", prefix .. "m4", function()
   local line = vim.api.nvim_get_current_line()
   if not (vim.startswith(line, "~~") and vim.endswith(line, "~~")) then
     vim.api.nvim_set_current_line("~~" .. line .. "~~")
   end
-end, { desc = "Wrap current line with ~ for markdown strike through" })
+end, { desc = "Wrap line with ~~ (strikethrough)" })
 
 vim.keymap.set("n", prefix .. "m5", function()
   local line = vim.api.nvim_get_current_line()
   if not (vim.startswith(line, "**") and vim.endswith(line, "**")) then
     vim.api.nvim_set_current_line("**" .. line .. "**")
   end
-end, { desc = "Wrap current line with ** for markdown bold" })
+end, { desc = "Wrap line with ** (bold)" })
 
 vim.keymap.set("n", prefix .. "m6", function()
   local line = vim.api.nvim_get_current_line()
   if not (vim.startswith(line, "*") and vim.endswith(line, "*")) then
     vim.api.nvim_set_current_line("*" .. line .. "*")
   end
-end, { desc = "Wrap current line with * for markdown italic" })
--- =========================================== Markdown & TODO End ====================================
+end, { desc = "Wrap line with * (italic)" })
 
--- FZF keymaps
-map("n", prefix .. "fa", function()
-  require("fzf-lua").live_grep({ cwd = "~/app/" })
-end, { desc = "Live Grep in App Files" })
+map("n", prefix .. "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>", { desc = "Open daily goals" })
+map("n", prefix .. "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { desc = "Open notes" })
+map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all" })
 
-map("n", prefix .. "fw", function()
-  require("fzf-lua").live_grep({ cwd = "~/web/" })
-end, { desc = "Live Grep in Web Files" })
+-- ================================ FILE OPERATIONS ================================
+-- jf = File operations
 
-map("n", prefix .. "fx", function()
-  require("fzf-lua").live_grep({ cwd = "~/Desktop/obs-v1/" })
-end, { desc = "Live Grep in Notes Files" })
-
-map("n", prefix .. "fs", function()
-  require("fzf-lua").live_grep({ cwd = "~/Desktop/snippets/" })
-end, { desc = "Live Grep in Snippets Files" })
-
-map("n", prefix .. "ba", function()
-  require("fzf-lua").blines()
-end, { desc = "Live Grep in Current Buffer" })
-
-map("n", prefix .. "f7", copy_to_s3, { desc = "Upload current buffer to S3" })
-map("n", prefix .. "f6", select_file_to_move_to_s3, { desc = "Upload file from /scr to S3" })
-map("n", prefix .. "f5", send_file_to_s3, { desc = "Choose any file to S3" })
-
--- Convert .mov to YouTube-ready .mp4 with external audio
-map("n", prefix .. "f8", function()
-  if vim.fn.executable("ffmpeg") ~= 1 then
-    vim.notify("ffmpeg is not installed or not in PATH.", vim.log.levels.ERROR)
-    return
-  end
-  local mov = vim.fn.input("Input .mov file: ", "", "file")
-  if mov == "" or vim.fn.filereadable(mov) == 0 then
-    vim.notify("Invalid .mov file: " .. mov, vim.log.levels.ERROR)
-    return
-  end
-  local audio = vim.fn.input("Input audio file (wav/mp3/m4a): ", "", "file")
-  if audio == "" or vim.fn.filereadable(audio) == 0 then
-    vim.notify("Invalid audio file: " .. audio, vim.log.levels.ERROR)
-    return
-  end
-  local out = mov:gsub("%.mov$", "") .. "-yt.mp4"
-  local args = {
-    "-y",
-    "-i",
-    mov,
-    "-stream_loop",
-    "-1", -- loop audio if shorter
-    "-i",
-    audio,
-    "-map",
-    "0:v:0",
-    "-map",
-    "1:a:0",
-    "-c:v",
-    "libx264",
-    "-pix_fmt",
-    "yuv420p",
-    "-profile:v",
-    "high",
-    "-level",
-    "4.1",
-    "-preset",
-    "medium",
-    "-crf",
-    "20",
-    "-c:a",
-    "aac",
-    "-b:a",
-    "192k",
-    "-ar",
-    "48000",
-    "-movflags",
-    "+faststart",
-    "-shortest", -- trim when audio is longer
-    out,
-  }
-  vim.notify("Converting to YouTube-ready MP4: " .. out, vim.log.levels.INFO)
-  vim.loop.spawn("ffmpeg", { args = args, stdio = { nil, nil, nil } }, function(code, signal)
-    vim.schedule(function()
-      if code == 0 and vim.fn.filereadable(out) == 1 then
-        vim.notify("Conversion complete: " .. out, vim.log.levels.INFO)
-        vim.fn.setreg("+", out)
-      else
-        vim.notify("ffmpeg failed (exit " .. code .. ")", vim.log.levels.ERROR)
-      end
-    end)
-  end)
-end, { desc = "Convert MOV→MP4 + external audio (YouTube)" })
-
-local personal_keymaps = {
-  { "C", "<Cmd>%y<CR>", "Copy All" },
-  { "X", "<Cmd>%d<CR>", "Cut All" },
-  { "S", "ggVG", "Select All" },
-  { "P", "ggVGp", "Select All and Paste" },
-  { "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>" },
-  { "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>" },
-  { "U", "<cmd>UndotreeToggle<cr>", "Toggle Undotree" },
-  { "W", "<cmd>wa<cr>", "Save all buffers" },
-  {
-    "f1",
-    function()
-      local path = vim.fn.expand("%:p")
-      vim.fn.setreg("+", path)
-      vim.notify("Copied absolute path: " .. path, vim.log.levels.INFO)
-    end,
-    "Copy file absolute path",
-  },
-  {
-    "f4",
-    function()
-      local path = vim.fn.expand("%:p")
-      local line = vim.fn.line(".")
-      local result = path .. ":" .. line
-      vim.fn.setreg("+", result)
-      vim.notify("Copied absolute path with line: " .. result, vim.log.levels.INFO)
-    end,
-    "Copy file absolute path and line number",
-  },
-  {
-    "f2",
-    function()
-      local path = vim.fn.expand("%:.")
-      vim.fn.setreg("+", path)
-      vim.notify("Copied relative path: " .. path, vim.log.levels.INFO)
-    end,
-    "Copy file relative path",
-  },
-  {
-    "f3",
-    function()
-      local path = vim.fn.expand("%:t")
-      vim.fn.setreg("+", path)
-      vim.notify("Copied file name: " .. path, vim.log.levels.INFO)
-    end,
-    "Copy file name",
-  },
-  {
-    "bo",
-    function()
-      local path = vim.fn.expand("%:p")
-      if path == "" or vim.fn.filereadable(path) == 0 then
-        vim.notify("Current buffer is not a file.", vim.log.levels.WARN)
-        return
-      end
-      vim.fn.system({ "open", path })
-      vim.notify("Opened in default app: " .. path, vim.log.levels.INFO)
-    end,
-    "Open buffer in default app (macOS)",
-  },
-  { "lh", "<Cmd>checkhealth<CR>", "Check health" },
-  { "ll", "<cmd>Lazy<CR>", "Plugin Manager - [LazyVim]" },
-  { "lm", "<cmd>Mason<CR>", "Package Manager - [Mason]" },
-  { "le", "<cmd>LazyExtras<CR>", "Extras Manager - [LazyVim]" },
-  { "li", "<cmd>LspInfo<CR>", "Lsp Info" },
-  { "ls", "<cmd>Lazy sync<CR>", "Lazy sync" },
-{
-  "bp",
-  function()
-    local paths = {}
-
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_loaded(buf) and vim.fn.buflisted(buf) == 1 then
-        local name = vim.api.nvim_buf_get_name(buf)
-        if name ~= "" then
-          table.insert(paths, vim.fn.fnamemodify(name, ":p"))
-        end
-      end
-    end
-
-    if #paths == 0 then
-      vim.notify("No listed file buffers found.", vim.log.levels.WARN)
-      return
-    end
-
-    local result = table.concat(paths, "\n")
-    vim.fn.setreg("+", result)
-    vim.notify("Copied " .. #paths .. " buffer absolute paths.", vim.log.levels.INFO)
-  end,
-  "Copy all open buffer absolute paths",
-},
-}
-
-table.insert(personal_keymaps, {
-  "rw",
-  function()
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    for i, line in ipairs(lines) do
-      local indent = line:match("^(%s*)") or ""
-      local content = line:sub(#indent + 1)
-      content = content:gsub("%s+", "")
-      lines[i] = indent .. content
-    end
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
-    vim.notify("All inner whitespace removed from buffer (indentation preserved).", vim.log.levels.INFO)
-  end,
-  "Remove all inner whitespace from buffer (preserve indentation)",
-})
-
-for _, keymap in ipairs(personal_keymaps) do
-  map("n", prefix .. keymap[1], keymap[2], { noremap = true, silent = true, desc = keymap[3] })
-end
-
--- Open File
 map("n", prefix .. "fo", function()
   local fzf = require("fzf-lua")
   fzf.files({
@@ -406,7 +205,7 @@ map("n", prefix .. "fo", function()
       end,
     },
   })
-end, { desc = "Open file in ~ (fzf)" })
+end, { desc = "Open file in ~" })
 
 map("n", prefix .. "fn", function()
   vim.ui.input({ prompt = "New file name: " }, function(input)
@@ -419,50 +218,166 @@ map("n", prefix .. "fn", function()
   end)
 end, { desc = "Create new file" })
 
-map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all and exit Vim" })
+map("n", prefix .. "ff", function()
+  local path = vim.fn.expand("%:p")
+  if path == "" or vim.fn.filereadable(path) == 0 then
+    vim.notify("Current buffer is not a file.", vim.log.levels.WARN)
+    return
+  end
+  vim.fn.system({ "open", "-R", path })
+  vim.notify("Revealed in Finder: " .. path, vim.log.levels.INFO)
+end, { desc = "Reveal in Finder" })
 
--- Open Search and Replace
-map("n", prefix .. "R", function()
-  vim.ui.input({ prompt = "Substitute pattern (e.g. %s/foo/bar/g): " }, function(input)
+map("n", prefix .. "fa", function()
+  local path = vim.fn.expand("%:p")
+  if path == "" or vim.fn.filereadable(path) == 0 then
+    vim.notify("Current buffer is not a file.", vim.log.levels.WARN)
+    return
+  end
+  vim.fn.system({ "open", path })
+  vim.notify("Opened in default app: " .. path, vim.log.levels.INFO)
+end, { desc = "Open in default app" })
+
+-- ================================ COPY PATHS ================================
+-- jy = Yank (copy) paths
+
+map("n", prefix .. "y1", function()
+  local path = vim.fn.expand("%:p")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied absolute path: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy absolute path" })
+
+map("n", prefix .. "y2", function()
+  local path = vim.fn.expand("%:.")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied relative path: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy relative path" })
+
+map("n", prefix .. "y3", function()
+  local path = vim.fn.expand("%:t")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied filename: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy filename" })
+
+map("n", prefix .. "y4", function()
+  local path = vim.fn.expand("%:p")
+  local line = vim.fn.line(".")
+  local result = path .. ":" .. line
+  vim.fn.setreg("+", result)
+  vim.notify("Copied path:line: " .. result, vim.log.levels.INFO)
+end, { desc = "Copy path:line" })
+
+map("n", prefix .. "yb", function()
+  local paths = {}
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(buf) and vim.fn.buflisted(buf) == 1 then
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name ~= "" then
+        table.insert(paths, vim.fn.fnamemodify(name, ":p"))
+      end
+    end
+  end
+  if #paths == 0 then
+    vim.notify("No listed file buffers found.", vim.log.levels.WARN)
+    return
+  end
+  local result = table.concat(paths, "\n")
+  vim.fn.setreg("+", result)
+  vim.notify("Copied " .. #paths .. " buffer paths.", vim.log.levels.INFO)
+end, { desc = "Copy all buffer paths" })
+
+-- ================================ SEARCH ================================
+-- js = Search
+
+map("n", prefix .. "sw", function()
+  require("fzf-lua").live_grep({ cwd = "~/work/" })
+end, { desc = "Search in ~/work" })
+
+map("n", prefix .. "sx", function()
+  require("fzf-lua").live_grep({ cwd = "~/Desktop/obs-v1/" })
+end, { desc = "Search in Notes" })
+
+map("n", prefix .. "ss", function()
+  require("fzf-lua").live_grep({ cwd = "~/Desktop/snippets/" })
+end, { desc = "Search in Snippets" })
+
+map("n", prefix .. "sb", function()
+  require("fzf-lua").blines()
+end, { desc = "Search in buffer" })
+
+map("n", prefix .. "si", function()
+  vim.ui.input({ prompt = "Search for: " }, function(input)
+    if not input or input == "" then
+      vim.notify("No search term entered.", vim.log.levels.WARN)
+      return
+    end
+    local ft = vim.bo.filetype
+    local globs = get_globs_for_filetype(ft)
+    local glob_args = ""
+    for _, g in ipairs(globs) do
+      glob_args = glob_args .. string.format(" --glob '%s'", g)
+    end
+    vim.o.grepprg = "rg --vimgrep"
+    vim.cmd("silent grep! -w " .. vim.fn.shellescape(input) .. glob_args)
+    vim.cmd("copen")
+  end)
+end, { noremap = true, silent = true, desc = "Project search (input)" })
+
+-- ================================ SUBSTITUTE ================================
+-- jr = Replace
+
+map("n", prefix .. "r", function()
+  vim.ui.input({ prompt = "Substitute (foo/bar/g): " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
       return
     end
     vim.cmd("%s/" .. input)
   end)
-end, { desc = "Start :%s substitution" })
+end, { desc = "Substitute in buffer" })
 
 map("n", prefix .. "rc", function()
-  vim.ui.input({ prompt = "cfdo substitute pattern (e.g. cfdo %s/foo/bar/g | update): " }, function(input)
+  vim.ui.input({ prompt = "cfdo substitute: " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
       return
     end
     vim.cmd("cfdo %s/" .. input .. " | update")
   end)
-end, { desc = "cfdo :%s substitution (all quickfix files)" })
+end, { desc = "Substitute in quickfix files" })
 
 map("n", prefix .. "rd", function()
-  vim.ui.input({ prompt = "cdo substitute pattern (e.g. cdo s/foo/bar/g | update): " }, function(input)
+  vim.ui.input({ prompt = "cdo substitute: " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
       return
     end
     vim.cmd("cdo s/" .. input .. " | update")
   end)
-end, { desc = "cdo :%s substitution (all quickfix matches/lines)" })
+end, { desc = "Substitute in quickfix lines" })
 
 map("n", prefix .. "ra", function()
-  vim.ui.input({ prompt = "argdo substitute pattern (e.g. argdo %s/foo/bar/g | update): " }, function(input)
+  vim.ui.input({ prompt = "argdo substitute: " }, function(input)
     if not input or input == "" then
       vim.notify("No pattern entered.", vim.log.levels.WARN)
       return
     end
     vim.cmd("argdo %s/" .. input .. " | update")
   end)
-end, { desc = "argdo :%s substitution" })
+end, { desc = "Substitute in arg files" })
 
-map("n", prefix .. "r^", "<Cmd>%s/\r//g<CR>", { desc = "Remove ^M" })
+map("n", prefix .. "rm", function()
+  vim.ui.input({ prompt = "Remove pattern (regex): " }, function(input)
+    if not input or input == "" then
+      vim.notify("No pattern entered.", vim.log.levels.WARN)
+      return
+    end
+    vim.cmd("%s/" .. input .. "//g")
+  end)
+end, { desc = "Remove pattern from buffer" })
+
+map("n", prefix .. "r^", "<Cmd>%s/\r//g<CR>", { desc = "Remove ^M (line endings)" })
+
 map("v", prefix .. "rm", function()
   local start_line = vim.fn.line("v")
   local end_line = vim.fn.line(".")
@@ -474,118 +389,63 @@ map("v", prefix .. "rm", function()
     line = line:gsub("^[-+]+", "")
     vim.fn.setline(lnum, line)
   end
-end, { desc = "Remove - and + from beginning of selected lines" })
+end, { desc = "Remove -/+ from lines" })
 
-table.insert(personal_keymaps, {
-  "rw",
-  function()
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    for i, line in ipairs(lines) do
-      local indent = line:match("^(%s*)") or ""
-      local content = line:sub(#indent + 1)
-      content = content:gsub("%s+", "")
-      lines[i] = indent .. content
-    end
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
-    vim.notify("All inner whitespace removed from buffer (indentation preserved).", vim.log.levels.INFO)
-  end,
-  "Remove all inner whitespace from buffer (preserve indentation)",
-})
+-- ================================ EDITING ================================
+-- je = Edit operations
 
--- Copy LSP error
-map("n", prefix .. "E", function()
-  local bufnr = vim.api.nvim_get_current_buf()
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local line_nr = cursor[1]
-  local diagnostics = vim.diagnostic.get(bufnr)
-  local errors = {}
-
-  for _, d in ipairs(diagnostics) do
-    if d.lnum + 1 == line_nr then
-      table.insert(errors, d)
-    end
+map("n", prefix .. "bw", function()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  for i, line in ipairs(lines) do
+    local indent = line:match("^(%s*)") or ""
+    local content = line:sub(#indent + 1)
+    content = content:gsub("%s+", "")
+    lines[i] = indent .. content
   end
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+  vim.notify("Removed inner whitespace.", vim.log.levels.INFO)
+end, { desc = "Remove inner whitespace" })
 
-  if #errors == 0 and vim.treesitter then
-    local ts_utils = require("nvim-treesitter.ts_utils")
-    local node = ts_utils.get_node_at_cursor()
-    while node do
-      local type = node:type()
-      if type:match("function") or type:match("class") then
-        local start_row, _, end_row, _ = node:range()
-        for _, d in ipairs(diagnostics) do
-          if d.lnum >= start_row and d.lnum <= end_row then
-            table.insert(errors, d)
-          end
-        end
-        break
-      end
-      node = node:parent()
-    end
+local function toggle_indent_mode()
+  if vim.bo.expandtab then
+    local ts = vim.bo.tabstop
+    vim.bo.expandtab = false
+    vim.cmd("retab!")
+    vim.notify("Converted to tabs (ts=" .. ts .. ")", vim.log.levels.INFO)
+  else
+    local ts = vim.bo.tabstop
+    vim.bo.expandtab = true
+    vim.cmd("retab")
+    vim.notify("Converted to spaces (ts=" .. ts .. ")", vim.log.levels.INFO)
   end
-
-  if #errors == 0 then
-    vim.notify("No LSP errors found on this line or code block.", vim.log.levels.INFO)
-    return
-  end
-
-  local msgs = {}
-  for _, d in ipairs(errors) do
-    table.insert(msgs, string.format("[%s] %s (line %d)", vim.diagnostic.severity[d.severity], d.message, d.lnum + 1))
-  end
-  local text = table.concat(msgs, "\n")
-  vim.fn.setreg("+", text)
-  vim.notify("Copied LSP error(s) to clipboard.", vim.log.levels.INFO)
-end, { desc = "Copy LSP error(s) on line or code block" })
-
--- Snippet keymaps
-map({ "n", "x" }, prefix .. "sa", function()
-  require("scissors").addNewSnippet()
-end, { desc = "Snippet: Add" })
-
-map("n", prefix .. "se", function()
-  require("scissors").editSnippet()
-end, { desc = "Snippet: Edit" })
-
-vim.keymap.set("n", prefix .. "si", function()
-  vim.ui.input({ prompt = "Search for: " }, function(input)
-    if not input or input == "" then
-      vim.notify("No search term entered.", vim.log.levels.WARN)
-      return
-    end
-
-    local ft = vim.bo.filetype
-    local globs = get_globs_for_filetype(ft)
-
-    local glob_args = ""
-    for _, g in ipairs(globs) do
-      glob_args = glob_args .. string.format(" --glob '%s'", g)
-    end
-
-    vim.o.grepprg = "rg --vimgrep"
-    vim.cmd("silent grep! -w " .. vim.fn.shellescape(input) .. glob_args)
-    vim.cmd("copen")
-  end)
-end, { noremap = true, silent = true, desc = "Input search term for project files" })
-
--- Yazi keymaps
-local yazi_keymaps = {
-  { "yf", "<cmd>Yazi<cr>", "Open yazi at the current file" },
-  { "yd", "<cmd>Yazi cwd<cr>", "Open the file manager in nvim's working directory" },
-  { "yt", "<cmd>Yazi toggle<cr>", "Resume the last yazi session" },
-}
-
-for _, keymap in ipairs(yazi_keymaps) do
-  map({ "n", "v" }, prefix .. keymap[1], keymap[2], { desc = keymap[3] })
 end
 
+map("n", prefix .. "bt", function()
+  local ts = vim.bo.tabstop
+  vim.bo.expandtab = false
+  vim.cmd("retab!")
+  vim.notify("Converted to tabs (ts=" .. ts .. ")", vim.log.levels.INFO)
+end, { desc = "Convert to tabs" })
+
+map("n", prefix .. "bs", function()
+  local ts = vim.bo.tabstop
+  vim.bo.expandtab = true
+  vim.cmd("retab")
+  vim.notify("Converted to spaces (ts=" .. ts .. ")", vim.log.levels.INFO)
+end, { desc = "Convert to spaces" })
+
+map("n", prefix .. "bi", toggle_indent_mode, { desc = "Toggle tabs/spaces" })
+
+-- ================================ TERMINAL / SHELL ================================
+-- jc = Terminal/Command
+
 map("n", prefix .. "c1", function()
-  vim.ui.input({ prompt = "Shell command to run: " }, function(cmd)
+  vim.ui.input({ prompt = "Shell command: " }, function(cmd)
     if not cmd or cmd == "" then
       vim.notify("No command entered.", vim.log.levels.WARN)
       return
     end
-    vim.notify("Running in new tab: " .. cmd, vim.log.levels.INFO)
+    vim.notify("Running: " .. cmd, vim.log.levels.INFO)
     vim.cmd("tabnew | terminal " .. cmd)
   end)
 end, { desc = "Run shell command" })
@@ -603,22 +463,79 @@ map("n", prefix .. "c2", function()
     p:close()
   end
   if #files == 0 then
-    vim.notify("No shell scripts found in " .. script_dir, vim.log.levels.WARN)
+    vim.notify("No .sh files in " .. script_dir, vim.log.levels.WARN)
     return
   end
-  vim.ui.select(files, { prompt = "Select shell script to run:" }, function(choice)
+  vim.ui.select(files, { prompt = "Select script:" }, function(choice)
     if not choice then
       return
     end
     local script_path = script_dir .. choice
-    vim.notify("Running: " .. script_path .. " in terminal", vim.log.levels.INFO)
+    vim.notify("Running: " .. script_path, vim.log.levels.INFO)
     vim.cmd("terminal bash '" .. script_path .. "'")
   end)
-end, { desc = "Run shell script from ~/Desktop/scripts" })
+end, { desc = "Run script from ~/Desktop/scripts" })
 
-vim.keymap.set("n", "<leader>ac", "<cmd>CodeCompanionActions<CR>", { desc = "CodeCompanionActions" })
+-- ================================ UPLOAD / S3 ================================
+-- ju = Upload
 
-vim.keymap.set("n", prefix .. "go", function()
+map("n", prefix .. "u5", send_file_to_s3, { desc = "Upload any file to S3" })
+map("n", prefix .. "u6", select_file_to_move_to_s3, { desc = "Upload from ~/Downloads/screenshots" })
+map("n", prefix .. "u7", copy_to_s3, { desc = "Upload current buffer" })
+
+map("n", prefix .. "u8", function()
+  if vim.fn.executable("ffmpeg") ~= 1 then
+    vim.notify("ffmpeg not found.", vim.log.levels.ERROR)
+    return
+  end
+  local mov = vim.fn.input("Input .mov file: ", "", "file")
+  if mov == "" or vim.fn.filereadable(mov) == 0 then
+    vim.notify("Invalid .mov file.", vim.log.levels.ERROR)
+    return
+  end
+  local audio = vim.fn.input("Input audio file: ", "", "file")
+  if audio == "" or vim.fn.filereadable(audio) == 0 then
+    vim.notify("Invalid audio file.", vim.log.levels.ERROR)
+    return
+  end
+  local out = mov:gsub("%.mov$", "") .. "-yt.mp4"
+  local args = {
+    "-y", "-i", mov, "-stream_loop", "-1", "-i", audio,
+    "-map", "0:v:0", "-map", "1:a:0",
+    "-c:v", "libx264", "-pix_fmt", "yuv420p",
+    "-profile:v", "high", "-level", "4.1",
+    "-preset", "medium", "-crf", "20",
+    "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
+    "-movflags", "+faststart", "-shortest", out,
+  }
+  vim.notify("Converting: " .. out, vim.log.levels.INFO)
+  vim.loop.spawn("ffmpeg", { args = args, stdio = { nil, nil, nil } }, function(code, _)
+    vim.schedule(function()
+      if code == 0 and vim.fn.filereadable(out) == 1 then
+        vim.notify("Done: " .. out, vim.log.levels.INFO)
+        vim.fn.setreg("+", out)
+      else
+        vim.notify("ffmpeg failed", vim.log.levels.ERROR)
+      end
+    end)
+  end)
+end, { desc = "Convert MOV+Audio → YouTube MP4" })
+
+-- ================================ PLUGINS ================================
+-- jl = LazyVim / Plugin manager
+
+map("n", prefix .. "ll", "<cmd>Lazy<CR>", { desc = "Open Lazy" })
+map("n", prefix .. "ls", "<cmd>Lazy sync<CR>", { desc = "Lazy sync" })
+map("n", prefix .. "le", "<cmd>LazyExtras<CR>", { desc = "Lazy extras" })
+map("n", prefix .. "lm", "<cmd>Mason<CR>", { desc = "Mason (LSP)" })
+map("n", prefix .. "li", "<cmd>LspInfo<CR>", { desc = "LSP info" })
+map("n", prefix .. "lh", "<Cmd>checkhealth<CR>", { desc = "Check health" })
+map("n", prefix .. "lu", "<cmd>UndotreeToggle<CR>", { desc = "Toggle Undotree" })
+
+-- ================================ GIT ================================
+-- jg = Git
+
+map("n", prefix .. "go", function()
   vim.cmd("tabnew")
   local files = vim.fn.systemlist("git diff --name-only HEAD")
   for _, f in ipairs(files) do
@@ -627,65 +544,80 @@ vim.keymap.set("n", prefix .. "go", function()
       vim.cmd("bprevious")
     end
   end
-end, { desc = "Open modified git files in new tabs" })
+end, { desc = "Open modified files" })
 
-local function tabs_to_spaces()
-  local ts = vim.bo.tabstop
-  vim.bo.expandtab = true
-  vim.cmd("retab")
-  vim.notify(string.format("Converted tabs to spaces (ts=%d).", ts), vim.log.levels.INFO)
+-- ================================ SNIPPETS ================================
+-- jn = Snippets
+
+map({ "n", "x" }, prefix .. "na", function()
+  require("scissors").addNewSnippet()
+end, { desc = "Add new snippet" })
+
+map("n", prefix .. "ne", function()
+  require("scissors").editSnippet()
+end, { desc = "Edit snippet" })
+
+-- ================================ FILE MANAGER ================================
+-- jj = Yazi
+
+local yazi_cmds = {
+  { "jf", "<cmd>Yazi<cr>", "Yazi at current file" },
+  { "jd", "<cmd>Yazi cwd<cr>", "Yazi at cwd" },
+  { "jt", "<cmd>Yazi toggle<cr>", "Yazi toggle" },
+}
+for _, k in ipairs(yazi_cmds) do
+  map({ "n", "v" }, prefix .. k[1], k[2], { desc = k[3] })
 end
 
-local function spaces_to_tabs()
-  local ts = vim.bo.tabstop
-  vim.bo.expandtab = false
-  vim.cmd("retab!")
-  vim.notify(string.format("Converted spaces to tabs (ts=%d).", ts), vim.log.levels.INFO)
-end
+-- ================================ LSP ================================
+-- jl = (already used) -> use jd for diagnostics
 
-local function toggle_indent_mode()
-  if vim.bo.expandtab then
-    spaces_to_tabs()
-  else
-    tabs_to_spaces()
+map("n", prefix .. "de", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line_nr = cursor[1]
+  local diagnostics = vim.diagnostic.get(bufnr)
+  local errors = {}
+  for _, d in ipairs(diagnostics) do
+    if d.lnum + 1 == line_nr then
+      table.insert(errors, d)
+    end
   end
-end
-
-map("n", prefix .. "b<tab>", toggle_indent_mode, { desc = "Toggle tabs/spaces and retab" })
-map("n", prefix .. "bs", tabs_to_spaces, { desc = "Convert tabs → spaces (retab)" })
-map("n", prefix .. "bt", spaces_to_tabs, { desc = "Convert spaces → tabs (retab!)" })
-
-map("n", prefix .. "bf", function()
-  local path = vim.fn.expand("%:p")
-  if path == "" or vim.fn.filereadable(path) == 0 then
-    vim.notify("Current buffer is not a file.", vim.log.levels.WARN)
+  if #errors == 0 and vim.treesitter then
+    local ts_utils = require("nvim-treesitter.ts_utils")
+    local node = ts_utils.get_node_at_cursor()
+    while node do
+      local typ = node:type()
+      if typ:match("function") or typ:match("class") then
+        local sr, _, er, _ = node:range()
+        for _, d in ipairs(diagnostics) do
+          if d.lnum >= sr and d.lnum <= er then
+            table.insert(errors, d)
+          end
+        end
+        break
+      end
+      node = node:parent()
+    end
+  end
+  if #errors == 0 then
+    vim.notify("No diagnostics on this line.", vim.log.levels.INFO)
     return
   end
-  vim.fn.system({ "open", "-R", path })
-  vim.notify("Revealed in Finder: " .. path, vim.log.levels.INFO)
-end, { desc = "Reveal buffer in Finder (macOS)" })
-
-local function printfile()
-  local file = vim.fn.expand("%:p")
-  if vim.fn.has("macunix") == 1 then
-    vim.fn.system({ "open", "-a", "TextEdit", file })
-    vim.notify("Opened in TextEdit. Use File → Print to save as PDF.", vim.log.levels.INFO)
-  elseif vim.fn.has("unix") == 1 then
-    vim.notify("Print dialog not supported on Linux from Neovim.", vim.log.levels.ERROR)
-  elseif vim.fn.has("win32") == 1 then
-    vim.fn.system({ "powershell", "-Command", "Start-Process", file, "-Verb", "Print" })
-    vim.notify("Opened print dialog (Windows).", vim.log.levels.INFO)
-  else
-    vim.notify("Printing not supported on this OS", vim.log.levels.ERROR)
+  local msgs = {}
+  for _, d in ipairs(errors) do
+    table.insert(msgs, string.format("[%s] %s (line %d)", vim.diagnostic.severity[d.severity], d.message, d.lnum + 1))
   end
-end
+  vim.fn.setreg("+", table.concat(msgs, "\n"))
+  vim.notify("Copied diagnostics.", vim.log.levels.INFO)
+end, { desc = "Copy LSP diagnostics" })
 
-map("n", prefix .. "p", printfile, { desc = "Print current buffer" })
+-- ================================ EXTERNAL APPS ================================
+-- ja = Apps
 
-local function spotlight_app()
+map("n", "<Leader>jaa", function()
   local dirs = { "/Applications", "~/Applications" }
   local items = {}
-  -- Collect applications
   for _, d in ipairs(dirs) do
     local ed = vim.fn.expand(d)
     local p = io.popen('ls -1 "' .. ed .. '"')
@@ -698,7 +630,6 @@ local function spotlight_app()
       p:close()
     end
   end
-  -- Collect top-level home directories (non-hidden)
   local home = vim.fn.expand("~")
   local hp = io.popen('ls -1 "' .. home .. '"')
   if hp then
@@ -712,12 +643,10 @@ local function spotlight_app()
     hp:close()
   end
   if #items == 0 then
-    vim.notify("No applications or folders found", vim.log.levels.WARN)
+    vim.notify("No apps found", vim.log.levels.WARN)
     return
   end
-  table.sort(items, function(a, b)
-    return a:lower() < b:lower()
-  end)
+  table.sort(items, function(a, b) return a:lower() < b:lower() end)
   local fzf = require("fzf-lua")
   fzf.fzf_exec(items, {
     prompt = "Open App/Dir> ",
@@ -729,26 +658,40 @@ local function spotlight_app()
         local full = sel[1]
         if full:match("%.app$") then
           local name = full:match("([^/]+)%.app$")
-          if not name then
-            vim.notify("Invalid app selection", vim.log.levels.ERROR)
-            return
-          end
           vim.fn.system({ "open", "-a", name })
-          vim.notify("Opened app: " .. name, vim.log.levels.INFO)
+          vim.notify("Opened: " .. name, vim.log.levels.INFO)
         else
           vim.fn.system({ "open", full })
-          vim.notify("Opened folder: " .. full, vim.log.levels.INFO)
+          vim.notify("Opened: " .. full, vim.log.levels.INFO)
         end
       end,
     },
   })
-end
+end, { desc = "Open app (spotlight-like)" })
 
-map("n", "<Leader>A", spotlight_app, { desc = "Open macOS Application (Spotlight-like)" })
-
--- Open root directory in VS Code
-map("n", prefix .. "V", function()
+map("n", prefix .. "av", function()
   local cwd = vim.fn.getcwd()
   vim.fn.system({ "code", cwd })
   vim.notify("Opened in VS Code: " .. cwd, vim.log.levels.INFO)
-end, { desc = "Open root directory in VS Code" })
+end, { desc = "Open in VS Code" })
+
+map("n", prefix .. "ap", function()
+  local file = vim.fn.expand("%:p")
+  if vim.fn.has("macunix") == 1 then
+    vim.fn.system({ "open", "-a", "TextEdit", file })
+    vim.notify("Opened in TextEdit", vim.log.levels.INFO)
+  elseif vim.fn.has("win32") == 1 then
+    vim.fn.system({ "powershell", "-Command", "Start-Process", file, "-Verb", "Print" })
+    vim.notify("Print dialog opened", vim.log.levels.INFO)
+  else
+    vim.notify("Not supported on this OS", vim.log.levels.ERROR)
+  end
+end, { desc = "Print / Open in editor" })
+
+-- ================================ MISC ================================
+-- jm = Misc
+map("n", prefix .. "C", "<Cmd>%y<CR>", { desc = "Yank all lines" })
+map("n", prefix .. "X", "<Cmd>%d<CR>", { desc = "Delete all lines" })
+map("n", prefix .. "S", "ggVG", { desc = "Select all" })
+map("n", prefix .. "P", "ggVGp", { desc = "Select all and paste" })
+map("n", prefix .. "W", "<cmd>wa<CR>", { desc = "Save all buffers" })

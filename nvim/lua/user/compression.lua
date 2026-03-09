@@ -87,6 +87,6 @@ function M.compress_file()
 end
 
 -- Set keymap for this module
-map("n", prefix .. "g1", M.compress_file, { desc = "Compress current/selected file (gzip/zstd/xz/bzip2)" })
+map("n", prefix .. "c3", M.compress_file, { desc = "Compress current/selected file (gzip/zstd/xz/bzip2)" })
 
 return M
