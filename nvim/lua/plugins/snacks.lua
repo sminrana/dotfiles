@@ -4,6 +4,7 @@ return {
   opts = {
     explorer = {
       enabled = false,
+      auto_close = true, -- closes explorer when file is opened
     },
   },
   keys = {
@@ -11,6 +12,7 @@ return {
       "<leader>e",
       function()
         require("snacks").explorer({
+          auto_close = true, -- closes explorer when file is opened
           layout = {
             layout = {
               position = "float",
