@@ -20,4 +20,4 @@ opt.mousemoveevent = true
 
 vim.g.lazyvim_picker = "fzf"
 vim.g.snacks_animate = false
-vim.g.autoformat = false
+vim.g.autoformat = true

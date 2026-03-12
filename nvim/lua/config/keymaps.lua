@@ -150,8 +150,6 @@ map("n", "<M-q>", "Q", { noremap = true, desc = "Replay last register" })
 
 map("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>")
 map("n", "go", "<Cmd>call append(line('.'), repeat([''], v:count1))<CR>")
-map("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
-map("n", "<leader>be", "<Cmd>Neotree buffers float<CR>")
 map("n", "<leader>F", "<Cmd>FzfLua<CR>")
 
 -- ================================ QUICK ACCESS ================================

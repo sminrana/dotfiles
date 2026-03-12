@@ -2,20 +2,6 @@
 -- Default autocmds that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/autocmds.lua
 -- Add any additional autocmds here
 
--- Make BG tran
--- vim.api.nvim_create_augroup("nobg", { clear = true })
--- vim.api.nvim_create_autocmd({ "ColorScheme" }, {
---   desc = "Make all backgrounds transparent",
---   group = "nobg",
---   pattern = "*",
---   callback = function()
---     vim.api.nvim_set_hl(0, "Normal", { bg = "NONE", ctermbg = "NONE" })
---     vim.api.nvim_set_hl(0, "NeoTreeNormal", { bg = "NONE", ctermbg = "NONE" })
---     vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "NONE", ctermbg = "NONE" })
---   end,
--- })
---
---
 vim.api.nvim_create_autocmd("DirChanged", {
   callback = function()
     local cwd = vim.fn.getcwd()
@@ -24,10 +10,6 @@ vim.api.nvim_create_autocmd("DirChanged", {
   end,
 })
 
--- Show Neotree on a popup, disabling left sidebar
-vim.api.nvim_exec2("Neotree reveal float", {})
-vim.cmd("wincmd p") -- Switch focus to the previous window (the newly opened Neotree)
-vim.cmd("wincmd p") -- Sometimes needs to be called twice depending on window layout
 
 -- Highlight trailing whitespace
 vim.api.nvim_create_autocmd("FileType", {
@@ -103,17 +85,5 @@ vim.api.nvim_create_autocmd({ "FocusLost", "WinLeave" }, {
     if mode == "i" or mode == "ic" then
       vim.cmd("stopinsert")
     end
-  end,
-})
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = vim.api.nvim_create_augroup("Format", { clear = true }),
-  callback = function()
-    vim.lsp.buf.format({
-      async = false,
-      filter = function(client)
-        return client.name == "null-ls"
-      end,
-    })
   end,
 })
