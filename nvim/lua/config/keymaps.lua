@@ -498,13 +498,39 @@ map("n", prefix .. "u8", function()
   end
   local out = mov:gsub("%.mov$", "") .. "-yt.mp4"
   local args = {
-    "-y", "-i", mov, "-stream_loop", "-1", "-i", audio,
-    "-map", "0:v:0", "-map", "1:a:0",
-    "-c:v", "libx264", "-pix_fmt", "yuv420p",
-    "-profile:v", "high", "-level", "4.1",
-    "-preset", "medium", "-crf", "20",
-    "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
-    "-movflags", "+faststart", "-shortest", out,
+    "-y",
+    "-i",
+    mov,
+    "-stream_loop",
+    "-1",
+    "-i",
+    audio,
+    "-map",
+    "0:v:0",
+    "-map",
+    "1:a:0",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-profile:v",
+    "high",
+    "-level",
+    "4.1",
+    "-preset",
+    "medium",
+    "-crf",
+    "20",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-ar",
+    "48000",
+    "-movflags",
+    "+faststart",
+    "-shortest",
+    out,
   }
   vim.notify("Converting: " .. out, vim.log.levels.INFO)
   vim.loop.spawn("ffmpeg", { args = args, stdio = { nil, nil, nil } }, function(code, _)
@@ -559,9 +585,7 @@ end, { desc = "Edit snippet" })
 -- jj = Yazi
 
 local yazi_cmds = {
-  { "jf", "<cmd>Yazi<cr>", "Yazi at current file" },
-  { "jd", "<cmd>Yazi cwd<cr>", "Yazi at cwd" },
-  { "jt", "<cmd>Yazi toggle<cr>", "Yazi toggle" },
+  { "jT", "<cmd>Yazi toggle<cr>", "Yazi toggle" },
 }
 for _, k in ipairs(yazi_cmds) do
   map({ "n", "v" }, prefix .. k[1], k[2], { desc = k[3] })
@@ -644,7 +668,9 @@ map("n", "<Leader>jaa", function()
     vim.notify("No apps found", vim.log.levels.WARN)
     return
   end
-  table.sort(items, function(a, b) return a:lower() < b:lower() end)
+  table.sort(items, function(a, b)
+    return a:lower() < b:lower()
+  end)
   local fzf = require("fzf-lua")
   fzf.fzf_exec(items, {
     prompt = "Open App/Dir> ",
