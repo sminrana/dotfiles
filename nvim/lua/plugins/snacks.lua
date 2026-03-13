@@ -6,6 +6,14 @@ return {
       enabled = false,
       auto_close = true, -- closes explorer when file is opened
     },
+    picker = {
+      sources = {
+        explorer = {
+          hidden = true, -- show dotfiles (.git, .env)
+          ignored = true, -- show .gitignored files
+        },
+      },
+    },
   },
   keys = {
     {
