@@ -3,6 +3,9 @@ return {
   opts = {
     servers = {
 
+      -- Go
+      gopls = {},
+
       -- PHP
       intelephense = {},
 

@@ -8,6 +8,7 @@ return {
       javascript = { "eslint" },
       typescript = { "eslint" },
       swift = { "swiftlint" },
+      go = { "golangcilint" },
     },
   },
 }

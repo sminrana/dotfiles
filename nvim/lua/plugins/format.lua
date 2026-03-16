@@ -18,6 +18,7 @@ return {
       vue = { "prettier" },
       swift = { "swiftformat" },
       python = { "black" },
+      go = { "gofumpt", "goimports" },
     },
     formatters = {
       php_cs_fixer = {
@@ -32,7 +33,8 @@ return {
       },
       prettier = {
         extra_args = {
-          "--print-width", "100",
+          "--print-width",
+          "100",
           "--single-quote",
           "--trailing-comma",
           "all",
