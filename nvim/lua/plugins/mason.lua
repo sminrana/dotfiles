@@ -8,7 +8,6 @@ return {
       "vue-language-server",
       "pyright",
       "ruff",
-      "rust-analyzer",
       "lua-language-server",
       "svelte-language-server",
       "tailwindcss-language-server",

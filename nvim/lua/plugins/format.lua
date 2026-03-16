@@ -5,7 +5,7 @@ return {
   cmd = "ConformInfo",
   opts = {
     formatters_by_ft = {
-      php = { "php_cs_fixer", "pint" },
+      php = { "pint" },
       blade = { "blade_formatter" },
       html = { "prettier" },
       css = { "prettier" },
@@ -21,9 +21,6 @@ return {
       go = { "gofumpt", "goimports" },
     },
     formatters = {
-      php_cs_fixer = {
-        extra_args = { "--config=.php-cs-fixer.php", "--using-cache=no" },
-      },
       pint = {
         prefer_local = "vendor/bin",
         extra_args = { "--quiet" },
