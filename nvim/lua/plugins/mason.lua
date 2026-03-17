@@ -2,21 +2,22 @@ return {
   "mason-org/mason.nvim",
   opts = {
     ensure_installed = {
-      -- LSP
-      "intelephense",
-      "typescript-language-server",
-      "vue-language-server",
-      "pyright",
-      "ruff",
-      "lua-language-server",
-      "svelte-language-server",
-      "tailwindcss-language-server",
+      -- LSPs
+      "intelephense", -- PHP
+      "typescript-language-server", -- JS/TS
+      "vue-language-server", -- Vue
+      "pyright", -- Python
+      "ruff", -- Python lint/format
+      "lua-language-server", -- Lua
+      "svelte-language-server", -- Svelte
+      "tailwindcss-language-server", -- Tailwind
 
-      -- formatters
-      "pint",
-      "php-cs-fixer",
-      "prettier",
-      "swiftformat",
+      -- Formatters
+      "pint", -- PHP
+      "prettier", -- JS/TS/HTML/CSS
+      "swiftformat", -- Swift
     },
+
+    automatic_installation = false,
   },
 }
