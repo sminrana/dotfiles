@@ -70,9 +70,5 @@ return {
     vim.keymap.set("n", "<leader>gH", "<Cmd>DiffviewFileHistory %<CR>", { desc = "Review: current file history" })
     vim.keymap.set("n", "<leader>gm", "<Cmd>DiffviewOpen origin/main<CR>", { desc = "Review: vs origin/main" })
     vim.keymap.set("n", "<leader>gp", "<Cmd>DiffviewOpen main...HEAD<CR>", { desc = "Review: current PR (vs main)" })
-
-    -- 🌍 GLOBAL HUNK NAVIGATION (WORKS EVERYWHERE)
-    vim.keymap.set("n", "]h", "]c", { desc = "Next hunk (global)" })
-    vim.keymap.set("n", "[h", "[c", { desc = "Prev hunk (global)" })
   end,
 }
