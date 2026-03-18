@@ -1,2 +1,82 @@
+gui:
+  # Side panel widths
+  sidePanelWidth: 0.25
+  expandFocusedSidePanel: true
+  mainPanelSplitMode: vertical # side-by-side diff
+  enlargedSideViewLocation: left
+
+  # Better visuals
+  theme:
+    lightTheme: false
+    activeBorderColor: [cyan, bold]
+    inactiveBorderColor: [white]
+    selectedLineBgColor: [blue]
+  nerdFontsVersion: "3" # if you use nerd fonts
+  showIcons: true
+  showFileTree: true # tree view for files (enterprise monorepos 🙌)
+  showRandomTip: false
+  showCommandLog: false # cleaner UI
+
 git:
   overrideGpg: true
+  paging:
+    colorArg: always
+    pager: delta --dark --side-by-side # use delta for beautiful diffs
+  commit:
+    signOff: false # set true if your org requires sign-offs
+  merging:
+    manualCommit: false
+    args: "--no-ff" # enforce merge commits (common in enterprise)
+  pull:
+    mode: "rebase" # rebase by default (cleaner history)
+  autoFetch: true
+  autoRefresh: true
+  branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --"
+
+os:
+  # Open files directly in Neovim
+  edit: "nvim {{filename}}"
+  editAtLine: "nvim +{{line}} {{filename}}"
+  editAtLineAndWait: "nvim +{{line}} {{filename}}"
+  openDirInEditor: "nvim {{dir}}"
+  suspend: true # suspend lazygit and drop into nvim (crucial!)
+
+keybinding:
+  universal:
+    quit: "q"
+    return: "<esc>"
+    togglePanel: "<tab>"
+    prevItem: "<up>"
+    nextItem: "<down>"
+    scrollLeft: "H"
+    scrollRight: "L"
+    filteringMenu: "<c-s>"
+
+  files:
+    ignoreFile: "i"
+    refreshFiles: "<c-r>"
+
+  branches:
+    # Fast branch checkout with fuzzy search
+    checkoutBranchByName: "c"
+    rebaseBranch: "r"
+    mergeIntoCurrentBranch: "M"
+    fastForward: "f"
+    createPullRequest: "o" # opens PR in browser
+    viewGitFlowOptions: "i"
+
+  commits:
+    squashDown: "s"
+    renameCommit: "r"
+    renameCommitWithEditor: "R"
+    amendToCommit: "A"
+    copyCommitMessageToClipboard: "<c-y>"
+    revertCommit: "t"
+    cherryPickCopy: "c"
+    cherryPickCopyRange: "C"
+    pasteCommits: "v" # cherry-pick paste
+    markAsBaseCommit: "b" # for fixup workflows
+
+  stash:
+    popStash: "p"
+    renameStash: "r"
