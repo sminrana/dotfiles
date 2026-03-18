@@ -13,8 +13,8 @@ return {
       untracked = { text = "┆" },
     },
 
-    show_deleted = true,
-    word_diff = true,
+    show_deleted = false,
+    word_diff = false,
 
     -- Inline blame (GitLens-style)
     current_line_blame = true,
