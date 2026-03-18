@@ -131,6 +131,4 @@ return {
       },
     },
   },
-
-  { "mfussenegger/nvim-dap", lazy = true }, -- Debugging
 }
