@@ -13,6 +13,9 @@ return {
       untracked = { text = "┆" },
     },
 
+    show_deleted = true,
+    word_diff = true,
+
     -- Inline blame (GitLens-style)
     current_line_blame = true,
     current_line_blame_opts = {
@@ -57,4 +60,5 @@ return {
     -- Preview window border
     set(0, "GitSignsPreviewBorder", { fg = "#79C0FF" })
   end,
+
 }
