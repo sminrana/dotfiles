@@ -68,7 +68,5 @@ return {
     vim.keymap.set("n", "<leader>gD", "<Cmd>DiffviewClose<CR>", { desc = "Review: close Diffview" })
     vim.keymap.set("n", "<leader>gF", "<Cmd>DiffviewFileHistory<CR>", { desc = "Review: files history" })
     vim.keymap.set("n", "<leader>gH", "<Cmd>DiffviewFileHistory %<CR>", { desc = "Review: current file history" })
-    vim.keymap.set("n", "<leader>gm", "<Cmd>DiffviewOpen origin/main<CR>", { desc = "Review: vs origin/main" })
-    vim.keymap.set("n", "<leader>gp", "<Cmd>DiffviewOpen main...HEAD<CR>", { desc = "Review: current PR (vs main)" })
   end,
 }
