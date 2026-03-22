@@ -236,6 +236,13 @@ map("n", prefix .. "fa", function()
   vim.notify("Opened in default app: " .. path, vim.log.levels.INFO)
 end, { desc = "Open in default app" })
 
+local yazi_cmds = {
+  { "fy", "<cmd>Yazi toggle<cr>", "Yazi toggle" },
+}
+for _, k in ipairs(yazi_cmds) do
+  map({ "n", "v" }, prefix .. k[1], k[2], { desc = k[3] })
+end
+
 -- ================================ COPY PATHS ================================
 -- jy = Yank (copy) paths
 
@@ -581,18 +588,6 @@ map("n", prefix .. "ne", function()
   require("scissors").editSnippet()
 end, { desc = "Edit snippet" })
 
--- ================================ FILE MANAGER ================================
--- jj = Yazi
-
-local yazi_cmds = {
-  { "jT", "<cmd>Yazi toggle<cr>", "Yazi toggle" },
-}
-for _, k in ipairs(yazi_cmds) do
-  map({ "n", "v" }, prefix .. k[1], k[2], { desc = k[3] })
-end
-
--- ================================ LSP ================================
--- jl = (already used) -> use jd for diagnostics
 
 map("n", prefix .. "de", function()
   local bufnr = vim.api.nvim_get_current_buf()
