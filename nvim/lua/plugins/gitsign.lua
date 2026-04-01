@@ -59,6 +59,12 @@ return {
 
     -- Preview window border
     set(0, "GitSignsPreviewBorder", { fg = "#79C0FF" })
+
+    -- Exit diff view explicitly
+    vim.keymap.set("n", "<leader>ghq", function()
+      vim.cmd("diffoff!")
+      vim.cmd("only")
+    end, { desc = "Exit diff view" })
   end,
 
 }
