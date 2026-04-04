@@ -5,7 +5,9 @@ return {
     "rcarriga/nvim-dap-ui",
     "jay-babu/mason-nvim-dap.nvim",
     "leoluz/nvim-dap-go",
-    "theHamsta/nvim-dap-virtual-text"
+    "theHamsta/nvim-dap-virtual-text",
+    "mfussenegger/nvim-dap-python",
+    "nvim-neotest/nvim-nio"
   },
 
   config = function ()
@@ -52,3 +54,4 @@ return {
     },
   },
 }
+
