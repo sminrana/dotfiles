@@ -338,8 +338,9 @@ function M.upload_adjacent_html()
 end
 
 local prefix = "<leader>j"
-map("n", prefix .. "wp", M.upload_current_buffer, { desc = "Upload current buffer to WordPress (draft)" })
+map("n", prefix .. "wp", M.upload_current_buffer, { desc = "MD: Upload current buffer to WordPress (draft)" })
 map("n", prefix .. "mh", M.export_html_current_buffer, { desc = "Export Markdown to HTML file" })
-map("n", prefix .. "wh", M.upload_adjacent_html, { desc = "Publish adjacent HTML to WordPress" })
 
+map("n", prefix .. "wh", M.upload_adjacent_html, { desc = "HTML: Publish adjacent HTML to WordPress" })
 return M
+
