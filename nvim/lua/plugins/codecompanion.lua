@@ -20,18 +20,19 @@ return {
         },
       },
     },
-    -- Test with nvim-cmp
-    -- { "hrsh7th/nvim-cmp" },
   },
   opts = {
-    --Refer to: https://github.com/olimorris/codecompanion.nvim/blob/main/lua/codecompanion/config.lua
+    adapters = {
+      copilot = function()
+        return require("codecompanion.adapters").extend("copilot")
+      end,
+    },
     strategies = {
       chat = { adapter = "copilot" },
       inline = { adapter = "copilot" },
+      agent = { adapter = "copilot" },
     },
-    opts = {
-      log_level = "DEBUG",
-    },
+    log_level = "DEBUG",
   },
   keys = {
     { "<leader>axa", "<cmd>CodeCompanionActions<cr>", desc = "CodeCompanion Actions" },
@@ -40,3 +41,4 @@ return {
     { "<leader>axi", ":'<,'>CodeCompanion<cr>", mode = "v", desc = "CodeCompanion Inline (Selection)" },
   },
 }
+
