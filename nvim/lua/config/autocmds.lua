@@ -97,16 +97,6 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Automatically remove trailing blank lines on save
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = autocmds_group,
-  callback = function()
-    if vim.fn.line("$") < 2500 then
-      vim.cmd([[silent! %s#\($\n\s*\)\+\%$##]])
-    end
-  end,
-})
-
 -- Restore cursor position when reopening a file
 vim.api.nvim_create_autocmd("BufReadPost", {
   group = autocmds_group,
@@ -123,9 +113,14 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = autocmds_group,
   callback = function()
+    local view = vim.fn.winsaveview()
     if vim.fn.getline("$") ~= "" then
       vim.fn.append(vim.fn.line("$"), "")
     end
+    if vim.fn.line("$") < 2500 then
+      vim.cmd([[silent! %s#\($\n\s*\)\+\%$##]])
+    end
+    vim.fn.winrestview(view)
   end,
 })
 
@@ -169,3 +164,4 @@ vim.api.nvim_create_autocmd({ "FocusLost", "WinLeave" }, {
     end
   end,
 })
+
