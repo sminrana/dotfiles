@@ -9,3 +9,5 @@ data
 lua/**/.DS_Store
 snippets
 pack/**
+lazy-lock.json
+
