@@ -1,5 +1,6 @@
 return {
   "chrisgrieser/nvim-scissors",
+  commit = "855ce6ba0c0bf3b03428d6352f61940cdcf332f3",
   config = function()
     local snippet_path = vim.fn.expand("~/.config/nvim/snippets")
 

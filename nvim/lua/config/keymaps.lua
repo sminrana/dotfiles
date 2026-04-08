@@ -580,12 +580,28 @@ end, { desc = "Open modified files" })
 -- ================================ SNIPPETS ================================
 -- jn = Snippets
 
+local function scissors_action(action)
+  local ok, scissors = pcall(require, "scissors")
+  if not ok or type(scissors) ~= "table" then
+    vim.notify("nvim-scissors is not available", vim.log.levels.ERROR)
+    return
+  end
+
+  local fn = scissors[action]
+  if type(fn) ~= "function" then
+    vim.notify("nvim-scissors API changed: missing " .. action, vim.log.levels.ERROR)
+    return
+  end
+
+  fn()
+end
+
 map({ "n", "x" }, prefix .. "na", function()
-  require("scissors").addNewSnippet()
+  scissors_action("addNewSnippet")
 end, { desc = "Add new snippet" })
 
 map("n", prefix .. "ne", function()
-  require("scissors").editSnippet()
+  scissors_action("editSnippet")
 end, { desc = "Edit snippet" })
 
 

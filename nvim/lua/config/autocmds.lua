@@ -164,4 +164,3 @@ vim.api.nvim_create_autocmd({ "FocusLost", "WinLeave" }, {
     end
   end,
 })
-
