@@ -1,15 +1,15 @@
 theme = molokai
 term = xterm-256color
 
-font-family = JetBrainsMono NFM Regular
-font-family-bold = JetBrainsMono NFM Bold
-font-family-italic = JetBrainsMono NFM Italic
-font-family-bold-italic = JetBrainsMono NFM Bold Italic
+font-family = JetBrainsMono Nerd Font
+font-family-bold = JetBrainsMono Nerd Font Bold
+font-family-italic = JetBrainsMono Nerd Font Italic
+font-family-bold-italic = JetBrainsMono Nerd Font Italic
 font-style = "Regular"
 font-style-bold = "Bold"
 font-style-italic = "Italic"
 font-thicken = false
-font-size = 15
+font-size = 16
 font-feature = calt
 font-feature = liga
 font-feature = ss01
@@ -22,10 +22,12 @@ font-feature = ss09
 font-feature = ss08
 
 macos-non-native-fullscreen=visible-menu
+fullscreen = non-native-visible-menu
 macos-option-as-alt = true
 macos-titlebar-style = hidden
 
 
+working-directory = home
 auto-update=download
 auto-update-channel=stable
 quit-after-last-window-closed = false
@@ -33,9 +35,9 @@ confirm-close-surface=false
 clipboard-read = allow
 mouse-hide-while-typing = true
 
-background-opacity = 1.0
+background-opacity = 0.97
 unfocused-split-opacity = 0.35
-background-blur=1
+background-blur=false
 
 
 adjust-cell-width = 0
@@ -44,8 +46,8 @@ window-colorspace = display-p3
 window-save-state = always
 window-theme = auto
 window-decoration=true
-window-padding-y = 10
-window-padding-x = 10
+window-padding-y = 0
+window-padding-x = 2
 window-padding-color = extend
 window-padding-balance = true
 
@@ -68,3 +70,20 @@ keybind = super+shift+down=resize_split:down,10
 keybind = super+shift+e=equalize_splits
 keybind = super+shift+t=toggle_tab_overview
 keybind = global:cmd+shift+e=toggle_quick_terminal
+
+# tmux keybindings (from alacritty config)
+keybind = super+a=text:\x01
+keybind = super+t=text:\x01c
+keybind = super+[=text:\x01p
+keybind = super+]=text:\x01n
+keybind = super+.=text:\x01o
+keybind = super+shift+x=text:\x01X
+keybind = super+1=text:\x011
+keybind = super+2=text:\x012
+keybind = super+3=text:\x013
+keybind = super+4=text:\x014
+keybind = super+5=text:\x015
+keybind = super+6=text:\x016
+keybind = super+7=text:\x017
+keybind = super+8=text:\x018
+keybind = super+9=text:\x019
