@@ -1,13 +1,10 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
-local mux = wezterm.mux
-wezterm.on('gui-startup', function(window)
-  local tab, pane, window = mux.spawn_window(cmd or {})
-  local gui_window = window:gui_window();
-  gui_window:perform_action(wezterm.action.ToggleFullScreen, pane)
+wezterm.on("gui-startup", function()
+  local _, _, window = wezterm.mux.spawn_window({})
+  window:gui_window():maximize()
 end)
-
 
 -- Start with Dawn theme so the rotator uses it as the default
 -- config.color_scheme = "Tokyo Night"
