@@ -1,10 +1,7 @@
 return {
-    "tiagovla/tokyodark.nvim",
-    opts = {
-        -- custom options here
-    },
+   "ellisonleao/gruvbox.nvim",
     config = function(_, opts)
-        require("tokyodark").setup(opts) -- calling setup is optional
-        vim.cmd [[colorscheme tokyodark]]
+        vim.opt.background = "dark"
+        vim.cmd [[colorscheme gruvbox]]
     end,
 }
