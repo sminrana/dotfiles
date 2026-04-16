@@ -1,14 +1,11 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
-wezterm.on("gui-startup", function()
-  local _, _, window = wezterm.mux.spawn_window({})
-  window:gui_window():maximize()
-end)
+
 
 -- Start with Dawn theme so the rotator uses it as the default
 -- config.color_scheme = "Tokyo Night"
-config.color_scheme = 'tokyonight'
+config.color_scheme = 'Gruvbox Dark (Gogh)'
 
 config.max_fps = 120
 config.scrollback_lines = 3500
@@ -36,7 +33,7 @@ config.hide_tab_bar_if_only_one_tab = true
 config.window_decorations = "RESIZE | MACOS_FORCE_DISABLE_SHADOW"
 config.use_fancy_tab_bar = false
 config.window_close_confirmation = 'NeverPrompt'
-config.native_macos_fullscreen_mode = true
+config.native_macos_fullscreen_mode = false
 config.cursor_blink_rate = 0
 
 
