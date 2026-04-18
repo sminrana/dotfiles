@@ -8,26 +8,23 @@ local config = wezterm.config_builder()
 config.color_scheme = 'Gruvbox Dark (Gogh)'
 
 config.max_fps = 120
-config.scrollback_lines = 3500
+config.scrollback_lines = 5000
 config.enable_tab_bar = false
-config.enable_scroll_bar = true
-config.animation_fps = 60
+config.enable_scroll_bar = false
+config.animation_fps = 1
 
 
 config.bold_brightens_ansi_colors = "No"
-config.font = wezterm.font({ family = "JetBrains Mono", weight = "Light" })
-config.font_size = 16.0
-config.freetype_load_target = "Light"
-config.freetype_render_target = "Light"
+config.font = wezterm.font({ family = "Menlo"})
+config.font_size = 14.0
 config.front_end = "WebGpu"
 config.webgpu_power_preference = "HighPerformance"
 config.cell_width = 1.0
-config.freetype_load_flags = "NO_HINTING"
 config.default_cursor_style = "BlinkingBar"
 -- Transparency OFF (important)
 config.window_background_opacity = 1.0
 config.macos_window_background_blur = 0
-
+config.term = "xterm-256color"
 config.hide_tab_bar_if_only_one_tab = true
 
 config.window_decorations = "RESIZE | MACOS_FORCE_DISABLE_SHADOW"
@@ -35,8 +32,8 @@ config.use_fancy_tab_bar = false
 config.window_close_confirmation = 'NeverPrompt'
 config.native_macos_fullscreen_mode = false
 config.cursor_blink_rate = 0
-
-
+config.enable_wayland = false
+config.adjust_window_size_when_changing_font_size = false
 
 -- Input latency tuning
 config.send_composed_key_when_left_alt_is_pressed = true
