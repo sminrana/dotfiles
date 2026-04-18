@@ -16,7 +16,7 @@ config.animation_fps = 1
 
 config.bold_brightens_ansi_colors = "No"
 config.font = wezterm.font({ family = "Menlo"})
-config.font_size = 14.0
+config.font_size = 15.0
 config.front_end = "WebGpu"
 config.webgpu_power_preference = "HighPerformance"
 config.cell_width = 1.0
