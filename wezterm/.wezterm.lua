@@ -8,11 +8,11 @@ local config = wezterm.config_builder()
 config.color_scheme = 'Gruvbox Dark (Gogh)'
 
 config.max_fps = 120
-config.scrollback_lines = 5000
+config.scrollback_lines = 3000
 config.enable_tab_bar = false
 config.enable_scroll_bar = false
 config.animation_fps = 1
-
+config.check_for_updates = false
 
 config.bold_brightens_ansi_colors = "No"
 config.font = wezterm.font({ family = "Menlo"})
@@ -30,7 +30,7 @@ config.hide_tab_bar_if_only_one_tab = true
 config.window_decorations = "RESIZE | MACOS_FORCE_DISABLE_SHADOW"
 config.use_fancy_tab_bar = false
 config.window_close_confirmation = 'NeverPrompt'
-config.native_macos_fullscreen_mode = false
+config.native_macos_fullscreen_mode = true
 config.cursor_blink_rate = 0
 config.enable_wayland = false
 config.adjust_window_size_when_changing_font_size = false
@@ -47,8 +47,8 @@ config.window_padding = {
 }
 
 config.inactive_pane_hsb = {
-	saturation = 0.3,
-	brightness = 0.3,
+	saturation = 1.0,
+	brightness = 1.0,
 }
 
 local act = wezterm.action
