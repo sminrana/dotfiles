@@ -56,6 +56,7 @@ config.disable_default_key_bindings = true
 
 local act = wezterm.action
 config.keys = {
+
 	-- follow Alacritty tmux-friendly Command bindings
 	{ mods = "CMD", key = "s", action = act.SendKey({ mods = "CTRL", key = "s" }) },
 	{ key = "a", mods = "CMD", action = act.SendKey({ mods = "CTRL", key = "a" }) },
@@ -100,8 +101,8 @@ config.keys = {
 -- use explicit mouse/key bindings below instead.
 
 -- Add common copy/paste shortcuts (Cmd and Ctrl+Shift)
-table.insert(config.keys, { key = "C", mods = "CMD", action = wezterm.action.CopyTo("Clipboard") })
-table.insert(config.keys, { key = "V", mods = "CMD", action = wezterm.action.PasteFrom("Clipboard") })
+table.insert(config.keys, { key = "c", mods = "CMD", action = wezterm.action.CopyTo("Clipboard") })
+table.insert(config.keys, { key = "v", mods = "CMD", action = wezterm.action.PasteFrom("Clipboard") })
 table.insert(config.keys, { key = "C", mods = "CTRL|SHIFT", action = wezterm.action.CopyTo("Clipboard") })
 table.insert(config.keys, { key = "V", mods = "CTRL|SHIFT", action = wezterm.action.PasteFrom("Clipboard") })
 
