@@ -79,21 +79,8 @@ config.keys = {
 	{ key = "8", mods = "CMD", action = act.SendString("\x018") },
 	{ key = "9", mods = "CMD", action = act.SendString("\x019") },
 
-	-- keep/manage panes and tabs shortcuts
-	{ key = "d", mods = "CMD|SHIFT", action = wezterm.action.SplitVertical },
-	{ key = "d", mods = "CMD", action = wezterm.action.SplitHorizontal },
-	{ key = "LeftArrow", mods = "CMD", action = wezterm.action.ActivatePaneDirection("Left") },
-	{ key = "RightArrow", mods = "CMD", action = wezterm.action.ActivatePaneDirection("Right") },
-	{ key = "UpArrow", mods = "CMD", action = wezterm.action.ActivatePaneDirection("Up") },
-	{ key = "DownArrow", mods = "CMD", action = wezterm.action.ActivatePaneDirection("Down") },
-	{ key = "w", mods = "CMD", action = wezterm.action.CloseCurrentTab({ confirm = true }) },
-	{ key = "t", mods = "CMD|SHIFT", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
 	{ key = "f", mods = "CMD|SHIFT", action = wezterm.action.ToggleFullScreen },
-	{ key = "p", mods = "CMD|SHIFT", action = wezterm.action({ PaneSelect = { alphabet = "0123456789" } }) },
-	{ key = "LeftArrow", mods = "CMD|SHIFT", action = act.AdjustPaneSize({ "Left", 5 }) },
-	{ key = "DownArrow", mods = "CMD|SHIFT", action = act.AdjustPaneSize({ "Down", 5 }) },
-	{ key = "UpArrow", mods = "CMD|SHIFT", action = act.AdjustPaneSize({ "Up", 5 }) },
-	{ key = "RightArrow", mods = "CMD|SHIFT", action = act.AdjustPaneSize({ "Right", 5 }) },
+	{ key = "q", mods = "CMD", action = wezterm.action.QuitApplication },
 }
 
 -- Make copy/paste easier
