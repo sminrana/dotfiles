@@ -1,7 +1,8 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
-
+config.initial_rows = 40
+config.initial_cols = 140
 
 -- Start with Dawn theme so the rotator uses it as the default
 -- config.color_scheme = "Tokyo Night"
@@ -19,6 +20,7 @@ config.font = wezterm.font({ family = "Menlo"})
 config.font_size = 15.0
 config.front_end = "WebGpu"
 config.webgpu_power_preference = "HighPerformance"
+config.prefer_egl = true
 config.cell_width = 1.0
 config.default_cursor_style = "BlinkingBar"
 -- Transparency OFF (important)
@@ -27,10 +29,10 @@ config.macos_window_background_blur = 0
 config.term = "xterm-256color"
 config.hide_tab_bar_if_only_one_tab = true
 
-config.window_decorations = "RESIZE | MACOS_FORCE_DISABLE_SHADOW"
+config.window_decorations = "RESIZE"
 config.use_fancy_tab_bar = false
 config.window_close_confirmation = 'NeverPrompt'
-config.native_macos_fullscreen_mode = true
+config.native_macos_fullscreen_mode = false
 config.cursor_blink_rate = 0
 config.enable_wayland = false
 config.adjust_window_size_when_changing_font_size = false
@@ -38,7 +40,6 @@ config.adjust_window_size_when_changing_font_size = false
 -- Input latency tuning
 config.send_composed_key_when_left_alt_is_pressed = true
 config.use_dead_keys = false
-
 config.window_padding = {
 	left = 0,
 	right = 0,
@@ -50,6 +51,8 @@ config.inactive_pane_hsb = {
 	saturation = 1.0,
 	brightness = 1.0,
 }
+
+config.disable_default_key_bindings = true
 
 local act = wezterm.action
 config.keys = {
