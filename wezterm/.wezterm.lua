@@ -92,6 +92,22 @@ table.insert(config.keys, { key = "c", mods = "CMD", action = wezterm.action.Cop
 table.insert(config.keys, { key = "v", mods = "CMD", action = wezterm.action.PasteFrom("Clipboard") })
 table.insert(config.keys, { key = "C", mods = "CTRL|SHIFT", action = wezterm.action.CopyTo("Clipboard") })
 table.insert(config.keys, { key = "V", mods = "CTRL|SHIFT", action = wezterm.action.PasteFrom("Clipboard") })
+table.insert(config.keys, {
+  key = "=",
+  mods = "CMD",
+  action = act.IncreaseFontSize,
+})
+
+table.insert(config.keys, {
+  key = "-",
+  mods = "CMD",
+  action = act.DecreaseFontSize,
+})
+table.insert(config.keys, {
+  key = "0",
+  mods = "CMD",
+  action = act.ResetFontSize,
+})
 
 -- Copy selection to clipboard on mouse release
 config.mouse_bindings = {
