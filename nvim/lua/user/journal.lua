@@ -6,7 +6,7 @@ local function create_note(dir, template_content)
     vim.fn.mkdir(expanded_dir, "p")
   end
 
-  local filename = os.date("%Y-%m-%d-%H%M") .. ".md"
+  local filename = os.date("%Y-%m-%d") .. ".md"
   local filepath = expanded_dir .. "/" .. filename
 
   if vim.fn.filereadable(filepath) == 1 then
