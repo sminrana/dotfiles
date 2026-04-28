@@ -57,8 +57,8 @@ config.disable_default_key_bindings = true
 local act = wezterm.action
 config.keys = {
 
-	-- follow Alacritty tmux-friendly Command bindings
-	{ mods = "CMD", key = "s", action = act.SendKey({ mods = "CTRL", key = "s" }) },
+	-- follow tmux-friendly Command bindings
+	{ key = "s", mods = "CMD", action = act.SendKey({ mods = "CTRL", key = "s" }) },
 	{ key = "a", mods = "CMD", action = act.SendKey({ mods = "CTRL", key = "a" }) },
 
 	-- tmux window/pane commands via prefix (Ctrl-A) + key
@@ -67,6 +67,9 @@ config.keys = {
 	{ key = "]", mods = "CMD", action = act.SendString("\x01n") }, -- Cmd-] -> Ctrl-A n (next window)
 	{ key = ".", mods = "CMD", action = act.SendString("\x01o") }, -- Cmd-. -> Ctrl-A o (other pane)
 	{ key = "x", mods = "CMD|SHIFT", action = act.SendString("\x01X") }, -- Cmd-Shift-x -> Ctrl-A X (instant kill)
+
+	{ key = "(", mods = "CMD|SHIFT", action = act.SendString("\x01(") }, -- Cmd-[ -> Ctrl-A ( (prev session)
+	{ key = ")", mods = "CMD|SHIFT", action = act.SendString("\x01)") }, -- Cmd-] -> Ctrl-A ) (next session)
 
 	-- Cmd-1..Cmd-9 -> Ctrl-A 1..9 (switch tmux windows)
 	{ key = "1", mods = "CMD", action = act.SendString("\x011") },
