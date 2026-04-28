@@ -1,5 +1,4 @@
 return {
-
   -- =====================================
   -- MASON: Manage LSP, linters, formatters
   -- =====================================
@@ -108,7 +107,18 @@ return {
           stdin = true,
         },
         pint = { prefer_local = "vendor/bin", extra_args = { "--quiet" } },
-        prettier = { extra_args = { "--print-width", "100", "--single-quote", "--trailing-comma", "all" } },
+        prettier = {
+          extra_args = {
+            "--print-width",
+            "100",
+            "--single-quote",
+            "--trailing-comma",
+            "all",
+            "--tab-width",
+            "2",
+            "--no-use-tabs",
+          },
+        },
         swiftformat = { extra_args = { "--indent", "4" } },
       },
     },
