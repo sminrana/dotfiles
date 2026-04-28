@@ -62,7 +62,7 @@ config.keys = {
 	{ key = "a", mods = "CMD", action = act.SendKey({ mods = "CTRL", key = "a" }) },
 
 	-- tmux window/pane commands via prefix (Ctrl-A) + key
-	{ key = "t", mods = "CMD", action = act.SendString("\x01c") }, -- Cmd-t -> Ctrl-A then c (new tmux window)
+  { key = "t", mods = "CMD",       action = act.SendString("\x01c") }, -- Cmd-t -> Ctrl-A then c (new tmux window)
 	{ key = "[", mods = "CMD", action = act.SendString("\x01p") }, -- Cmd-[ -> Ctrl-A p (prev window)
 	{ key = "]", mods = "CMD", action = act.SendString("\x01n") }, -- Cmd-] -> Ctrl-A n (next window)
 	{ key = ".", mods = "CMD", action = act.SendString("\x01o") }, -- Cmd-. -> Ctrl-A o (other pane)
@@ -70,6 +70,7 @@ config.keys = {
 
 	{ key = "(", mods = "CMD|SHIFT", action = act.SendString("\x01(") }, -- Cmd-[ -> Ctrl-A ( (prev session)
 	{ key = ")", mods = "CMD|SHIFT", action = act.SendString("\x01)") }, -- Cmd-] -> Ctrl-A ) (next session)
+	{ key = "n", mods = "CMD|SHIFT", action = act.SendString("\x01N") }, -- Cmd-Shift-n -> Ctrl-A N (popup new/switch session)
 
 	-- Cmd-1..Cmd-9 -> Ctrl-A 1..9 (switch tmux windows)
 	{ key = "1", mods = "CMD", action = act.SendString("\x011") },
