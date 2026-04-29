@@ -181,6 +181,7 @@ vim.keymap.set("n", prefix .. "m6", function()
   end
 end, { desc = "Wrap line with * (italic)" })
 
+map("n", prefix .. "mp", "<Cmd>MarkdownPreview<CR>", { desc = "MarkdownPreview on Browser" })
 map("n", prefix .. "D", "<Cmd>tabe ~/Desktop/obs-v1/goals/daily.md<CR>", { desc = "Open daily goals" })
 map("n", prefix .. "N", "<Cmd>tabe ~/Desktop/obs-v1/notes.md<CR>", { desc = "Open notes" })
 map("n", prefix .. "Q", "<Cmd>qa<CR>", { noremap = true, silent = true, desc = "Quit all" })
