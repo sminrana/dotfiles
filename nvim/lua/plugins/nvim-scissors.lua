@@ -14,7 +14,15 @@ return {
               -- auto-detects filetype from buffer, no manual ft list needed
             },
           },
+
+          dadbod = {
+            name = "vim-dadbod-completion",
+            module = "vim_dadbod_completion.blink",
+          },
         },
+
+        -- enable source order
+        default = { "lsp", "path", "snippets", "dadbod" },
       },
     })
 

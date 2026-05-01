@@ -66,10 +66,11 @@ config.keys = {
 	{ key = "[", mods = "CMD", action = act.SendString("\x01p") }, -- Cmd-[ -> Ctrl-A p (prev window)
 	{ key = "]", mods = "CMD", action = act.SendString("\x01n") }, -- Cmd-] -> Ctrl-A n (next window)
 	{ key = ".", mods = "CMD", action = act.SendString("\x01o") }, -- Cmd-. -> Ctrl-A o (other pane)
+	{ key = "g", mods = "CMD", action = act.SendString("\x01g") }, -- Cmd-g -> Ctrl-A g (sessionizer)
 	{ key = "x", mods = "CMD|SHIFT", action = act.SendString("\x01X") }, -- Cmd-Shift-x -> Ctrl-A X (instant kill)
 
-	{ key = "(", mods = "CMD|SHIFT", action = act.SendString("\x01(") }, -- Cmd-[ -> Ctrl-A ( (prev session)
-	{ key = ")", mods = "CMD|SHIFT", action = act.SendString("\x01)") }, -- Cmd-] -> Ctrl-A ) (next session)
+	{ key = "(", mods = "CMD|SHIFT", action = act.SendString("\x01(") }, -- Cmd+SHIFT-( -> Ctrl-A ( (prev session)
+	{ key = ")", mods = "CMD|SHIFT", action = act.SendString("\x01)") }, -- Cmd+SHIFT-) -> Ctrl-A ) (next session)
 	{ key = "n", mods = "CMD|SHIFT", action = act.SendString("\x01N") }, -- Cmd-Shift-n -> Ctrl-A N (popup new/switch session)
 
 	-- Cmd-1..Cmd-9 -> Ctrl-A 1..9 (switch tmux windows)
