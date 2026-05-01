@@ -63,8 +63,6 @@ config.keys = {
 
 	-- tmux window/pane commands via prefix (Ctrl-A) + key
   { key = "t", mods = "CMD",       action = act.SendString("\x01c") }, -- Cmd-t -> Ctrl-A then c (new tmux window)
-	{ key = "[", mods = "CMD", action = act.SendString("\x01p") }, -- Cmd-[ -> Ctrl-A p (prev window)
-	{ key = "]", mods = "CMD", action = act.SendString("\x01n") }, -- Cmd-] -> Ctrl-A n (next window)
 	{ key = "{", mods = "CMD|SHIFT", action = act.SendString("\x01p") }, -- Cmd-Shift-[ -> Ctrl-A p (prev window)
 	{ key = "}", mods = "CMD|SHIFT", action = act.SendString("\x01n") }, -- Cmd-Shift-] -> Ctrl-A n (next window)
 	{ key = ".", mods = "CMD", action = act.SendString("\x01o") }, -- Cmd-. -> Ctrl-A o (other pane)
