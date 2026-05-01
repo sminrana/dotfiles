@@ -66,7 +66,7 @@ config.keys = {
 	{ key = "{", mods = "CMD|SHIFT", action = act.SendString("\x01p") }, -- Cmd-Shift-[ -> Ctrl-A p (prev window)
 	{ key = "}", mods = "CMD|SHIFT", action = act.SendString("\x01n") }, -- Cmd-Shift-] -> Ctrl-A n (next window)
 	{ key = ".", mods = "CMD", action = act.SendString("\x01o") }, -- Cmd-. -> Ctrl-A o (other pane)
-	{ key = "g", mods = "CMD", action = act.SendString("\x01g") }, -- Cmd-g -> Ctrl-A g (sessionizer)
+	{ key = "g", mods = "CMD|SHIFT", action = act.SendString("\x01g") }, -- Cmd-g -> Ctrl-A g (sessionizer)
 	{ key = "x", mods = "CMD|SHIFT", action = act.SendString("\x01X") }, -- Cmd-Shift-x -> Ctrl-A X (instant kill)
 
 	{ key = "(", mods = "CMD|SHIFT", action = act.SendString("\x01(") }, -- Cmd+SHIFT-( -> Ctrl-A ( (prev session)
