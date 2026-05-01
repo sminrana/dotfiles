@@ -19,6 +19,14 @@ return {
 
     init = function()
       vim.g.db_ui_use_nerd_fonts = 1
+      vim.g.db_ui_save_location = "~/Desktop/queries"
+
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "dbout",
+        callback = function()
+          vim.cmd("resize 30")
+        end,
+      })
     end,
 
     keys = {
@@ -36,7 +44,7 @@ return {
         "<leader>jdq",
         "<cmd>DBUIFindBuffer<cr>",
         desc = "Find DB Buffer",
-      },
+      }
     },
   },
 }
