@@ -86,6 +86,11 @@ config.keys = {
 
 	{ key = "f", mods = "CMD|SHIFT", action = wezterm.action.ToggleFullScreen },
 	{ key = "q", mods = "CMD", action = wezterm.action.QuitApplication },
+  {
+    key = 'H',
+    mods = 'CMD|SHIFT',
+    action = act.Search { CaseInSensitiveString = '' },
+  },
 }
 
 -- Make copy/paste easier
