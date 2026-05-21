@@ -736,7 +736,19 @@ map("n", prefix .. "H", function()
   vim.notify("cursorline: " .. (vim.opt.cursorline:get() and "on" or "off"))
 end, { desc = "Toggle cursorline" })
 
-map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down and center" })
-map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up and center" })
-map("n", "<C-f>", "<C-f>zz", { desc = "Page down and center" })
-map("n", "<C-b>", "<C-b>zz", { desc = "Page up and center" })
+-- Keep cursor centered while scrolling
+map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down and center", silent = true })
+map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up and center", silent = true })
+map("n", "<C-f>", "<C-f>zz", { desc = "Full-page down and center", silent = true })
+map("n", "<C-b>", "<C-b>zz", { desc = "Full-page up and center", silent = true })
+
+-- Keep search results centered too
+map("n", "n", "nzzzv", { desc = "Next search result centered", silent = true })
+map("n", "N", "Nzzzv", { desc = "Previous search result centered", silent = true })
+
+-- Better J/K with wrapped lines
+map("n", "j", "gj", { noremap = true, silent = true })
+map("n", "k", "gk", { noremap = true, silent = true })
+
+-- Join lines but keep cursor position
+map("n", "J", "mzJ`z", { desc = "Join lines keep cursor" })
