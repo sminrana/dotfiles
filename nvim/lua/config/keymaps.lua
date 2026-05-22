@@ -742,10 +742,6 @@ map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up and center", silent = true }
 map("n", "<C-f>", "<C-f>zz", { desc = "Full-page down and center", silent = true })
 map("n", "<C-b>", "<C-b>zz", { desc = "Full-page up and center", silent = true })
 
--- Keep search results centered too
-map("n", "n", "nzzzv", { desc = "Next search result centered", silent = true })
-map("n", "N", "Nzzzv", { desc = "Previous search result centered", silent = true })
-
 -- Better J/K with wrapped lines
 map("n", "j", "gj", { noremap = true, silent = true })
 map("n", "k", "gk", { noremap = true, silent = true })
