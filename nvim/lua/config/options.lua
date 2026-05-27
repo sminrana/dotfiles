@@ -23,6 +23,16 @@ opt.scrolloff = 8                  -- keep 8 lines above/below cursor
 opt.sidescrolloff = 8
 opt.wrap = true                    -- better long-line reading
 opt.linebreak = true               -- wrap at words, not mid-word
+opt.cursorline = true              -- highlight current line
+opt.cursorlineopt = "number,line"
+opt.guicursor = table.concat({
+  "n-v-c:block-blinkwait700-blinkon400-blinkoff250",
+  "i-ci-ve:ver25-blinkwait700-blinkon400-blinkoff250",
+  "r-cr:hor20-blinkwait700-blinkon400-blinkoff250",
+  "o:hor50",
+}, ",")
+vim.cmd([[highlight CursorLine cterm=NONE ctermbg=236 gui=NONE guibg=#3c3836]])
+vim.cmd([[highlight CursorLineNr gui=bold guifg=#fabd2f]])
 
 vim.g.lazyvim_picker = "fzf"
 vim.g.snacks_animate = false

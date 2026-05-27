@@ -33,7 +33,7 @@ config.window_decorations = "RESIZE"
 config.use_fancy_tab_bar = false
 config.window_close_confirmation = 'NeverPrompt'
 config.native_macos_fullscreen_mode = false
-config.cursor_blink_rate = 0
+config.cursor_blink_rate = 700
 config.enable_wayland = false
 config.adjust_window_size_when_changing_font_size = false
 
