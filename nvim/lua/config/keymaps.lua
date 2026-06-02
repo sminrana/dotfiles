@@ -745,6 +745,3 @@ map("n", "<C-b>", "<C-b>zz", { desc = "Full-page up and center", silent = true }
 -- Better J/K with wrapped lines
 map("n", "j", "gj", { noremap = true, silent = true })
 map("n", "k", "gk", { noremap = true, silent = true })
-
--- Join lines but keep cursor position
-map("n", "J", "mzJ`z", { desc = "Join lines keep cursor" })
