@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -eq 1 ]]; then
+  selected="$1"
+else
+  # Search common project and workspace directories
+  selected=$(find -L \
+    "${HOME}/work" \
+    "${HOME}/web" \
+    "${HOME}/.config" \
+    "${HOME}/ai" \
+    "${HOME}/Desktop/obs-v1" \
+    -mindepth 1 -maxdepth 2 -type d 2>/dev/null | fzf --prompt="📂 Projects: " --reverse)
+fi
+
+if [[ -z "${selected:-}" ]]; then
+  exit 0
+fi
+
+selected_name=$(basename "$selected" | tr '.' '_' | tr ':' '_')
+tmux_running=$(pgrep tmux || true)
+
+if [[ -z "${TMUX:-}" ]] && [[ -z "$tmux_running" ]]; then
+  tmux new-session -s "$selected_name" -c "$selected"
+  exit 0
+fi
+
+if ! tmux has-session -t="$selected_name" 2>/dev/null; then
+  tmux new-session -ds "$selected_name" -c "$selected"
+  tmux send-keys -t "$selected_name" "nvim ." C-m
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+  tmux switch-client -t "$selected_name"
+else
+  tmux attach-session -t "$selected_name"
+fi

@@ -5,3 +5,4 @@ lazygit/state.yml
 DBeaverData
 node_modules
 .DS_Store
+zsh/.secrets

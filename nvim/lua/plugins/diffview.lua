@@ -31,27 +31,32 @@ return {
       keymaps = {
         -- 🔍 DIFF VIEW (actual diff buffers)
         view = {
-          -- FILE navigation
-          ["[q"] = actions.select_prev_entry,
-          ["]q"] = actions.select_next_entry,
+          -- File navigation
+          { "n", "[q", actions.select_prev_entry, { desc = "Previous changed file" } },
+          { "n", "]q", actions.select_next_entry, { desc = "Next changed file" } },
+          -- Conflict navigation
+          { "n", "[h", actions.prev_conflict, { desc = "Previous conflict" } },
+          { "n", "]h", actions.next_conflict, { desc = "Next conflict" } },
+          { "n", "[x", actions.prev_conflict, { desc = "Previous conflict" } },
+          { "n", "]x", actions.next_conflict, { desc = "Next conflict" } },
           -- Actions
-          ["gf"] = actions.goto_file_edit,
-          ["<C-w>gf"] = actions.goto_file_tab,
-          ["<leader>e"] = actions.toggle_files,
-          ["p"] = actions.prev_conflict,
-          ["q"] = actions.close,
+          { "n", "gf", actions.goto_file_edit, { desc = "Open file in edit buffer" } },
+          { "n", "<C-w>gf", actions.goto_file_tab, { desc = "Open file in new tab" } },
+          { "n", "<leader>e", actions.toggle_files, { desc = "Toggle file panel" } },
+          { "n", "q", actions.close, { desc = "Close Diffview" } },
         },
 
         -- 📁 FILE PANEL
         file_panel = {
-          ["j"] = actions.next_entry,
-          ["k"] = actions.prev_entry,
-          ["<cr>"] = actions.select_entry,
-          ["s"] = actions.toggle_stage_entry,
-          ["R"] = actions.refresh_files,
-          ["[q"] = actions.select_prev_entry,
-          ["]q"] = actions.select_next_entry,
-          ["<leader>e"] = actions.toggle_files,
+          { "n", "j", actions.next_entry, { desc = "Next entry" } },
+          { "n", "k", actions.prev_entry, { desc = "Previous entry" } },
+          { "n", "<cr>", actions.select_entry, { desc = "Select entry" } },
+          { "n", "s", actions.toggle_stage_entry, { desc = "Stage / unstage entry" } },
+          { "n", "R", actions.refresh_files, { desc = "Refresh file list" } },
+          { "n", "[q", actions.select_prev_entry, { desc = "Previous changed file" } },
+          { "n", "]q", actions.select_next_entry, { desc = "Next changed file" } },
+          { "n", "<leader>e", actions.toggle_files, { desc = "Toggle file panel" } },
+          { "n", "q", actions.close, { desc = "Close Diffview" } },
         },
       },
 
