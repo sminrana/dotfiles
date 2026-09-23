@@ -32,7 +32,7 @@ function M.create_journal_note()
   local template = string.format([[# Date: %s
 ]], date)
 
-  create_note("~/Desktop/obs-v1/90-Journals", template)
+  create_note("/Volumes/localhost/Notes/90-Journals", template)
 end
 
 

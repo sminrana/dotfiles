@@ -298,11 +298,11 @@ map("n", prefix .. "sw", function()
 end, { desc = "Search in ~/work" })
 
 map("n", prefix .. "sx", function()
-  require("fzf-lua").live_grep({ cwd = "~/Desktop/obs-v1/" })
+  require("fzf-lua").live_grep({ cwd = "/Volumes/localhost/Notes/" })
 end, { desc = "Search in Notes" })
 
 map("n", prefix .. "ss", function()
-  require("fzf-lua").live_grep({ cwd = "~/Desktop/snippets/" })
+  require("fzf-lua").live_grep({ cwd = "~/MEGA/obs-v1/snippets/" })
 end, { desc = "Search in Snippets" })
 
 map("n", prefix .. "sb", function()
@@ -455,7 +455,7 @@ map("n", prefix .. "c1", function()
 end, { desc = "Run shell command" })
 
 map("n", prefix .. "c2", function()
-  local script_dir = vim.fn.expand("~/Desktop/scripts/")
+  local script_dir = vim.fn.expand("~/MEGA/obs-v1/scripts/")
   local files = {}
   local p = io.popen('ls -1 "' .. script_dir .. '"')
   if p then
@@ -478,7 +478,7 @@ map("n", prefix .. "c2", function()
     vim.notify("Running: " .. script_path, vim.log.levels.INFO)
     vim.cmd("terminal bash '" .. script_path .. "'")
   end)
-end, { desc = "Run script from ~/Desktop/scripts" })
+end, { desc = "Run script from ~/MEGA/Scripts" })
 
 -- ================================ UPLOAD / S3 ================================
 -- ju = Upload
