@@ -26,3 +26,8 @@ opt.linebreak = true               -- wrap at words, not mid-word
 vim.g.lazyvim_picker = "fzf"
 vim.g.snacks_animate = false
 vim.g.autoformat = true
+
+-- In multi-project / monorepo workspaces (apps/*, reporting),
+-- prevent LSP from locking the search scope to a single sub-folder.
+-- Using "cwd" ensures <leader><space> searches all files across the whole project.
+vim.g.root_spec = { "cwd" }
