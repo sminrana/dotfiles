@@ -106,7 +106,16 @@ return {
           args = { "format", "-" },
           stdin = true,
         },
-        pint = { prefer_local = "vendor/bin", extra_args = { "--quiet" } },
+        pint = {
+          command = require("conform.util").find_executable({
+            "vendor/bin/pint",
+            vim.fn.expand("~/.composer/vendor/bin/pint"),
+          }, "pint"),
+          cwd = require("conform.util").root_file({ "pint.json", "composer.json" }),
+          args = { "$FILENAME" },
+          stdin = false,
+          extra_args = { "--quiet" },
+        },
         prettier = {
           extra_args = {
             "--print-width",
