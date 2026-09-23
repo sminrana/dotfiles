@@ -85,7 +85,7 @@ config.keys = {
   { key = "9", mods = "CMD", action = act.SendString("\x019") },
 
   -- Tmux Pane Splitting & Zooming
-  { key = "d", mods = "CMD|SHIFT", action = act.SendString("\x01|") }, -- Cmd-d -> Split horizontal/right (C-a |)
+  { key = "d", mods = "CMD", action = act.SendString("\x01|") }, -- Cmd-d -> Split horizontal/right (C-a |)
   { key = "d", mods = "CMD|SHIFT", action = act.SendString("\x01_") }, -- Cmd-Shift-d -> Split vertical/down (C-a _)
   { key = "z", mods = "CMD", action = act.SendString("\x01z") }, -- Cmd-z -> Toggle pane zoom (C-a z)
   { key = ".", mods = "CMD", action = act.SendString("\x01o") }, -- Cmd-. -> Switch to other pane
