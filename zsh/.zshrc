@@ -170,11 +170,15 @@ alias gdnum="git diff --numstat"
 alias nest="lsof -iTCP -sTCP:ESTABLISHED"
 alias ni="netinfo"
 alias ns="netsusp"
+alias dk='docker kill $(docker ps -q)'
 alias ssdc='docker compose -f .devcontainer/docker-compose.yml up -d \
   mariadb redis mailpit phpmyadmin \
   middleware-init middleware-php-fpm middleware-nginx \
   middleware-php-worker middleware-bulk-worker middleware-informal-entry-worker \
   admin-init admin-portal node-init customer-portal'
+
+alias ssup='devcontainer up --workspace-folder /Users/smin/work/logx/shipsavvy-monorepo'
+alias ssclaude='devcontainer exec --workspace-folder /Users/smin/work/logx/shipsavvy-monorepo claude'
 
 # Quick Tmux shortcuts
 alias ta="tmux attach-session -t"

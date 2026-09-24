@@ -1,46 +1,69 @@
-# Rio config adjusted to behave similarly to user's Alacritty config
+# ==============================================================================
+# Rio Terminal Configuration
+# Harmonized with Tmux, Neovim (Gruvbox Dark), and Zsh
+# Migrated from WezTerm configuration (~/.config/wezterm/.wezterm.lua)
+# ==============================================================================
 
-# Hide the cursor while typing
+# General Behavior
 hide-cursor-when-typing = true
-
-# Treat left Option as Alt (macOS)
 option-as-alt = 'left'
-
-# Start in home directory by default
 working-dir = "/Users/smin"
-draw-bold-text-with-light-colors = false
+draw-bold-text-with-light-colors = true
 confirm-before-quit = false
 
-
+# ==============================================================================
+# Navigation (Plain mode for seamless Tmux multiplexing)
+# ==============================================================================
+# "Plain" disables Rio's internal tab bar and window bindings so Tmux handles
+# all multiplexing without conflicts (matches WezTerm's enable_tab_bar = false)
 [navigation]
-mode = "Bookmark"
+mode = "Plain"
 
 [editor]
-program = "vi"
+program = "nvim"
 
+# ==============================================================================
+# Window Appearance & Geometry
+# ==============================================================================
 [window]
-colorspace = "display-p3"
-opacity = 0.97
-padding-x = 0
-padding-y = 0
+colorspace = "srgb"
+opacity = 1.0
+padding-x = 2
+padding-y = 2
 decorations = "Buttonless"
 blur = false
-mode = "Fullscreen"
+mode = "Windowed"
 
+# ==============================================================================
+# Cursor
+# ==============================================================================
+[cursor]
+shape = 'beam'
+blinking = false
+
+# ==============================================================================
+# Rendering & Performance
+# ==============================================================================
 [renderer]
-performance = "high"
-backend = "automatic"
+performance = "High"
+backend = "Metal"
 disable-unfocused-render = false
 level = 1
 
+# ==============================================================================
+# Keyboard Protocol
+# ==============================================================================
 [keyboard]
 use-kitty-keyboard-protocol = false
 disable-ctlseqs-alt = false
 ime-cursor-positioning = true
 
+# ==============================================================================
+# Typography (Medium / SemiBold weight for crisp, non-thin rendering on macOS)
+# ==============================================================================
 [fonts]
-# Base font size and family to match Alacritty
 size = 16.0
+hinting = true
 features = []
 use-drawable-chars = true
 symbol-map = []
@@ -49,40 +72,107 @@ additional-dirs = []
 
 [fonts.regular]
 family = "JetBrainsMono Nerd Font"
-style = "Normal"
+style = "Medium"
 width = "Normal"
-weight = 400
+weight = 600
 
 [fonts.bold]
 family = "JetBrainsMono Nerd Font"
-style = "Normal"
+style = "Bold"
 width = "Normal"
-weight = 700
+weight = 800
 
 [fonts.italic]
 family = "JetBrainsMono Nerd Font"
 style = "Italic"
 width = "Normal"
-weight = 400
+weight = 600
 
 [fonts.bold-italic]
 family = "JetBrainsMono Nerd Font"
-style = "Italic"
+style = "Bold Italic"
 width = "Normal"
-weight = 700
+weight = 800
 
+# ==============================================================================
+# Colors: Gruvbox Dark (Gogh) - Harmonized with Neovim & Tmux
+# ==============================================================================
+[colors]
+background = '#282828'
+foreground = '#ebdbb2'
+cursor = '#ebdbb2'
+vi-cursor = '#fe8019'
+selection-background = '#504945'
+selection-foreground = '#ebdbb2'
+
+# Normal Colors
+black   = '#282828'
+red     = '#cc241d'
+green   = '#98971a'
+yellow  = '#d79921'
+blue    = '#458588'
+magenta = '#b16286'
+cyan    = '#689d6a'
+white   = '#a89984'
+
+# Bright / Light Colors
+light-black   = '#928374'
+light-red     = '#fb4934'
+light-green   = '#b8bb26'
+light-yellow  = '#fabd2f'
+light-blue    = '#83a598'
+light-magenta = '#d3869b'
+light-cyan    = '#8ec07c'
+light-white   = '#ebdbb2'
+
+# Dim Colors
+dim-black = '#1d2021'
+
+# ==============================================================================
+# Keybindings: Native macOS shortcuts bridged to Tmux (Ctrl-A prefix)
+# Matches 1-to-1 with WezTerm configuration
+# ==============================================================================
 [bindings]
 keys = [
+	# Passthrough Modifiers
 	{ key = "s", with = "super", esc = "\u0013" },
 	{ key = "a", with = "super", esc = "\u0001" },
+
+	# Clipboard (Cmd+C / Cmd+V and Ctrl+Shift+C / Ctrl+Shift+V)
 	{ key = "c", with = "super", action = "Copy" },
 	{ key = "v", with = "super", action = "Paste" },
-	{ key = "t", with = "super", esc = "\u0001c" },
+	{ key = "c", with = "control | shift", action = "Copy" },
+	{ key = "v", with = "control | shift", action = "Paste" },
+
+	# Tmux Window Management
+	{ key = "t", with = "super", esc = "\u0001c" },         # Cmd-t -> New window (C-a c)
+	{ key = "w", with = "super", esc = "\u0001x" },         # Cmd-w -> Close pane with prompt (C-a x)
+	{ key = "w", with = "super | shift", esc = "\u0001X" }, # Cmd-Shift-w -> Instant kill pane (C-a X)
+	{ key = "x", with = "super | shift", esc = "\u0001X" }, # Cmd-Shift-x -> Instant kill pane (C-a X)
+
+	# Tmux Window Navigation (Previous / Next Window -> C-a p / C-a n)
+	# Triggered by Cmd-[, Cmd-], Cmd-Shift-{, Cmd-Shift-}
 	{ key = "[", with = "super", esc = "\u0001p" },
+	{ key = "[", with = "super | shift", esc = "\u0001p" },
+	{ key = "{", with = "super", esc = "\u0001p" },
+	{ key = "{", with = "super | shift", esc = "\u0001p" },
 	{ key = "]", with = "super", esc = "\u0001n" },
-	{ key = ".", with = "super", esc = "\u0001o" },
-	{ key = "x", with = "super|shift", esc = "\u0001X" },
-	{ key = "f", with = "super|shift", action = "ToggleFullscreen" },
+	{ key = "]", with = "super | shift", esc = "\u0001n" },
+	{ key = "}", with = "super", esc = "\u0001n" },
+	{ key = "}", with = "super | shift", esc = "\u0001n" },
+
+	# Tmux Session Navigation (Previous / Next Session -> C-a ( / C-a ))
+	# Triggered by Cmd-Shift-( / Cmd-Shift-) and Cmd-Shift-9 / Cmd-Shift-0
+	{ key = "9", with = "super | shift", esc = "\u0001(" },
+	{ key = "(", with = "super", esc = "\u0001(" },
+	{ key = "(", with = "super | shift", esc = "\u0001(" },
+	{ key = "0", with = "super | shift", esc = "\u0001)" },
+	{ key = ")", with = "super", esc = "\u0001)" },
+	{ key = ")", with = "super | shift", esc = "\u0001)" },
+	{ key = "[", with = "super | alt", esc = "\u0001(" },
+	{ key = "]", with = "super | alt", esc = "\u0001)" },
+
+	# Jump to Window (Cmd-1..9)
 	{ key = "1", with = "super", esc = "\u00011" },
 	{ key = "2", with = "super", esc = "\u00012" },
 	{ key = "3", with = "super", esc = "\u00013" },
@@ -91,16 +181,36 @@ keys = [
 	{ key = "6", with = "super", esc = "\u00016" },
 	{ key = "7", with = "super", esc = "\u00017" },
 	{ key = "8", with = "super", esc = "\u00018" },
-	{ key = "9", with = "super", esc = "\u00019" }
+	{ key = "9", with = "super", esc = "\u00019" },
+
+	# Tmux Pane Splitting & Zooming
+	{ key = "d", with = "super", esc = "\u0001|" },         # Cmd-d -> Split horizontal/right (C-a |)
+	{ key = "d", with = "super | shift", esc = "\u0001_" }, # Cmd-Shift-d -> Split vertical/down (C-a _)
+	{ key = "z", with = "super", esc = "\u0001z" },         # Cmd-z -> Toggle pane zoom (C-a z)
+	{ key = ".", with = "super", esc = "\u0001o" },         # Cmd-. -> Switch to other pane (C-a o)
+
+	# Floating Popups & Session Creation
+	{ key = "g", with = "super | shift", esc = "\u0001g" }, # Cmd-Shift-g -> Sessionizer popup (C-a g)
+	{ key = "n", with = "super | shift", esc = "\u0001N" }, # Cmd-Shift-n -> New session popup (C-a N)
+
+	# Search / Copy Mode & Clear History
+	{ key = "f", with = "super", esc = "\u0001[" },         # Cmd-f -> Tmux search / copy mode (C-a [)
+	{ key = "k", with = "super", action = "ClearHistory" },  # Cmd-k -> Clear terminal history
+
+	# Font Resizing
+	{ key = "=", with = "super", action = "IncreaseFontSize" },
+	{ key = "+", with = "super", action = "IncreaseFontSize" },
+	{ key = "-", with = "super", action = "DecreaseFontSize" },
+	{ key = "0", with = "super", action = "ResetFontSize" },
+
+	# Window Controls
+	{ key = "f", with = "super | shift", action = "ToggleFullscreen" },
+	{ key = "q", with = "super", action = "Quit" }
 ]
 
-# Notes:
-# - Some Alacritty-specific options (live_config_reload, dynamic_title, semantic_escape_chars)
-#   do not have direct Rio equivalents, so closest matches are applied.
-# - If any key bindings behave differently, we can tweak their `esc` sequences or use
-#   Rio actions instead of raw escape sequences.
-# blinking-interval = 800
-
+# ==============================================================================
+# Shell Program (Bootstraps Tmux session WS-1 via helper `t`)
+# ==============================================================================
 [shell]
 program = "/bin/zsh"
 args = ["-i", "-c", "t; exec zsh"]
