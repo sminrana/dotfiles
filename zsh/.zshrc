@@ -179,6 +179,7 @@ alias ssdc='docker compose -f .devcontainer/docker-compose.yml up -d \
 
 alias ssup='devcontainer up --workspace-folder /Users/smin/work/logx/shipsavvy-monorepo'
 alias ssclaude='devcontainer exec --workspace-folder /Users/smin/work/logx/shipsavvy-monorepo claude'
+alias drivesync='rclone bisync ~/MEGA Drive:MEGA  --verbose'
 
 # Quick Tmux shortcuts
 alias ta="tmux attach-session -t"
