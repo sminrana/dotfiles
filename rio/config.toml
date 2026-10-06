@@ -185,8 +185,8 @@ keys = [
 	{ key = "9", with = "super", esc = "\u00019" },
 
 	# Tmux Pane Splitting & Zooming
-	{ key = "d", with = "super", esc = "\u0001|" },         # Cmd-d -> Split horizontal/right (C-a |)
-	{ key = "d", with = "super | shift", esc = "\u0001_" }, # Cmd-Shift-d -> Split vertical/down (C-a _)
+	{ key = "\\", with = "super | shift", esc = "\u0001|" },         # Cmd-d -> Split horizontal/right (C-a |)
+	{ key = "-", with = "super | shift", esc = "\u0001_" }, # Cmd-Shift-d -> Split vertical/down (C-a _)
 	{ key = "z", with = "super", esc = "\u0001z" },         # Cmd-z -> Toggle pane zoom (C-a z)
 	{ key = ".", with = "super", esc = "\u0001o" },         # Cmd-. -> Switch to other pane (C-a o)
 
