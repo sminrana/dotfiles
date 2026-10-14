@@ -1,9 +1,3 @@
-# ==============================================================================
-# Powerlevel10k Instant Prompt (must stay close to the top of ~/.zshrc)
-# ==============================================================================
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
 
 # ==============================================================================
 # Deduplicated Path & Environment Setup
@@ -13,54 +7,19 @@ typeset -U path PATH fpath FPATH
 export LANG="en_US.UTF-8"
 export PIP_REQUIRE_VIRTUALENV=true
 export EDITOR="nvim"
-export VISUAL="nvim"
-export GPG_TTY=$(tty)
+export VISUAL="nvim"s
 
-# Homebrew configuration (using local prefix)
-export HOMEBREW_PREFIX="${HOME}/.local"
-export HOMEBREW_CELLAR="${HOMEBREW_PREFIX}/Cellar"
-export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
-export HOMEBREW_CASK_OPTS="${HOME}/Applications"
+# ==============================================================================
+# Homebrew Configuration
+# ==============================================================================
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 
-# Static tool paths (eliminates slow $(brew --prefix) subshell overhead)
-export SSL_CERT_FILE="${HOMEBREW_PREFIX}/etc/ca-certificates/cert.pem"
-export NODE_EXTRA_CA_CERTS="${HOME}/.local/etc/ssl/cert.pem"
-export JAVA_HOME="${HOMEBREW_PREFIX}/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
-export DOCKER_HOST="unix://${HOME}/.docker/run/docker.sock"
-export RUBYOPT="-ropenssl"
-export LDFLAGS="-L/usr/local/opt/openssl/lib"
-export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 export ANDROID_HOME="${HOME}/Library/Android/sdk"
 export ANDROID_SDK_ROOT="${ANDROID_HOME}"
 
-# Deduplicated PATH entries (front-loaded in order of precedence)
-path=(
-  "${HOMEBREW_PREFIX}/bin"
-  "${HOMEBREW_PREFIX}/sbin"
-  "${HOME}/.local/bin"
-  "${HOME}/.local/php/bin"
-  "${HOMEBREW_PREFIX}/opt/node@22/bin"
-  "${HOMEBREW_PREFIX}/opt/python@3.9/libexec/bin"
-  "${HOMEBREW_PREFIX}/opt/mysql-client@8.4/bin"
-  "${JAVA_HOME}/bin"
-  "${HOME}/.cargo/bin"
-  "${HOME}/.composer/vendor/bin"
-  "${HOME}/.docker/bin"
-  "${HOME}/.gem/bin"
-  "${HOME}/.rbenv/shims"
-  "${ANDROID_HOME}/emulator"
-  "${ANDROID_HOME}/platform-tools"
-  "${ANDROID_HOME}/tools"
-  "${ANDROID_HOME}/tools/bin"
-  "${HOME}/Library/Application Support/Code/User/globalStorage/ms-vscode-remote.remote-containers/cli-bin"
-  $path
-)
-
-# Load Ruby gem path if available
-if [ -d "${HOME}/.local/opt/ruby/bin" ]; then
-  path=("${HOME}/.local/opt/ruby/bin" "${HOME}/.gem/ruby/3.4.0/bin" $path)
-fi
 
 # ==============================================================================
 # Private Secrets & Machine-Local Overrides
@@ -139,11 +98,8 @@ if command -v atuin &>/dev/null; then
   eval "$(atuin init zsh)"
 fi
 
-[[ -f "${HOMEBREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && \
-  source "${HOMEBREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-[[ -f "${HOMEBREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && \
-  source "${HOMEBREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # ==============================================================================
 # Aliases
@@ -153,7 +109,6 @@ alias kp="cd ~/work/kp"
 alias logx="cd ~/work/logx"
 alias mm="cd ~/work/mm/"
 alias nc="cd ~/.config/nvim && nvim ."
-alias notes="cd ~/Desktop/obs-v1/ && nvim ."
 alias v="nvim"
 alias vi="nvim"
 alias vd="nvim -d"
@@ -314,17 +269,12 @@ dh() {
 # Tmux Workspace Launcher (WezTerm default_prog target)
 t() {
   local SESSION_NAME="${1:-WS-1}"
-  local ROOT_DIR="${HOME}/Desktop/obs-v1"
   local YAZI_CMD="yazi"
-  local NOTES_CMD="cd \"$ROOT_DIR\" && nvim ."
 
   if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     printf "📂 Creating workspace session: %s\n" "$SESSION_NAME"
     tmux new-session -d -s "$SESSION_NAME" -n yazi
-    tmux new-window  -t "$SESSION_NAME" -n notes
     tmux send-keys -t "$SESSION_NAME:yazi" "$YAZI_CMD" C-m
-    tmux send-keys -t "$SESSION_NAME:notes" "$NOTES_CMD" C-m
-    tmux select-window -t "$SESSION_NAME:notes"
   fi
 
   if [ -n "$TMUX" ]; then
@@ -354,5 +304,13 @@ gpg-keys() {
 # ==============================================================================
 # Prompt Theme (Powerlevel10k)
 # ==============================================================================
+# ==============================================================================
+# Powerlevel10k Instant Prompt (must stay close to the top of ~/.zshrc)
+# ==============================================================================
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+
 [[ -f "${HOME}/powerlevel10k/powerlevel10k.zsh-theme" ]] && source "${HOME}/powerlevel10k/powerlevel10k.zsh-theme"
 [[ -f "${HOME}/.p10k.zsh" ]] && source "${HOME}/.p10k.zsh"
